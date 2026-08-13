@@ -1,0 +1,17 @@
+/vendor/
+/node_modules/
+/.env
+/.env.local
+/.env.*.local
+
+var/
+cache/
+logs/
+
+.idea/
+.vscode/
+
+.DS_Store
+
+docker-data/
+*.log
