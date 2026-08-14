@@ -1,0 +1,16 @@
+                ┌─────────────────┐
+                │ System Admin    │
+                └────────┬────────┘
+                         │
+                         │
+┌──────────────┐         ▼
+│ Solar        │    ┌───────────────┐
+│ Devices      │───▶│ Solar Energy  │
+└──────────────┘    │ Platform      │
+                    └───────┬───────┘
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+        Plant Manager   Operations     Management
+                         Engineer
