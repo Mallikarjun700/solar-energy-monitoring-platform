@@ -1,0 +1,62 @@
+                           USERS
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Angular Web App │
+                    └────────┬────────┘
+                             │ HTTPS
+                             ▼
+                    ┌─────────────────┐
+                    │ Load Balancer   │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ API / Gateway   │
+                    └────────┬────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+          ▼                  ▼                  ▼
+      Identity           Business APIs      Telemetry
+      /Auth                 │                Ingestion
+                            │                   │
+                  ┌─────────┼───────┐           ▼
+                  │         │       │        Queue
+                  ▼         ▼       ▼           │
+                Plants    Assets  Devices       ▼
+                  │         │       │         Workers
+                  └─────────┼───────┘           │
+                            │                   ▼
+                            ▼                Storage
+                          MySQL
+                            ▲
+                            │
+                         Redis
+                            │
+                            │
+                      Dashboard Cache
+
+Telemetry Workers
+      │
+      ├── Telemetry Storage
+      │
+      ├── Analytics
+      │
+      └── Alert Engine
+              │
+              ▼
+       Notification Queue
+              │
+              ▼
+       Notification Worker
+         ├── Email
+         ├── SMS
+         └── Push
+
+Application
+    │
+    └── Reports/Documents
+              │
+              ▼
+             S3
