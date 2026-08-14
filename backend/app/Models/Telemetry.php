@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Telemetry extends Model
 {
+    protected $table = 'telemetries';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'device_id',
         'recorded_at',
@@ -19,6 +23,11 @@ class Telemetry extends Model
 
     protected $casts = [
         'recorded_at' => 'datetime',
+        'temperature' => 'float',
+        'voltage' => 'float',
+        'current' => 'float',
+        'power' => 'float',
+        'energy_generated' => 'float',
     ];
 
     public function device()
