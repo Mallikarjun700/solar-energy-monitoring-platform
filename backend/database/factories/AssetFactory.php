@@ -3,26 +3,20 @@
 namespace Database\Factories;
 
 use App\Models\Asset;
+use App\Models\Plant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Asset>
- */
 class AssetFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    use HasFactory;
+    protected $model = Asset::class;
+
     public function definition(): array
     {
         return [
-            'name' => fake()->company() . ' Solar Farm',
-            'code' => fake()->unique()->bothify('PLANT-###'),
-            'location' => fake()->city(),
-            'capacity_kw' => fake()->randomFloat(2, 1000, 50000),
+            'plant_id' => Plant::factory(),
+            'name' => $this->faker->word() . ' Asset',
+            'asset_type' => $this->faker->randomElement(['INVERTER', 'TRACKER', 'TRANSFORMER']),
+            'serial_number' => 'ASSET-' . $this->faker->unique()->numberBetween(1000, 9999),
             'status' => 'ACTIVE',
         ];
     }
