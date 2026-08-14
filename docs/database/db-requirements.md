@@ -37,8 +37,8 @@ This document outlines the initial relational database schema for core entities 
 
 ## 2. Table Definitions
 
-### DATABASE: `solar_monitoring_dev`
-CREATE DATABASE solar_monitoring_dev 
+### DATABASE: `solar_energy`
+CREATE DATABASE solar_energy 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
