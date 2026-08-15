@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Telemetry extends Model
 {
     protected $table = 'telemetries';
-
+    protected $connection = 'mysql'; // important
     public $timestamps = false;
 
     protected $fillable = [
@@ -20,18 +20,4 @@ class Telemetry extends Model
         'energy_generated',
         'status',
     ];
-
-    protected $casts = [
-        'recorded_at' => 'datetime',
-        'temperature' => 'float',
-        'voltage' => 'float',
-        'current' => 'float',
-        'power' => 'float',
-        'energy_generated' => 'float',
-    ];
-
-    public function device()
-    {
-        return $this->belongsTo(Device::class);
-    }
 }
