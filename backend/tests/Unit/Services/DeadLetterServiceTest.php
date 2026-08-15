@@ -62,5 +62,10 @@ class DeadLetterServiceTest extends TestCase
                 'status' => DeadLetterStatus::PENDING->value,
             ]
         );
+
+        $this->assertDatabaseHas('dead_letter_events', [
+            'event_id' => 'evt-invalid-001',
+            'status' => DeadLetterStatus::PENDING->value,
+        ]);
     }
 }
