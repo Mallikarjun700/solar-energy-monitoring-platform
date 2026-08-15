@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             AssetSeeder::class,
             DeviceSeeder::class,
             TelemetrySeeder::class,
+            DeadLetterEventSeeder::class,
         ]);
     }
 }

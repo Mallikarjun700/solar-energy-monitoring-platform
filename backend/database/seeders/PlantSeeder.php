@@ -48,7 +48,7 @@ class PlantSeeder extends Seeder
         ];
 
         foreach ($plants as $plant) {
-            Plant::create($plant);
+            Plant::updateOrCreate(['code' => $plant['code']], $plant);
         }
     }
 }
