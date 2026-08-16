@@ -28,7 +28,7 @@ class DeadLetterControllerTest extends TestCase
             'status' => DeadLetterStatus::PENDING,
         ]);
 
-        $response = $this->getJson('/v1/dlq');
+        $response = $this->getJson('/api/v1/dlq');
 
         $response
             ->assertOk()
@@ -53,7 +53,7 @@ class DeadLetterControllerTest extends TestCase
             'status' => DeadLetterStatus::PENDING,
         ]);
 
-        $response = $this->postJson("/v1/dlq/{$deadLetterEvent->id}/replay", [
+        $response = $this->postJson("/api/v1/dlq/{$deadLetterEvent->id}/replay", [
             'event_id' => $deadLetterEvent->event_id,
             'device_id' => $deadLetterEvent->device_id,
             'original_payload' => $deadLetterEvent->original_payload,
@@ -81,7 +81,7 @@ class DeadLetterControllerTest extends TestCase
             'status' => DeadLetterStatus::RESOLVED,
         ]);
 
-        $response = $this->postJson("/v1/dlq/{$deadLetterEvent->id}/replay");
+        $response = $this->postJson("/api/v1/dlq/{$deadLetterEvent->id}/replay");
 
         $response->assertStatus(409);
     }
@@ -117,7 +117,7 @@ class DeadLetterControllerTest extends TestCase
             'status' => DeadLetterStatus::PENDING,
         ]);
 
-        $this->postJson("/v1/dlq/{$deadLetterEvent->id}/replay");
+        $this->postJson("/api/v1/dlq/{$deadLetterEvent->id}/replay");
 
         $this->assertDatabaseCount('telemetry', 1);
     }

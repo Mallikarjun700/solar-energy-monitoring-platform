@@ -20,7 +20,7 @@ class DeviceApiTest extends TestCase
             'serial_number' => 'ASSET-TEST-001',
         ]);
 
-        $response = $this->postJson('/v1/devices', [
+        $response = $this->postJson('/api/v1/devices', [
             'asset_id' => $asset->id,
             'device_type' => 'THERMAL_SENSOR',
             'serial_number' => 'DEV-001',

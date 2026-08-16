@@ -14,7 +14,7 @@ class AssetApiTest extends TestCase
     {
         $plant = Plant::factory()->create();
 
-        $response = $this->postJson('/v1/assets', [
+        $response = $this->postJson('/api/v1/assets', [
             'plant_id' => $plant->id,
             'name' => 'Inverter 001',
             'asset_type' => 'INVERTER',
