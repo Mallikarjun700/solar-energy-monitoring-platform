@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TelemetryEventRequest;
 use App\Services\TelemetryService;
 use Illuminate\Http\JsonResponse;
+use App\Jobs\ProcessTelemetryBatchJob;
 
 class TelemetryController extends Controller
 {
@@ -18,9 +19,12 @@ class TelemetryController extends Controller
     {
         $events = $request->validated('events');
 
-        $result = $this->telemetryService->ingest($events);
+        ProcessTelemetryBatchJob::dispatch($events);
 
-        return response()->json($result, 202);
+        return response()->json([
+            'message' => 'Telemetry batch accepted for asynchronous processing.',
+            'count' => count($events),
+        ], 202);
     }
 
     public function index(): JsonResponse
