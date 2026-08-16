@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\DeadLetterStatus;
+use App\Models\Asset;
 use App\Models\DeadLetterEvent;
+use App\Models\Device;
+use App\Models\Plant;
 use App\Models\Telemetry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -37,13 +40,41 @@ class DeadLetterControllerTest extends TestCase
 
     public function test_dlq_event_can_be_replayed(): void
     {
+        $plant = Plant::create([
+            'name' => 'Replay Plant',
+            'code' => 'RP-001',
+            'location' => 'Test City',
+            'capacity_kw' => 5000,
+            'status' => 'ACTIVE',
+        ]);
+
+        $asset = Asset::create([
+            'plant_id' => $plant->id,
+            'name' => 'Replay Asset',
+            'asset_type' => 'INVERTER',
+            'serial_number' => 'RA-001',
+            'status' => 'ACTIVE',
+            'location' => 'Block A',
+        ]);
+
+        $device = Device::create([
+            'asset_id' => $asset->id,
+            'device_type' => 'SMART_METER',
+            'serial_number' => 'RD-001',
+            'status' => 'ONLINE',
+            'last_seen_at' => now(),
+        ]);
+
         $deadLetterEvent = DeadLetterEvent::create([
             'event_id' => 'evt-replay-001',
-            'device_id' => 101,
+            'device_id' => $device->id,
             'original_payload' => [
                 'event_id' => 'evt-replay-001',
-                'device_id' => 101,
+                'device_id' => $device->id,
+                'recorded_at' => now(),
                 'power_kw' => 52.4,
+                'temperature' => 29.5,
+                'status' => 'OK',
             ],
             'error_type' => 'PROCESSING_ERROR',
             'failure_reason' => 'Temporary database failure',
@@ -88,26 +119,56 @@ class DeadLetterControllerTest extends TestCase
 
     public function test_dlq_replay_does_not_create_duplicate_telemetry(): void
     {
+        $plant = Plant::create([
+            'name' => 'Duplicate Plant',
+            'code' => 'DP-001',
+            'location' => 'Test City',
+            'capacity_kw' => 5000,
+            'status' => 'ACTIVE',
+        ]);
+
+        $asset = Asset::create([
+            'plant_id' => $plant->id,
+            'name' => 'Duplicate Asset',
+            'asset_type' => 'INVERTER',
+            'serial_number' => 'DA-001',
+            'status' => 'ACTIVE',
+            'location' => 'Block B',
+        ]);
+
+        $device = Device::create([
+            'asset_id' => $asset->id,
+            'device_type' => 'SMART_METER',
+            'serial_number' => 'DD-001',
+            'status' => 'ONLINE',
+            'last_seen_at' => now(),
+        ]);
+
+        $recordedAt = now();
+
         Telemetry::create([
-            'device_id' => 109,
-            'recorded_at' => now(),
+            'device_id' => $device->id,
+            'recorded_at' => $recordedAt,
             'temperature' => 35.5,
             'voltage' => 230,
             'current' => 12.8,
             'power' => 2.9,
             'energy_generated' => 0.0,
-            'status' => DeadLetterStatus::RESOLVED,
+            'status' => 'OK',
         ]);
 
         $this->assertDatabaseCount('telemetry', 1);
 
         $deadLetterEvent = DeadLetterEvent::create([
-            'event_id' => 'evt-replay-001',
-            'device_id' => 101,
+            'event_id' => 'evt-replay-duplicate',
+            'device_id' => $device->id,
             'original_payload' => [
-                'event_id' => 'evt-replay-001',
-                'device_id' => 101,
-                'power_kw' => 52.4,
+                'event_id' => 'evt-replay-duplicate',
+                'device_id' => $device->id,
+                'recorded_at' => $recordedAt,
+                'power_kw' => 2.9,
+                'temperature' => 35.5,
+                'status' => 'OK',
             ],
             'error_type' => 'PROCESSING_ERROR',
             'failure_reason' => 'Temporary database failure',

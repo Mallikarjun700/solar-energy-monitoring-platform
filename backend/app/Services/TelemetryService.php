@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Telemetry;
 use App\Models\TelemetryEvent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class TelemetryService
 {
@@ -41,18 +44,9 @@ class TelemetryService
             ];
         }
 
-        /*
-         * PostgreSQL performs the conflict handling.
-         *
-         * Important:
-         * insertOrIgnore() will ignore rows that violate
-         * the UNIQUE constraint.
-         */
-        
         $inserted = TelemetryEvent::query()->insertOrIgnore($rows);
 
         $accepted = $inserted;
-
         $duplicates = count($rows) - $accepted;
 
         return [
@@ -60,6 +54,43 @@ class TelemetryService
             'duplicates' => $duplicates,
             'rejected' => 0,
         ];
+    }
+
+    public function process(array $payload): void
+    {
+        if (empty($payload)) {
+            throw new InvalidArgumentException('Telemetry payload is empty.');
+        }
+
+        $deviceId = $payload['device_id'] ?? null;
+        if ($deviceId === null) {
+            throw new InvalidArgumentException('Telemetry payload must contain device_id.');
+        }
+
+        $recordedAt = $payload['recorded_at'] ?? $payload['timestamp'] ?? now();
+        $recordedAtString = Carbon::parse($recordedAt)
+            ->setMicrosecond(0)
+            ->format('Y-m-d H:i:s');
+
+        $alreadyExists = Telemetry::query()
+            ->where('device_id', (int) $deviceId)
+            ->where('recorded_at', $recordedAtString)
+            ->exists();
+
+        if ($alreadyExists) {
+            return;
+        }
+
+        Telemetry::query()->create([
+            'device_id' => (int) $deviceId,
+            'recorded_at' => $recordedAtString,
+            'temperature' => $payload['temperature'] ?? null,
+            'voltage' => $payload['voltage'] ?? null,
+            'current' => $payload['current'] ?? null,
+            'power' => $payload['power'] ?? $payload['power_kw'] ?? null,
+            'energy_generated' => $payload['energy_generated'] ?? null,
+            'status' => $payload['status'] ?? 'OK',
+        ]);
     }
 
     public function getAllEvents(): array
