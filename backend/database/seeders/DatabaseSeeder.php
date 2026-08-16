@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             DeviceSeeder::class,
             TelemetrySeeder::class,
             DeadLetterEventSeeder::class,
+            DeadLetterControllerTestDataSeeder::class,
         ]);
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Telemetry extends Model
 {
-    protected $table = 'telemetries';
+    protected $table = 'telemetry';
     protected $connection = 'mysql'; // important
     public $timestamps = false;
 

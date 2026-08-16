@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telemetries', function (Blueprint $table) {
+        Schema::create('telemetry', function (Blueprint $table) {
         $table->id();
 
         $table->foreignId('device_id')
@@ -38,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('telemetries');
+        Schema::dropIfExists('telemetry');
     }
 };
