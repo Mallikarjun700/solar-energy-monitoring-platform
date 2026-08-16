@@ -19,7 +19,7 @@ The system is designed to monitor renewable energy assets, process device teleme
 ## Technology Stack
 
 - Angular
-- Symfony
+- Laravel
 - PHP
 - MySQL
 - Redis
@@ -32,3 +32,18 @@ The system is designed to monitor renewable energy assets, process device teleme
 
 🚧 Architecture and requirements
 ![High Level Architecture](diagrams/high-level-architecture.drawio.png)
+
+
+## Telemetry Reliability
+
+The telemetry processing pipeline implements:
+
+- Idempotency
+- Retry with backoff
+- Dead Letter Queue
+- DLQ inspection
+- DLQ replay
+- Safe replay through idempotent processing
+
+Architecture:
+[Telemetry DLQ Architecture](docs/architecture/telemetry-dlq.md)
