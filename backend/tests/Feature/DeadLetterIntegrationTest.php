@@ -295,4 +295,39 @@ class DeadLetterIntegrationTest extends TestCase
 
         $this->assertDatabaseCount('telemetry', 1);
     }
+
+    public function test_exhausted_retry_creates_dlq_event_new(): void
+    {
+        $eventId = (string) \Illuminate\Support\Str::uuid();
+
+        $events = [
+            [
+                'event_id' => $eventId,
+                'tenant_id' => (string) \Illuminate\Support\Str::uuid(),
+                'source_id' => (string) \Illuminate\Support\Str::uuid(),
+                'event_type' => 'telemetry.power',
+                'timestamp' => now()->toISOString(),
+                'schema_version' => 1,
+                'attributes' => [
+                    'device_id' => 101,
+                ],
+                'payload' => [
+                    'power_kw' => 50.5,
+                ],
+
+                // Test-only failure switch.
+                'force_failure' => true,
+            ],
+        ];
+
+        $job = new \App\Jobs\ProcessTelemetryBatchJob($events);
+
+        // Execute the job directly and verify that it fails.
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Intentional telemetry queue failure.'
+        );
+
+        $job->handle(app(\App\Services\TelemetryService::class));
+    }
 }

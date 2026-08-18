@@ -19,11 +19,16 @@ class TelemetryController extends Controller
     {
         $events = $request->validated('events');
 
-        ProcessTelemetryBatchJob::dispatch($events);
+        $chunks = array_chunk($events, 250);
+
+        $correlationId = app()->bound('correlation_id') ? app('correlation_id') : null;
+        foreach ($chunks as $chunk) {
+            ProcessTelemetryBatchJob::dispatch($chunk, $correlationId);
+        }
 
         return response()->json([
-            'message' => 'Telemetry batch accepted for asynchronous processing.',
-            'count' => count($events),
+            'accepted' => count($events),
+            'jobs_dispatched' => count($chunks),
         ], 202);
     }
 

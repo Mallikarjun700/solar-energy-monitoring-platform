@@ -68,4 +68,42 @@ class DeadLetterServiceTest extends TestCase
             'status' => DeadLetterStatus::PENDING->value,
         ]);
     }
+
+    public function test_duplicate_event_id_creates_only_one_dlq_record(): void
+    {
+        $service = app(\App\Services\DeadLetterService::class);
+
+        $eventId = (string) \Illuminate\Support\Str::uuid();
+
+        $payload = [
+            'event_id' => $eventId,
+            'tenant_id' => (string) \Illuminate\Support\Str::uuid(),
+            'source_id' => (string) \Illuminate\Support\Str::uuid(),
+            'event_type' => 'telemetry',
+            'timestamp' => now()->toISOString(),
+            'schema_version' => 1,
+        ];
+
+        $service->captureFailedEvent(
+            $eventId,
+            null,
+            $payload,
+            'Test failure',
+            3
+        );
+
+        $service->captureFailedEvent(
+            $eventId,
+            null,
+            $payload,
+            'Test failure again',
+            3
+        );
+
+        $this->assertDatabaseCount('dead_letter_events', 1);
+
+        $this->assertDatabaseHas('dead_letter_events', [
+            'event_id' => $eventId,
+        ]);
+    }
 }

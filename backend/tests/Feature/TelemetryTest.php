@@ -51,5 +51,158 @@ class TelemetryTest extends TestCase
             }
         );
     }
+
+    public function test_telemetry_batch_accepts_up_to_1000_events(): void
+    {
+        $events = [];
+
+        for ($i = 0; $i < 1000; $i++) {
+            $events[] = [
+                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_type' => 'telemetry',
+                'timestamp' => now()->toISOString(),
+                'schema_version' => 1,
+                'attributes' => [],
+                'payload' => [
+                    'device_id' => 1,
+                    'temperature' => 25.5,
+                ],
+            ];
+        }
+
+        $response = $this->postJson('/api/v1/telemetry/events', [
+            'events' => $events,
+        ]);
+
+        $response->assertStatus(202);
+    }
+
+    public function test_telemetry_batch_rejects_more_than_1000_events(): void
+    {
+        $events = [];
+
+        for ($i = 0; $i < 1001; $i++) {
+            $events[] = [
+                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_type' => 'telemetry',
+                'timestamp' => now()->toISOString(),
+                'schema_version' => 1,
+                'attributes' => [],
+                'payload' => [
+                    'device_id' => 1,
+                    'temperature' => 25.5,
+                ],
+            ];
+        }
+
+        $response = $this->postJson('/api/v1/telemetry/events', [
+            'events' => $events,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_telemetry_dispatches_jobs_in_batches_of_250_or_less(): void
+    {
+        Queue::fake();
+
+        $events = [];
+
+        for ($i = 0; $i < 1000; $i++) {
+            $events[] = [
+                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_type' => 'telemetry',
+                'timestamp' => now()->toISOString(),
+                'schema_version' => 1,
+                'attributes' => [],
+                'payload' => [
+                    'device_id' => 1,
+                    'temperature' => 25.5,
+                ],
+            ];
+        }
+
+        $jobs = [];
+
+        $response = $this->postJson('/api/v1/telemetry/events', [
+            'events' => $events,
+        ]);
+
+        $response->assertStatus(202);
+
+        Queue::assertPushed(
+            ProcessTelemetryBatchJob::class,
+            function (ProcessTelemetryBatchJob $job) use (&$jobs) {
+                $jobs[] = $job;
+
+                return true;
+            }
+        );
+
+        $this->assertCount(4, $jobs);
+
+        foreach ($jobs as $job) {
+            $this->assertLessThanOrEqual(250, count($job->events));
+        }
+    }
+
+    public function test_telemetry_dispatches_three_jobs_for_600_events(): void
+    {
+        Queue::fake();
+
+        $events = [];
+
+        for ($i = 0; $i < 600; $i++) {
+            $events[] = [
+                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_type' => 'telemetry',
+                'timestamp' => now()->toISOString(),
+                'schema_version' => 1,
+                'attributes' => [],
+                'payload' => [
+                    'device_id' => 1,
+                    'temperature' => 25.5,
+                ],
+            ];
+        }
+
+        $jobs = [];
+
+        $response = $this->postJson('/api/v1/telemetry/events', [
+            'events' => $events,
+        ]);
+
+        $response->assertStatus(202);
+
+        Queue::assertPushed(
+            ProcessTelemetryBatchJob::class,
+            function (ProcessTelemetryBatchJob $job) use (&$jobs) {
+                $jobs[] = $job;
+
+                return true;
+            }
+        );
+
+        $this->assertCount(3, $jobs);
+        $this->assertSame(250, count($jobs[0]->events));
+        $this->assertSame(250, count($jobs[1]->events));
+        $this->assertSame(100, count($jobs[2]->events));
+    }
+
+    public function test_telemetry_batch_job_has_expected_retry_configuration(): void
+    {
+        $job = new ProcessTelemetryBatchJob([]);
+
+        $this->assertSame(3, $job->tries);
+        $this->assertSame(60, $job->timeout);
+    }
 }
 
