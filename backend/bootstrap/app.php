@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
         ]);
+        $middleware->append(
+            \App\Http\Middleware\SecurityHeadersMiddleware::class
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
