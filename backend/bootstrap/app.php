@@ -92,7 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             logger()->error('Unhandled API exception', [
                 'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
+               // 'message' => $exception->getMessage(),
                 'correlation_id' => app()->bound('correlation_id')
                     ? app('correlation_id')
                     : null,
