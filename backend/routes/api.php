@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\V1\PlantController;
 use App\Http\Controllers\Api\V1\AssetController;
 use App\Http\Controllers\Api\V1\DeviceController;
@@ -9,14 +10,56 @@ use App\Http\Controllers\Api\V1\DeadLetterController;
 
 
 Route::prefix('v1')->group(function () {
-    Route::apiResource('plants', PlantController::class);
-    Route::apiResource('assets', AssetController::class);
-    Route::apiResource('devices', DeviceController::class);
-    Route::post('/telemetry/events', [TelemetryController::class, 'ingest']);
-    Route::get('/dlq', [DeadLetterController::class, 'index']);
-    Route::post('/dlq/{deadLetterEvent}/replay',[DeadLetterController::class, 'replay']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::apiResource('plants', PlantController::class);
+        Route::apiResource('assets', AssetController::class);
+        Route::apiResource('devices', DeviceController::class);
+
+        Route::post('/telemetry/events', [TelemetryController::class, 'ingest'])->middleware([
+                'auth:sanctum', 
+                'abilities:telemetry:write', 
+                'throttle:telemetry', 
+                \App\Http\Middleware\ValidateTelemetryRequestSize::class,
+                'idempotency',
+            ]);
+        Route::get('/dlq', [DeadLetterController::class, 'index'])->middleware('abilities:dlq:read');
+        Route::post('/dlq/{deadLetterEvent}/replay',[DeadLetterController::class, 'replay'])->middleware('abilities:dlq:replay');
+
+        // This route is for testing purposes and should be removed in production
+        Route::get('/telemetry/events', [TelemetryController::class, 'index']); 
+    });
+});
 
 
-    // This route is for testing purposes and should be removed in production
-    Route::get('/telemetry/events', [TelemetryController::class, 'index']); 
+Route::prefix('v1')->group(function () {
+    Route::get('/ready', function () {
+        try {
+            DB::connection()->getPdo();
+
+            DB::table('jobs')->count();
+
+            return response()->json([
+                'status' => 'ready',
+                'checks' => [
+                    'database' => 'ok',
+                    'queue' => 'ok',
+                ],
+            ], 200);
+        } catch (\Throwable $exception) {
+            logger()->error('Readiness check failed', [
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 'not_ready',
+                'checks' => [
+                    'database' => 'failed',
+                    'queue' => 'failed',
+                ],
+            ], 503);
+        }
+    });
+    Route::get('/test-error', function () {
+        throw new \RuntimeException('Intentional test exception.');
+    });
 });

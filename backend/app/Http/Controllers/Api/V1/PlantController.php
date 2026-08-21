@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePlantRequest;
+use App\Http\Resources\PlantResource;
 use App\Services\PlantService;
-use Illuminate\Http\Request;
 
 class PlantController extends Controller
 {
@@ -17,7 +17,7 @@ class PlantController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => $this->plantService->getPlants(),
+            'data' => PlantResource::collection($this->plantService->getPlants()),
         ], 200);
     }
 
@@ -30,7 +30,7 @@ class PlantController extends Controller
 
         return response()->json([
             'message' => 'Plant created successfully.',
-            'data' => $plant,
+            'data' => new PlantResource($plant),
         ], 201);
     }
 }

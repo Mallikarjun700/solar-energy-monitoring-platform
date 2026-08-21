@@ -127,8 +127,10 @@ class DeadLetterReplayTest extends TestCase
 
         $response = $this->postJson("/api/v1/dlq/{$deadLetterEvent->id}/replay");
 
-        $response->assertStatus(409);
-        $response->assertJsonPath('message', 'DLQ event has already been resolved.');
+        $response->assertStatus(409)->assertJson([
+            'status' => 'error',
+            'message' => 'DLQ event has already been resolved.',
+        ]);
 
         $deadLetterEvent->refresh();
 

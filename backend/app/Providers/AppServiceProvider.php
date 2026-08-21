@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Event;
 use App\Jobs\ProcessTelemetryBatchJob;
 use App\Services\DeadLetterService;
 use App\Services\QueueMetricsService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('telemetry', function ($request) {
+            return Limit::perMinute(60)
+                ->by($request->ip());
+        });
+        
         $metricsService = app(QueueMetricsService::class);
 
         Event::listen(JobProcessing::class, function (JobProcessing $event) use ($metricsService) {

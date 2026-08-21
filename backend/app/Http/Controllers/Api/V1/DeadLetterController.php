@@ -34,7 +34,11 @@ class DeadLetterController extends Controller
     public function replay(DeadLetterEvent $deadLetterEvent, TelemetryService $telemetryService): JsonResponse {
         if ($deadLetterEvent->status === DeadLetterStatus::RESOLVED) {
             return response()->json([
+                'status' => 'error',
                 'message' => 'DLQ event has already been resolved.',
+                'correlation_id' => app()->bound('correlation_id')
+                    ? app('correlation_id')
+                    : null,
             ], 409);
         }
 

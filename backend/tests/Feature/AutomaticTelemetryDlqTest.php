@@ -90,6 +90,16 @@ class AutomaticTelemetryDlqTest extends TestCase
                     return ProcessTelemetryBatchJob::class;
                 }
 
+                public function getJobId(): string
+                {
+                    return $this->payload['uuid'];
+                }
+
+                public function getQueue(): string
+                {
+                    return 'default';
+                }
+
                 public function attempts(): int
                 {
                     return 3;

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,13 +12,17 @@ class CorrelationIdTest extends TestCase
 
     public function test_request_generates_correlation_id(): void
     {
-        $response = $this->getJson('/api/v1/telemetry');
+        $response = $this->getJson('/api/v1/plants');
 
         $response->assertHeader('X-Correlation-ID');
 
-        $this->assertNotEmpty(
-            $response->headers->get('X-Correlation-ID')
-        );
+        $correlationId = $response->headers->get('X-Correlation-ID');
+
+        $this->assertNotEmpty($correlationId);
+        $response
+            ->assertOk()
+            ->assertJsonPath('data', [])
+            ->assertJsonPath('correlation_id', $correlationId);
     }
 
     public function test_existing_correlation_id_is_preserved(): void
@@ -26,12 +31,13 @@ class CorrelationIdTest extends TestCase
 
         $response = $this
             ->withHeader('X-Correlation-ID', $correlationId)
-            ->getJson('/api/v1/telemetry');
+            ->getJson('/api/v1/plants');
 
         $response->assertHeader(
             'X-Correlation-ID',
             $correlationId
         );
+        $response->assertJsonPath('correlation_id', $correlationId);
     }
 
     public function test_correlation_id_is_propagated_to_telemetry_job(): void
@@ -63,8 +69,12 @@ class CorrelationIdTest extends TestCase
             ->withHeader('X-Correlation-ID', $correlationId)
             ->postJson('/api/v1/telemetry/events', $payload);
 
-        $response->assertStatus(202);
-        $response->assertHeader('X-Correlation-ID', $correlationId);
+        $response
+            ->assertStatus(202)
+            ->assertHeader('X-Correlation-ID', $correlationId)
+            ->assertJsonPath('accepted', 1)
+            ->assertJsonPath('jobs_dispatched', 1)
+            ->assertJsonPath('correlation_id', $correlationId);
 
         \Illuminate\Support\Facades\Queue::assertPushed(
             \App\Jobs\ProcessTelemetryBatchJob::class,
@@ -72,5 +82,17 @@ class CorrelationIdTest extends TestCase
                 return $job->correlationId === $correlationId;
             }
         );
+    }
+
+    public function test_no_content_response_does_not_receive_a_json_body(): void
+    {
+        $asset = Asset::factory()->create();
+
+        $response = $this->deleteJson("/api/v1/assets/{$asset->id}");
+
+        $response
+            ->assertNoContent()
+            ->assertHeader('X-Correlation-ID')
+            ->assertContent('');
     }
 }

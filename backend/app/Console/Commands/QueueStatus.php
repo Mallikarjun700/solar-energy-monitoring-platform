@@ -55,16 +55,15 @@ class QueueStatus extends Command
 
         if ($oldestJob) {
             $this->info("Oldest job age: {$oldestJobAge} seconds");
-
-            if ($oldestJobAge < 10) {
-                $this->info('Queue health: HEALTHY');
-            } elseif ($oldestJobAge < 30) {
-                $this->warn('Queue health: WARNING');
-            } else {
-                $this->error('Queue health: CRITICAL');
-            }
         } else {
             $this->info('Oldest job age: 0 seconds');
+        }
+
+        if ($failed > 0 || $oldestJobAge >= 30) {
+            $this->error('Queue health: CRITICAL');
+        } elseif ($oldestJobAge >= 10) {
+            $this->warn('Queue health: WARNING');
+        } else {
             $this->info('Queue health: HEALTHY');
         }
 

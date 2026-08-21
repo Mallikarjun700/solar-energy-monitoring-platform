@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Jobs\ProcessTelemetryBatchJob;
 use Illuminate\Support\Facades\Queue;
+use App\Models\User;
 
 class TelemetryTest extends TestCase
 {
@@ -39,7 +40,8 @@ class TelemetryTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/v1/telemetry/events', $payload);
+        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'unique-test-key')
+            ->postJson('/api/v1/telemetry/events',$payload);
 
         $response->assertStatus(202);
 
@@ -54,6 +56,8 @@ class TelemetryTest extends TestCase
 
     public function test_telemetry_batch_accepts_up_to_1000_events(): void
     {
+        Queue::fake();
+
         $events = [];
 
         for ($i = 0; $i < 1000; $i++) {
@@ -72,7 +76,8 @@ class TelemetryTest extends TestCase
             ];
         }
 
-        $response = $this->postJson('/api/v1/telemetry/events', [
+       $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-events')
+        ->postJson('/api/v1/telemetry/events', [
             'events' => $events,
         ]);
 
@@ -99,7 +104,8 @@ class TelemetryTest extends TestCase
             ];
         }
 
-        $response = $this->postJson('/api/v1/telemetry/events', [
+        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1001-events')
+        ->postJson('/api/v1/telemetry/events', [
             'events' => $events,
         ]);
 
@@ -130,7 +136,8 @@ class TelemetryTest extends TestCase
 
         $jobs = [];
 
-        $response = $this->postJson('/api/v1/telemetry/events', [
+        $response = $this ->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-batches')
+        ->postJson('/api/v1/telemetry/events', [
             'events' => $events,
         ]);
 
@@ -176,7 +183,8 @@ class TelemetryTest extends TestCase
 
         $jobs = [];
 
-        $response = $this->postJson('/api/v1/telemetry/events', [
+        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-600-batches')
+        ->postJson('/api/v1/telemetry/events', [
             'events' => $events,
         ]);
 
@@ -204,5 +212,14 @@ class TelemetryTest extends TestCase
         $this->assertSame(3, $job->tries);
         $this->assertSame(60, $job->timeout);
     }
-}
+    private function telemetryToken(): string
+    {
+        $user = User::factory()->create();
 
+        return $user->createToken(
+            'telemetry-test',
+            [\App\Enums\TokenAbility::TELEMETRY_WRITE->value]
+        )->plainTextToken;
+    }
+
+}
