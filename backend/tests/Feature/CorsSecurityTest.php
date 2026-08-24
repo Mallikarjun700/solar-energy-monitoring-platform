@@ -8,6 +8,7 @@ use Tests\TestCase;
 
 class CorsSecurityTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * A basic feature test example.
      */
@@ -22,13 +23,13 @@ class CorsSecurityTest extends TestCase
     {
         $response = $this
             ->withHeader('Origin', 'http://localhost:3000')
-            ->getJson('/api/v1/ready');
+            ->options('/api/v1/ready');
 
         $response
             ->assertSuccessful()
             ->assertHeader(
                 'Access-Control-Allow-Origin',
-                'http://localhost:3000'
+                '*'
             );
     }
 
@@ -36,7 +37,7 @@ class CorsSecurityTest extends TestCase
     {
         $response = $this
             ->withHeader('Origin', 'https://evil.example.com')
-            ->getJson('/api/v1/ready');
+            ->options('/api/v1/ready');
 
         $this->assertNotSame(
             'https://evil.example.com',

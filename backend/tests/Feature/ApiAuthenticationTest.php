@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\DeadLetterEvent;
 
 class ApiAuthenticationTest extends TestCase
 {
@@ -27,6 +28,7 @@ class ApiAuthenticationTest extends TestCase
 
         $response = $this
             ->withToken($token)
+            ->withHeader('Idempotency-Key', 'api-auth-telemetry-001')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => [
                     [
@@ -67,6 +69,7 @@ class ApiAuthenticationTest extends TestCase
 
         $response = $this
             ->withToken($token)
+            ->withHeader('Idempotency-Key', 'api-auth-telemetry-001')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => [],
             ]);
@@ -108,6 +111,19 @@ class ApiAuthenticationTest extends TestCase
 
     public function test_dlq_read_token_cannot_replay_dlq_event(): void
     {
+        $deadLetterEvent = DeadLetterEvent::create([
+            'event_id' => (string) \Illuminate\Support\Str::uuid(),
+            'device_id' => 1,
+            'original_payload' => [
+                'event_id' => (string) \Illuminate\Support\Str::uuid(),
+                'device_id' => 1,
+            ],
+            'error_type' => 'RuntimeException',
+            'failure_reason' => 'Test failure',
+            'attempt_count' => 3,
+            'status' => \App\Enums\DeadLetterStatus::PENDING,
+        ]);
+
         $user = User::factory()->create();
 
         $token = $user->createToken(
@@ -117,7 +133,9 @@ class ApiAuthenticationTest extends TestCase
 
         $response = $this
             ->withToken($token)
-            ->postJson('/api/v1/dlq/999999/replay');
+            ->postJson(
+                "/api/v1/dlq/{$deadLetterEvent->id}/replay"
+            );
 
         $response->assertForbidden();
     }

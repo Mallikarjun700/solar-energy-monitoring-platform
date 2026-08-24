@@ -14,18 +14,20 @@ class IdempotencyMiddleware
     {
         $idempotencyKey = $request->header('Idempotency-Key');
 
-        if (! preg_match('/^[A-Za-z0-9._:-]{1,255}$/', $idempotencyKey)) {
+        if ($idempotencyKey === null || $idempotencyKey === '') {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Idempotency-Key header is required.',
-                'correlation_id' => app()->bound('correlation_id') ? app('correlation_id') : null,
+                'correlation_id' => app()->bound('correlation_id')
+                    ? app('correlation_id')
+                    : null,
             ], 400);
         }
 
-        if (strlen($idempotencyKey) > 255) {
+        if (strlen($idempotencyKey) > 255 || ! preg_match('/^[A-Za-z0-9._:-]+$/', $idempotencyKey)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Idempotency-Key must not exceed 255 characters.',
+                'message' => 'Invalid Idempotency-Key format.',
                 'correlation_id' => app()->bound('correlation_id')
                     ? app('correlation_id')
                     : null,
@@ -128,6 +130,10 @@ class IdempotencyMiddleware
 
         $response = $next($request);
 
+        if (! $response->headers->has('X-Correlation-ID')) {
+            $response->headers->set('X-Correlation-ID', app()->bound('correlation_id') ? app('correlation_id') : null);
+
+        }
         $idempotencyRecord->update([
             'status_code' => $response->getStatusCode(),
             'response_body' => json_decode(

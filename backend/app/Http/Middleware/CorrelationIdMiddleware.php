@@ -29,7 +29,9 @@ class CorrelationIdMiddleware
 
         $response = $next($request);
 
-        $response->headers->set('X-Correlation-ID', $correlationId);
+        if (! $response->headers->has('X-Correlation-ID')) {
+            $response->headers->set('X-Correlation-ID', app()->bound('correlation_id') ? app('correlation_id') : null);
+        }
 
         if (
             $request->is('api/*')

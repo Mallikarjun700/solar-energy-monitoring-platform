@@ -20,6 +20,7 @@ class ApiErrorResponseTest extends TestCase
 
         $response = $this
             ->withHeader('X-Correlation-ID', $correlationId)
+            ->withHeader('Idempotency-Key', 'api-error-validation-001')
             ->postJson('/api/v1/telemetry/events', []);
 
         $response
@@ -39,7 +40,9 @@ class ApiErrorResponseTest extends TestCase
 
     public function test_validation_error_contains_field_errors(): void
     {
-        $response = $this->postJson('/api/v1/telemetry/events', []);
+        $response = $this
+            ->withHeader('Idempotency-Key', 'api-error-validation-002')
+            ->postJson('/api/v1/telemetry/events', []);
 
         $response
             ->assertStatus(422)
