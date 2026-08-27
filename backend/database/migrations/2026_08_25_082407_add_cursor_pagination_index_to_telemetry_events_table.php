@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('dead_letter_events', function (Blueprint $table) {
-            Schema::table('dead_letter_events', function (Blueprint $table) {
-                $table->unique('event_id');
-            });
+        Schema::table('telemetry_events', function (Blueprint $table) {
+            $table->index(
+                ['event_timestamp', 'id'],
+                'telemetry_events_cursor_index'
+            );
         });
     }
 
@@ -23,8 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dead_letter_events', function (Blueprint $table) {
-            $table->dropIndex(['event_id']); 
+        Schema::table('telemetry_events', function (Blueprint $table) {
+            $table->dropIndex('telemetry_events_cursor_index');
         });
     }
 };

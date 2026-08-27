@@ -7,6 +7,7 @@ use App\Http\Requests\TelemetryEventRequest;
 use App\Services\TelemetryService;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessTelemetryBatchJob;
+use Illuminate\Http\Request;
 
 class TelemetryController extends Controller
 {
@@ -32,12 +33,23 @@ class TelemetryController extends Controller
         ], 202);
     }
 
-    public function index(): JsonResponse
+    public function index(TelemetryQueryRequest $request): JsonResponse
     {
-        $events = $this->telemetryService->getAllEvents();
+        $filters = $request->only([
+            'tenant_id',
+            'source_id',
+            'event_type',
+            'from',
+            'to',
+        ]);
 
-        return response()->json([
-            'data' => $events,
-        ], 200);
+        $perPage = (int) $request->query('per_page', 50);
+
+        $events = $this->telemetryService->queryEvents(
+            $filters,
+            $perPage
+        );
+
+        return response()->json($events, 200);
     }
 }

@@ -44,7 +44,9 @@ class TelemetryService
             ];
         }
 
-        $inserted = TelemetryEvent::query()->insertOrIgnore($rows);
+        $inserted = DB::transaction(function () use ($rows) {
+            return TelemetryEvent::query()->insertOrIgnore($rows);
+        });
 
         $accepted = $inserted;
         $duplicates = count($rows) - $accepted;
@@ -93,11 +95,51 @@ class TelemetryService
         ]);
     }
 
-    public function getAllEvents(): array
+    public function getEventsCursor(int $perPage = 50)
     {
+        $perPage = min(max($perPage, 1), 1000);
+
         return TelemetryEvent::query()
-            ->orderBy('event_timestamp', 'desc')
-            ->limit(100)
-            ->get()->toArray();
+            ->orderByDesc('event_timestamp')
+            ->orderByDesc('id')
+            ->cursorPaginate($perPage);
+    }
+
+    public function queryEvents(array $filters = [], int $perPage = 50)
+    {
+        $perPage = min(max($perPage, 1), 100);
+
+        return TelemetryEvent::query()
+            ->when(
+                $filters['tenant_id'] ?? null,
+                fn ($query, $tenantId) => $query->where('tenant_id', $tenantId)
+            )
+            ->when(
+                $filters['source_id'] ?? null,
+                fn ($query, $sourceId) => $query->where('source_id', $sourceId)
+            )
+            ->when(
+                $filters['event_type'] ?? null,
+                fn ($query, $eventType) => $query->where('event_type', $eventType)
+            )
+            ->when(
+                $filters['from'] ?? null,
+                fn ($query, $from) => $query->where(
+                    'event_timestamp',
+                    '>=',
+                    $from
+                )
+            )
+            ->when(
+                $filters['to'] ?? null,
+                fn ($query, $to) => $query->where(
+                    'event_timestamp',
+                    '<=',
+                    $to
+                )
+            )
+            ->orderByDesc('event_timestamp')
+            ->orderByDesc('id')
+            ->paginate($perPage);
     }
 }

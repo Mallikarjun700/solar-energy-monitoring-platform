@@ -12,6 +12,7 @@ use App\Services\DeadLetterService;
 use App\Services\QueueMetricsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Services\ProductionConfigurationValidator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,9 +29,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app(ProductionConfigurationValidator::class)->validate();
+        
         RateLimiter::for('telemetry', function ($request) {
-            return Limit::perMinute(60)
-                ->by($request->ip());
+            $limit = (int) config('telemetry.rate_limit.requests_per_minute',60);
+
+            $user = $request->user();
+
+            $key = $user ? 'user:' . $user->getAuthIdentifier() : 'ip:' . $request->ip();
+
+            return Limit::perMinute($limit)->by($key);
         });
         
         $metricsService = app(QueueMetricsService::class);

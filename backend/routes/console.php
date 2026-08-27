@@ -14,3 +14,8 @@ Schedule::command('queue:monitor-health')
 
 Schedule::command('idempotency:cleanup')
     ->hourly();
+
+Schedule::command('telemetry:cleanup --execute')
+    ->dailyAt('02:00')
+    ->withoutOverlapping()
+    ->onOneServer();

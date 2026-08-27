@@ -27,6 +27,8 @@ Route::prefix('v1')->group(function () {
 
         // This route is for testing purposes and should be removed in production
         Route::get('/telemetry/events', [TelemetryController::class, 'index']); 
+
+        Route::get('/telemetry/events/cursor',[TelemetryController::class, 'cursorIndex']);
     });
 });
 
