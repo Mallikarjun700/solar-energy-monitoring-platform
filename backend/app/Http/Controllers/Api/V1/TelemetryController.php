@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TelemetryEventRequest;
+use App\Http\Requests\TelemetryQueryRequest;
 use App\Services\TelemetryService;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\ProcessTelemetryBatchJob;
@@ -51,5 +52,18 @@ class TelemetryController extends Controller
         );
 
         return response()->json($events, 200);
+    }
+
+    public function health(): JsonResponse
+    {
+        $health = app(\App\Services\TelemetryHealthService::class)
+            ->check();
+
+        $statusCode = $health['status'] === 'healthy' ? 200 : 503;
+
+        return response()->json(
+            $health,
+            $statusCode
+        );
     }
 }

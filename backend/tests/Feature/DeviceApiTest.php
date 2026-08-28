@@ -11,6 +11,13 @@ class DeviceApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi();
+    }
+
     public function test_device_index_returns_resource_fields(): void
     {
         $device = Asset::factory()->create()->devices()->create([

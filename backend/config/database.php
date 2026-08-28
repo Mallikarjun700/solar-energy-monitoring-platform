@@ -113,7 +113,16 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
-        'pgsql_telemetry' => [
+        'pgsql_telemetry' => env('APP_ENV') === 'testing' ? [
+            'driver' => 'sqlite',
+            'database' => env('TELEMETRY_DB_DATABASE', env('DB_DATABASE', database_path('database.sqlite'))),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ] : [
             'driver' => 'pgsql',
             'host' => env('TELEMETRY_DB_HOST', '127.0.0.1'),
             'port' => env('TELEMETRY_DB_PORT', '5432'),

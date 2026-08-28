@@ -8,10 +8,20 @@ use App\Jobs\ProcessTelemetryBatchJob;
 use Illuminate\Support\Facades\Queue;
 use App\Models\TelemetryEvent;
 use App\Services\TelemetryService;
+use App\Enums\TokenAbility;
 
 class TelemetryTestSimplified extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi([
+            TokenAbility::TELEMETRY_WRITE->value,
+        ]);
+    }
 
     public function test_telemetry_ingestion_dispatches_async_batch_job(): void
     {
@@ -40,7 +50,9 @@ class TelemetryTestSimplified extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/v1/telemetry/events', $payload);
+        $response = $this
+            ->withHeader('Idempotency-Key', 'telemetry-simplified-001')
+            ->postJson('/api/v1/telemetry/events', $payload);
 
         $response->assertStatus(202);
 

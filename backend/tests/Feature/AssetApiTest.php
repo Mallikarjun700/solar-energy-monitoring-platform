@@ -11,6 +11,13 @@ class AssetApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi();
+    }
+
     public function test_asset_index_returns_resource_fields(): void
     {
         $asset = Asset::factory()->create();

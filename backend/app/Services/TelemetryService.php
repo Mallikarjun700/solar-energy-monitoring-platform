@@ -7,6 +7,9 @@ use App\Models\TelemetryEvent;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use App\Models\AlertRule;
+use App\Services\AlertCreationService;
+use App\Jobs\EvaluateTelemetryAlertsJob;
 
 class TelemetryService
 {
@@ -50,6 +53,43 @@ class TelemetryService
 
         $accepted = $inserted;
         $duplicates = count($rows) - $accepted;
+
+        /*
+        * Only evaluate telemetry that now exists in the database.
+        *
+        * This prevents duplicate telemetry from repeatedly triggering
+        * alert evaluation.
+        */
+        if ($accepted > 0) {
+            $eventIds = array_column($rows, 'event_id');
+
+            $storedEvents = TelemetryEvent::query()
+                ->whereIn('event_id', $eventIds)
+                ->get();
+
+            $rulesByTenant = AlertRule::query()
+                ->whereIn(
+                    'tenant_id',
+                    $storedEvents->pluck('tenant_id')->unique()->values()
+                )
+                ->where('enabled', true)
+                ->get()
+                ->groupBy('tenant_id');
+
+            $alertCreationService = app(AlertCreationService::class);
+
+            foreach ($storedEvents as $storedEvent) {
+                EvaluateTelemetryAlertsJob::dispatch([
+                    'event_id' => $storedEvent->event_id,
+                    'tenant_id' => $storedEvent->tenant_id,
+                    'source_id' => $storedEvent->source_id,
+                    'event_type' => $storedEvent->event_type,
+                    'timestamp' => $storedEvent->event_timestamp,
+                    'attributes' => $storedEvent->attributes,
+                    'payload' => $storedEvent->payload,
+                ]);
+            }
+        }
 
         return [
             'accepted' => $accepted,

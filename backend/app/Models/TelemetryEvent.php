@@ -30,4 +30,11 @@ class TelemetryEvent extends Model
     ];
 
     public $timestamps = false;
+
+    public function getConnectionName()
+    {
+        return app()->environment('testing')
+            ? config('database.default')
+            : parent::getConnectionName();
+    }
 }

@@ -4,18 +4,23 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class CleanupTelemetry extends Command
 {
     protected $signature = 'telemetry:cleanup
                             {--execute : Archive eligible telemetry}
-                            {--delete : Delete telemetry already archived past retention}';
+                            {--delete : Delete archived telemetry past retention}';
 
-    protected $description = 'Archive and safely clean up telemetry according to retention policy';
+    protected $description =
+        'Archive and safely clean up telemetry according to retention policy';
+
+    private const CHUNK_SIZE = 1000;
 
     public function handle(): int
     {
         $startedAt = microtime(true);
+
         $hotDays = (int) config(
             'telemetry.retention.hot_days',
             90
@@ -26,26 +31,51 @@ class CleanupTelemetry extends Command
             365
         );
 
+        if ($hotDays <= 0 || $archiveDays <= 0) {
+            $this->error('Telemetry retention values must be greater than zero.');
+
+            return self::FAILURE;
+        }
+
+        if ($archiveDays <= $hotDays) {
+            $this->error(
+                'Archive retention must be greater than hot retention.'
+            );
+
+            return self::FAILURE;
+        }
+
         $archiveBefore = now()->subDays($hotDays);
         $deleteBefore = now()->subDays($archiveDays);
+
+        $telemetryDb = DB::connection('pgsql_telemetry');
 
         $this->info("Hot telemetry retention: {$hotDays} days");
         $this->info("Archive retention: {$archiveDays} days");
 
         /*
          * -------------------------------------------------------------
-         * Report-only mode
+         * Report
          * -------------------------------------------------------------
          */
-
-        $telemetryDb = DB::connection('pgsql_telemetry');
 
         $eligibleForArchive = $telemetryDb
             ->table('telemetry_events')
             ->where('event_timestamp', '<', $archiveBefore)
             ->count();
 
-        $this->info("Records eligible for archival: {$eligibleForArchive}");
+        $eligibleForDeletion = $telemetryDb
+            ->table('telemetry_events_archive')
+            ->where('archived_at', '<', $deleteBefore)
+            ->count();
+
+        $this->info(
+            "Records eligible for archival: {$eligibleForArchive}"
+        );
+
+        $this->info(
+            "Archived records eligible for deletion: {$eligibleForDeletion}"
+        );
 
         /*
          * -------------------------------------------------------------
@@ -53,28 +83,47 @@ class CleanupTelemetry extends Command
          * -------------------------------------------------------------
          */
 
+        $archivedCount = 0;
+
         if ($this->option('execute')) {
             $this->info('Archival execution enabled.');
 
-            // Your existing archival implementation goes here.
-            //
-            // Do not delete source records during this phase.
+            $archivedCount = $this->archiveTelemetry(
+                $telemetryDb,
+                $archiveBefore
+            );
+
+            $this->info(
+                "Total telemetry records archived: {$archivedCount}"
+            );
         }
 
         /*
          * -------------------------------------------------------------
-         * Delete archived telemetry
+         * Delete
          * -------------------------------------------------------------
          */
+
+        $deletedCount = 0;
 
         if ($this->option('delete')) {
             $this->warn('Deletion mode enabled.');
 
-            $this->deleteArchivedTelemetry(
+            $deletedCount = $this->deleteArchivedTelemetry(
                 $telemetryDb,
                 $deleteBefore
             );
+
+            $this->info(
+                "Total telemetry records deleted: {$deletedCount}"
+            );
         }
+
+        /*
+         * -------------------------------------------------------------
+         * Report-only mode
+         * -------------------------------------------------------------
+         */
 
         if (
             ! $this->option('execute')
@@ -85,65 +134,160 @@ class CleanupTelemetry extends Command
             );
         }
 
-        $durationMs = round((microtime(true) - $startedAt) * 1000,2);
+        $durationMs = round(
+            (microtime(true) - $startedAt) * 1000,
+            2
+        );
 
-        $this->info('Telemetry retention cleanup completed', [
-            'hot_retention_days' => $hotDays,
-            'archive_retention_days' => $archiveDays,
-            'eligible_for_archive' => $eligibleForArchive,
-            // 'archived_count' => $archivedCount,
-            // 'deleted_count' => $deletedCount,
-            'duration_ms' => $durationMs,
-        ]);
+        $this->info(
+            'Telemetry retention cleanup completed.'
+        );
+
+        $this->line(
+            "Hot retention: {$hotDays} days"
+        );
+
+        $this->line(
+            "Archive retention: {$archiveDays} days"
+        );
+
+        $this->line(
+            "Eligible for archive: {$eligibleForArchive}"
+        );
+
+        $this->line(
+            "Archived: {$archivedCount}"
+        );
+
+        $this->line(
+            "Eligible for deletion: {$eligibleForDeletion}"
+        );
+
+        $this->line(
+            "Deleted: {$deletedCount}"
+        );
+
+        $this->line(
+            "Duration: {$durationMs} ms"
+        );
+
         return self::SUCCESS;
     }
 
+    /**
+     * Archive telemetry older than the hot-storage retention period.
+     *
+     * Source records are intentionally NOT deleted here.
+     */
+    private function archiveTelemetry(
+        $telemetryDb,
+        $archiveBefore
+    ): int {
+        $totalArchived = 0;
+
+        $telemetryDb
+            ->table('telemetry_events')
+            ->where('event_timestamp', '<', $archiveBefore)
+            ->orderBy('id')
+            ->chunkById(
+                self::CHUNK_SIZE,
+                function ($events) use (
+                    $telemetryDb,
+                    &$totalArchived
+                ) {
+                    $rows = $events->map(
+                        function ($event) {
+                            return [
+                                'event_id' => $event->event_id,
+                                'tenant_id' => $event->tenant_id,
+                                'source_id' => $event->source_id,
+                                'event_type' => $event->event_type,
+                                'event_timestamp' => $event->event_timestamp,
+                                'received_at' => $event->received_at,
+                                'schema_version' => $event->schema_version,
+                                'attributes' => $event->attributes,
+                                'payload' => $event->payload,
+                                'archived_at' => now(),
+                            ];
+                        }
+                    )->all();
+
+                    if (empty($rows)) {
+                        return;
+                    }
+
+                    /*
+                     * event_id is UNIQUE in the archive table.
+                     *
+                     * insertOrIgnore makes the archival operation
+                     * idempotent. Re-running the command will not
+                     * create duplicate archive records.
+                     */
+                    $inserted = $telemetryDb
+                        ->table('telemetry_events_archive')
+                        ->insertOrIgnore($rows);
+
+                    $totalArchived += $inserted;
+
+                    $this->info(
+                        "Processed {$events->count()} telemetry records; "
+                        . "archived {$inserted} new records."
+                    );
+                },
+                'id'
+            );
+
+        return $totalArchived;
+    }
+
+    /**
+     * Delete only source telemetry that has already been archived
+     * and whose archive retention period has expired.
+     */
     private function deleteArchivedTelemetry(
         $telemetryDb,
         $deleteBefore
-    ): void {
-        $this->info(
-            "Checking archived telemetry older than {$deleteBefore->toISOString()}."
-        );
-
+    ): int {
         $totalDeleted = 0;
 
         $telemetryDb
             ->table('telemetry_events_archive')
             ->where('archived_at', '<', $deleteBefore)
             ->orderBy('id')
-            ->chunkById(1000, function ($archiveRecords) use (
-                $telemetryDb,
-                &$totalDeleted
-            ) {
-                $eventIds = $archiveRecords
-                    ->pluck('event_id')
-                    ->filter()
-                    ->values()
-                    ->all();
+            ->chunkById(
+                self::CHUNK_SIZE,
+                function ($archiveRecords) use (
+                    $telemetryDb,
+                    &$totalDeleted
+                ) {
+                    $eventIds = $archiveRecords
+                        ->pluck('event_id')
+                        ->filter()
+                        ->values()
+                        ->all();
 
-                if (empty($eventIds)) {
-                    return;
-                }
+                    if (empty($eventIds)) {
+                        return;
+                    }
 
-                /*
-                 * Only delete source telemetry whose event_id
-                 * exists in the archive table.
-                 */
-                $deleted = $telemetryDb
-                    ->table('telemetry_events')
-                    ->whereIn('event_id', $eventIds)
-                    ->delete();
+                    /*
+                     * Delete only source records whose event_id exists
+                     * in the archive.
+                     */
+                    $deleted = $telemetryDb
+                        ->table('telemetry_events')
+                        ->whereIn('event_id', $eventIds)
+                        ->delete();
 
-                $totalDeleted += $deleted;
+                    $totalDeleted += $deleted;
 
-                $this->info(
-                    "Deleted {$deleted} telemetry records."
-                );
-            });
+                    $this->info(
+                        "Deleted {$deleted} hot telemetry records."
+                    );
+                },
+                'id'
+            );
 
-        $this->info(
-            "Total telemetry records deleted: {$totalDeleted}"
-        );
+        return $totalDeleted;
     }
 }

@@ -13,6 +13,8 @@ use App\Services\QueueMetricsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Services\ProductionConfigurationValidator;
+use App\Events\AlertCreated;
+use App\Listeners\HandleAlertCreated;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +44,8 @@ class AppServiceProvider extends ServiceProvider
         });
         
         $metricsService = app(QueueMetricsService::class);
+
+        Event::listen(AlertCreated::class,HandleAlertCreated::class);
 
         Event::listen(JobProcessing::class, function (JobProcessing $event) use ($metricsService) {
             $jobId = $event->job->getJobId();

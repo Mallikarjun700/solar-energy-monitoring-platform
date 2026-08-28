@@ -13,7 +13,7 @@ class ProductionConfigurationValidator
      */
     public function validate(): void
     {
-        if (! app()->environment('production')) {
+        if (config('app.env') !== 'production') {
             return;
         }
 
@@ -47,9 +47,9 @@ class ProductionConfigurationValidator
             $errors[] = 'LOG_LEVEL must not be debug in production.';
         }
 
-        // if (config('cors.allowed_origins') === ['*']) {
-        //     $errors[] = 'CORS must not allow all origins in production.';
-        // }
+        if (config('cors.allowed_origins') === ['*']) {
+            $errors[] = 'CORS must not allow all origins in production.';
+        }
 
         if ($errors !== []) {
             throw new RuntimeException(

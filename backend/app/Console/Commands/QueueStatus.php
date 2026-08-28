@@ -6,6 +6,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 #[Signature('queue:status {--json}')] 
 #[Description('Display telemetry queue status')]
@@ -19,16 +20,24 @@ class QueueStatus extends Command
      */
     public function handle(): int
     {
-        $oldestJob = DB::table('jobs')
-            ->where('queue', 'default')
-            ->orderBy('created_at')
-            ->first();
+        $pending = 0;
+        $failed = 0;
+        $oldestJob = null;
 
-        $pending = DB::table('jobs')
-            ->where('queue', 'default')
-            ->count();
+        if (Schema::hasTable('jobs')) {
+            $oldestJob = DB::table('jobs')
+                ->where('queue', 'default')
+                ->orderBy('created_at')
+                ->first();
 
-        $failed = DB::table('failed_jobs')->count();
+            $pending = DB::table('jobs')
+                ->where('queue', 'default')
+                ->count();
+        }
+
+        if (Schema::hasTable('failed_jobs')) {
+            $failed = DB::table('failed_jobs')->count();
+        }
 
         $oldestJobAge = 0;
 

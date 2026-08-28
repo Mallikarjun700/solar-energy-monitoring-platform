@@ -10,6 +10,13 @@ class PlantApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi();
+    }
+
     public function test_plant_list_returns_resource_fields(): void
     {
         $plant = Plant::factory()->create();

@@ -48,12 +48,6 @@ class TelemetryRequestSizeTest extends TestCase
 
     public function test_telemetry_request_over_size_limit_is_rejected(): void
     {
-        $response = $this
-            ->withHeader('Content-Length', (string) (6 * 1024 * 1024))
-            ->postJson('/api/v1/telemetry/events', [
-                'events' => [],
-            ]);
-
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'request-size-too-large')
         ->withHeader('Content-Length', (string) (6 * 1024 * 1024))->postJson('/api/v1/telemetry/events', [
             'events' => [],

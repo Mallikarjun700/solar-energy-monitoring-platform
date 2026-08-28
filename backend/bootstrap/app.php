@@ -85,6 +85,19 @@ return Application::configure(basePath: dirname(__DIR__))
                     : null,
             ], 403);
         });
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Too many requests.',
+                'correlation_id' => app()->bound('correlation_id')
+                    ? app('correlation_id')
+                    : null,
+            ], 429, $exception->getHeaders());
+        });
         $exceptions->render(function (\Throwable $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;

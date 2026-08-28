@@ -5,11 +5,21 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use App\Models\User;
+use App\Enums\TokenAbility;
 
 class ApiErrorResponseTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi([
+            TokenAbility::TELEMETRY_WRITE->value,
+        ]);
+    }
+
     /**
      * A basic feature test example.
      */
@@ -90,21 +100,5 @@ class ApiErrorResponseTest extends TestCase
             'Intentional test exception.',
             $response->getContent()
         );
-    }
-    
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $user = User::factory()->create();
-
-        $token = $user->createToken(
-            'api-error-test',
-            [
-                \App\Enums\TokenAbility::TELEMETRY_WRITE->value,
-            ]
-        )->plainTextToken;
-
-        $this->withToken($token);
     }
 }

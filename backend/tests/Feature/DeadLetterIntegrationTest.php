@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\DeadLetterStatus;
+use App\Enums\TokenAbility;
 use App\Models\Asset;
 use App\Models\DeadLetterEvent;
 use App\Models\Device;
@@ -14,6 +15,16 @@ use Tests\TestCase;
 class DeadLetterIntegrationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->authenticateForApi([
+            TokenAbility::DLQ_READ->value,
+            TokenAbility::DLQ_REPLAY->value,
+        ]);
+    }
 
     public function test_exhausted_retry_creates_dlq_event(): void
     {

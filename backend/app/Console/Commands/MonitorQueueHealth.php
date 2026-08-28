@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class MonitorQueueHealth extends Command
 {
@@ -13,16 +14,24 @@ class MonitorQueueHealth extends Command
 
     public function handle(): int
     {
-        $pending = DB::table('jobs')
-            ->where('queue', 'default')
-            ->count();
+        $pending = 0;
+        $failed = 0;
+        $oldestJob = null;
 
-        $failed = DB::table('failed_jobs')->count();
+        if (Schema::hasTable('jobs')) {
+            $pending = DB::table('jobs')
+                ->where('queue', 'default')
+                ->count();
 
-        $oldestJob = DB::table('jobs')
-            ->where('queue', 'default')
-            ->orderBy('created_at')
-            ->first();
+            $oldestJob = DB::table('jobs')
+                ->where('queue', 'default')
+                ->orderBy('created_at')
+                ->first();
+        }
+
+        if (Schema::hasTable('failed_jobs')) {
+            $failed = DB::table('failed_jobs')->count();
+        }
 
         $oldestJobAge = 0;
 

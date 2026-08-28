@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'notifications' => [
+        'channel' => env('ALERT_NOTIFICATION_CHANNEL', 'log'),
+        'email' => env('ALERT_NOTIFICATION_EMAIL'),
+    ],
+
 ];
