@@ -7,12 +7,13 @@ use App\Mail\AlertNotificationMail;
 use App\Models\Alert;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
+use App\Models\NotificationPreference;
 
 class EmailNotificationChannel implements NotificationChannel
 {
-    public function send(Alert $alert): void
+    public function send(Alert $alert, ?NotificationPreference $preference = null): void
     {
-        $email = $this->resolveRecipient($alert);
+        $email = $this->resolveRecipient($alert, $preference);
 
         if ($email === null) {
             throw new RuntimeException(
@@ -20,11 +21,10 @@ class EmailNotificationChannel implements NotificationChannel
             );
         }
 
-        Mail::to($email)
-            ->send(new AlertNotificationMail($alert));
+        Mail::to($email)->send(new AlertNotificationMail($alert));
     }
 
-    private function resolveRecipient(Alert $alert): ?string
+    private function resolveRecipient(Alert $alert, ?NotificationPreference $preference = null): ?string
     {
         /*
          * Recipient resolution will eventually come from
@@ -32,6 +32,6 @@ class EmailNotificationChannel implements NotificationChannel
          *
          * For now use ALERT_NOTIFICATION_EMAIL.
          */
-        return config('services.notifications.email');
+        return $preference?->email ?? config('services.notifications.email');
     }
 }

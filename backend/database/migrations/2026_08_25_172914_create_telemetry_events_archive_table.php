@@ -12,7 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telemetry_events_archive', function (Blueprint $table) {
+        $schema = Schema::connection($this->getConnection());
+
+        // The archive table may have been provisioned separately in production.
+        if ($schema->hasTable('telemetry_events_archive')) {
+            return;
+        }
+
+        $schema->create('telemetry_events_archive', function (Blueprint $table) {
             $table->bigIncrements('id');
 
             $table->uuid('event_id')->unique();

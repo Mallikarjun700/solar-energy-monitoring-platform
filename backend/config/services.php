@@ -38,6 +38,11 @@ return [
     'notifications' => [
         'channel' => env('ALERT_NOTIFICATION_CHANNEL', 'log'),
         'email' => env('ALERT_NOTIFICATION_EMAIL'),
+        'webhook' => [
+            'url' => env('ALERT_NOTIFICATION_WEBHOOK_URL'),
+            'secret' => env('ALERT_NOTIFICATION_WEBHOOK_SECRET'),
+            'timeout' => (int) env('ALERT_NOTIFICATION_WEBHOOK_TIMEOUT', 5),
+        ],
     ],
 
 ];

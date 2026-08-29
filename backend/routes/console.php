@@ -19,3 +19,11 @@ Schedule::command('telemetry:cleanup --execute')
     ->dailyAt('02:00')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('notification:status')
+    ->everyMinute()
+    ->withoutOverlapping();
+
+Schedule::command('notification:monitor-health')
+    ->everyMinute()
+    ->withoutOverlapping();

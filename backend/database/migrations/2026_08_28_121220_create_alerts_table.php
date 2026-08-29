@@ -31,6 +31,12 @@ return new class extends Migration
 
             $table->string('status', 30)->index();
 
+            if (DB::getDriverName() === 'mysql') {
+                $table->string('active_alert_marker')
+                    ->nullable()
+                    ->storedAs("IF(status IN ('open', 'acknowledged'), 'active', NULL)");
+            }
+
             $table->string('message', 500);
 
             $table->timestampTz('triggered_at');
@@ -52,17 +58,20 @@ return new class extends Migration
             );
         });
 
-        /*
-         * Prevent multiple active alerts for the same
-         * tenant/device/rule combination.
-         *
-         * PostgreSQL partial unique index.
-         */
-        DB::statement("
-            CREATE UNIQUE INDEX alerts_active_unique
-            ON alerts (tenant_id, device_id, rule_id)
-            WHERE status IN ('open', 'acknowledged')
-        ");
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('alerts', function (Blueprint $table) {
+                $table->unique(
+                    ['tenant_id', 'device_id', 'rule_id', 'active_alert_marker'],
+                    'alerts_active_unique'
+                );
+            });
+        } else {
+            DB::statement("
+                CREATE UNIQUE INDEX alerts_active_unique
+                ON alerts (tenant_id, device_id, rule_id)
+                WHERE status IN ('open', 'acknowledged')
+            ");
+        }
     }
 
     /**
@@ -70,7 +79,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('DROP INDEX IF EXISTS alerts_active_unique');
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('alerts', function (Blueprint $table) {
+                $table->dropUnique('alerts_active_unique');
+                $table->dropColumn('active_alert_marker');
+            });
+        } else {
+            DB::statement('DROP INDEX IF EXISTS alerts_active_unique');
+        }
+
         Schema::dropIfExists('alerts');
     }
 };

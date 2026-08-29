@@ -7,6 +7,7 @@ use App\Enums\AlertStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alert extends Model
 {
@@ -42,5 +43,10 @@ class Alert extends Model
     public function rule(): BelongsTo
     {
         return $this->belongsTo(AlertRule::class, 'rule_id');
+    }
+
+    public function notificationDeliveries(): HasMany
+    {
+        return $this->hasMany(NotificationDelivery::class);
     }
 }
