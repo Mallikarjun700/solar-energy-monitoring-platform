@@ -6,26 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('telemetry_events', function (Blueprint $table) {
-            $table->index(
-                ['event_timestamp', 'id'],
-                'telemetry_events_cursor_index'
-            );
-        });
+        Schema::connection('pgsql_telemetry')->table(
+            'telemetry_events',
+            function (Blueprint $table) {
+                $table->index(
+                    ['event_timestamp', 'id'],
+                    'telemetry_events_cursor_index'
+                );
+            }
+        );
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('telemetry_events', function (Blueprint $table) {
-            $table->dropIndex('telemetry_events_cursor_index');
-        });
+        Schema::connection('pgsql_telemetry')->table(
+            'telemetry_events',
+            function (Blueprint $table) {
+                $table->dropIndex('telemetry_events_cursor_index');
+            }
+        );
     }
 };

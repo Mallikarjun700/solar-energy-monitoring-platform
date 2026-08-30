@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telemetry_events', function (Blueprint $table) {
+        Schema::connection('pgsql_telemetry')->create('telemetry_events', function (Blueprint $table) {
             $table->id();
             $table->uuid('event_id')->unique();
             $table->uuid('tenant_id');
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('telemetry_events');
+        Schema::connection('pgsql_telemetry')->dropIfExists('telemetry_events');
     }
 };
