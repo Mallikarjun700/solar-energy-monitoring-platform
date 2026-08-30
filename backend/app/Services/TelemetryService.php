@@ -10,9 +10,14 @@ use InvalidArgumentException;
 use App\Models\AlertRule;
 use App\Services\AlertCreationService;
 use App\Jobs\EvaluateTelemetryAlertsJob;
+use App\Services\Cache\TelemetryCacheService;
 
 class TelemetryService
 {
+    public function __construct(private readonly TelemetryCacheService $telemetryCacheService,
+    ) {
+    }
+
     public function ingest(array $events): array
     {
         $accepted = 0;
@@ -79,6 +84,21 @@ class TelemetryService
             $alertCreationService = app(AlertCreationService::class);
 
             foreach ($storedEvents as $storedEvent) {
+                $deviceId = $storedEvent->attributes['device_id']  ?? $storedEvent->payload['device_id'] ?? null;
+
+                if ($deviceId !== null) {
+                    $this->telemetryCacheService->putLatest(
+                        $storedEvent->tenant_id,
+                        $deviceId,
+                        [
+                            'event_id' => $storedEvent->event_id,
+                            'event_type' => $storedEvent->event_type,
+                            'timestamp' => $storedEvent->event_timestamp,
+                            'attributes' => $storedEvent->attributes,
+                            'payload' => $storedEvent->payload,
+                        ]
+                    );
+                }
                 EvaluateTelemetryAlertsJob::dispatch([
                     'event_id' => $storedEvent->event_id,
                     'tenant_id' => $storedEvent->tenant_id,
@@ -181,5 +201,47 @@ class TelemetryService
             ->orderByDesc('event_timestamp')
             ->orderByDesc('id')
             ->paginate($perPage);
+    }
+
+    public function getLatest(string $tenantId,int|string $deviceId): ?array {
+        $cached = $this->telemetryCacheService->getLatest(
+            $tenantId,
+            $deviceId
+        );
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $event = TelemetryEvent::query()
+            ->where('tenant_id', $tenantId)
+            ->where(function ($query) use ($deviceId) {
+                $query
+                    ->whereJsonContains('attributes->device_id', $deviceId)
+                    ->orWhereJsonContains('payload->device_id', $deviceId);
+            })
+            ->orderByDesc('event_timestamp')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($event === null) {
+            return null;
+        }
+
+        $latest = [
+            'event_id' => $event->event_id,
+            'event_type' => $event->event_type,
+            'timestamp' => $event->event_timestamp,
+            'attributes' => $event->attributes,
+            'payload' => $event->payload,
+        ];
+
+        $this->telemetryCacheService->putLatest(
+            $tenantId,
+            $deviceId,
+            $latest
+        );
+
+        return $latest;
     }
 }

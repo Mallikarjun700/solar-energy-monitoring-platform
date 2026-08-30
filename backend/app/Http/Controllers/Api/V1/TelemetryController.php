@@ -66,4 +66,27 @@ class TelemetryController extends Controller
             $statusCode
         );
     }
+
+    public function latest(Request $request,string $deviceId): JsonResponse {
+        $tenantId = $request->query('tenant_id');
+
+        if (! $tenantId) {
+            return response()->json([
+                'message' => 'tenant_id is required.',
+            ], 422);
+        }
+
+        $latest = $this->telemetryService->getLatest(
+            $tenantId,
+            $deviceId
+        );
+
+        if ($latest === null) {
+            return response()->json([
+                'message' => 'Latest telemetry not found.',
+            ], 404);
+        }
+
+        return response()->json($latest, 200);
+    }
 }

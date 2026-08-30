@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/telemetry/health', [TelemetryController::class, 'health']);
         // This route is for testing purposes and should be removed in production
         Route::get('/telemetry/events', [TelemetryController::class, 'index']); 
+        Route::get('/telemetry/devices/{deviceId}/latest',[TelemetryController::class, 'latest']);
 
         Route::get('/telemetry/events/cursor',[TelemetryController::class, 'cursorIndex']);
         Route::get('/alerts', [AlertController::class, 'index'])->middleware('abilities:alerts:read');
