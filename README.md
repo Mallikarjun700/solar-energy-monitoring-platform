@@ -33,6 +33,24 @@ The system is designed to monitor renewable energy assets, process device teleme
 🚧 Architecture and requirements
 ![High Level Architecture](diagrams/high-level-architecture.drawio.png)
 
+## Infrastructure
+
+Terraform infrastructure lives in [`infrastructure/terraform`](infrastructure/terraform).
+The repo pins Terraform `1.16.0` in [`infrastructure/terraform/.terraform-version`](infrastructure/terraform/.terraform-version).
+If Terraform is not installed locally, use:
+
+```bash
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+Then validate from the Terraform directory:
+
+```bash
+terraform init
+terraform fmt -check
+terraform validate
+```
 
 ## Telemetry Reliability
 

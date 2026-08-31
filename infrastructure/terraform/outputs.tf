@@ -62,7 +62,32 @@ output "ecs_service_name" {
   value       = aws_ecs_service.backend.name
 }
 
-output "cloudwatch_log_group" {
-  description = "CloudWatch log group for backend containers."
-  value       = aws_cloudwatch_log_group.backend.name
+output "cloudwatch_api_log_group" {
+  description = "CloudWatch log group for the Laravel API."
+  value       = aws_cloudwatch_log_group.api.name
+}
+
+output "cloudwatch_nginx_log_group" {
+  description = "CloudWatch log group for Nginx."
+  value       = aws_cloudwatch_log_group.nginx.name
+}
+
+output "cloudwatch_queue_log_group" {
+  description = "CloudWatch log group for the queue worker."
+  value       = aws_cloudwatch_log_group.queue.name
+}
+
+output "cloudwatch_scheduler_log_group" {
+  description = "CloudWatch log group for the scheduler."
+  value       = aws_cloudwatch_log_group.scheduler.name
+}
+
+output "nginx_ecr_repository_url" {
+  description = "ECR repository URL for the Nginx image."
+  value       = aws_ecr_repository.nginx.repository_url
+}
+
+output "alb_dns_name" {
+  description = "DNS name of the application load balancer."
+  value       = aws_lb.main.dns_name
 }

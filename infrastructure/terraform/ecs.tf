@@ -42,15 +42,6 @@ resource "aws_iam_role" "ecs_task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
-resource "aws_cloudwatch_log_group" "backend" {
-  name              = "/ecs/${local.name_prefix}/backend"
-  retention_in_days = 30
-
-  tags = {
-    Name = "${local.name_prefix}-backend-logs"
-  }
-}
-
 resource "aws_ecs_task_definition" "backend" {
   family                   = "${local.name_prefix}-backend"
   network_mode             = "awsvpc"
@@ -64,14 +55,18 @@ resource "aws_ecs_task_definition" "backend" {
 
   container_definitions = jsonencode([
     {
-      name      = "backend"
+      name      = "app"
       image     = "${aws_ecr_repository.backend.repository_url}:${var.backend_image_tag}"
       essential = true
 
+      command = [
+        "php-fpm",
+        "-F"
+      ]
+
       portMappings = [
         {
-          containerPort = 8000
-          hostPort      = 8000
+          containerPort = 9000
           protocol      = "tcp"
         }
       ]
@@ -92,6 +87,46 @@ resource "aws_ecs_task_definition" "backend" {
         {
           name  = "QUEUE_CONNECTION"
           value = "database"
+        },
+        {
+          name  = "DB_HOST"
+          value = var.database_host
+        },
+        {
+          name  = "DB_PORT"
+          value = var.database_port
+        },
+        {
+          name  = "DB_DATABASE"
+          value = var.database_name
+        },
+        {
+          name  = "DB_USERNAME"
+          value = var.database_username
+        },
+        {
+          name  = "TELEMETRY_DB_HOST"
+          value = var.telemetry_database_host
+        },
+        {
+          name  = "TELEMETRY_DB_PORT"
+          value = var.telemetry_database_port
+        },
+        {
+          name  = "TELEMETRY_DB_DATABASE"
+          value = var.telemetry_database_name
+        },
+        {
+          name  = "TELEMETRY_DB_USERNAME"
+          value = var.telemetry_database_username
+        },
+        {
+          name  = "REDIS_HOST"
+          value = var.redis_host
+        },
+        {
+          name  = "REDIS_PORT"
+          value = var.redis_port
         }
       ]
 
@@ -99,9 +134,38 @@ resource "aws_ecs_task_definition" "backend" {
         logDriver = "awslogs"
 
         options = {
-          awslogs-group         = aws_cloudwatch_log_group.backend.name
+          awslogs-group         = aws_cloudwatch_log_group.api.name
           awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "backend"
+          awslogs-stream-prefix = "app"
+        }
+      }
+    },
+    {
+      name      = "nginx"
+      image     = "${aws_ecr_repository.nginx.repository_url}:${var.nginx_image_tag}"
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 80
+          protocol      = "tcp"
+        }
+      ]
+
+      dependsOn = [
+        {
+          containerName = "app"
+          condition     = "START"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.nginx.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "nginx"
         }
       }
     }
@@ -118,8 +182,13 @@ resource "aws_ecs_service" "backend" {
   task_definition = aws_ecs_task_definition.backend.arn
 
   desired_count = var.backend_desired_count
+  launch_type   = "FARGATE"
 
-  launch_type = "FARGATE"
+  load_balancer {
+    target_group_arn = aws_lb_target_group.backend.arn
+    container_name   = "nginx"
+    container_port   = 80
+  }
 
   network_configuration {
     subnets = aws_subnet.private_app[*].id
@@ -136,5 +205,134 @@ resource "aws_ecs_service" "backend" {
 
   tags = {
     Name = "${local.name_prefix}-backend-service"
+  }
+}
+
+resource "aws_ecs_task_definition" "queue_worker" {
+  family                   = "${local.name_prefix}-queue-worker"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  cpu    = var.queue_worker_cpu
+  memory = var.queue_worker_memory
+
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "queue-worker"
+      image     = "${aws_ecr_repository.backend.repository_url}:${var.backend_image_tag}"
+      essential = true
+
+      command = [
+        "php",
+        "artisan",
+        "queue:work",
+        "--sleep=3",
+        "--tries=3",
+        "--timeout=60"
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.queue.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "worker"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name = "${local.name_prefix}-queue-worker-task"
+  }
+}
+
+resource "aws_ecs_service" "queue_worker" {
+  name            = "${local.name_prefix}-queue-worker"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.queue_worker.arn
+
+  desired_count = var.queue_worker_desired_count
+  launch_type   = "FARGATE"
+
+  network_configuration {
+    subnets = aws_subnet.private_app[*].id
+
+    security_groups = [
+      aws_security_group.ecs.id
+    ]
+
+    assign_public_ip = false
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-queue-worker-service"
+  }
+}
+
+resource "aws_ecs_task_definition" "scheduler" {
+  family                   = "${local.name_prefix}-scheduler"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  cpu    = var.scheduler_cpu
+  memory = var.scheduler_memory
+
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "scheduler"
+      image     = "${aws_ecr_repository.backend.repository_url}:${var.backend_image_tag}"
+      essential = true
+
+      command = [
+        "php",
+        "artisan",
+        "schedule:work"
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.scheduler.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "scheduler"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name = "${local.name_prefix}-scheduler-task"
+  }
+}
+
+resource "aws_ecs_service" "scheduler" {
+  name            = "${local.name_prefix}-scheduler"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.scheduler.arn
+
+  desired_count = var.scheduler_desired_count
+  launch_type   = "FARGATE"
+
+  network_configuration {
+    subnets = aws_subnet.private_app[*].id
+
+    security_groups = [
+      aws_security_group.ecs.id
+    ]
+
+    assign_public_ip = false
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-scheduler-service"
   }
 }
