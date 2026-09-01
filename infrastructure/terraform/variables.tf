@@ -173,3 +173,39 @@ variable "scheduler_desired_count" {
   type        = number
   default     = 1
 }
+
+variable "backend_min_capacity" {
+  description = "Minimum number of API ECS tasks."
+  type        = number
+  default     = 1
+}
+
+variable "backend_max_capacity" {
+  description = "Maximum number of API ECS tasks."
+  type        = number
+  default     = 4
+}
+
+variable "backend_cpu_target" {
+  description = "Target average CPU utilization for API ECS autoscaling."
+  type        = number
+  default     = 60
+}
+
+variable "queue_worker_min_capacity" {
+  description = "Minimum number of queue worker ECS tasks."
+  type        = number
+  default     = 1
+}
+
+variable "queue_worker_max_capacity" {
+  description = "Maximum number of queue worker ECS tasks."
+  type        = number
+  default     = 4
+}
+
+variable "queue_worker_cpu_target" {
+  description = "Target average CPU utilization for queue worker autoscaling."
+  type        = number
+  default     = 60
+}
