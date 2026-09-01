@@ -2,8 +2,7 @@
 
 ## Purpose
 
-The Solar Energy Monitoring Platform uses immutable Docker image tags for AWS
-deployment.
+The Solar Energy Monitoring Platform uses immutable Docker image tags for AWS deployment.
 
 ## Image Repositories
 
