@@ -31,8 +31,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deployment disabled
+      - name: Build deployment metadata
         run: |
-          echo "Deployment workflow is prepared but disabled."
           echo "Environment: ${{ inputs.environment }}"
-          echo "No AWS resources will be modified."
+          echo "Commit SHA: $GITHUB_SHA"
+          echo "Backend image tag: $GITHUB_SHA"
+          echo "Nginx image tag: $GITHUB_SHA"
+
+      - name: Build backend image
+        run: |
+          echo "AWS deployment disabled."
+          echo "Would build: backend:<git-sha>"
+
+      - name: Build Nginx image
+        run: |
+          echo "AWS deployment disabled."
+          echo "Would build: nginx:<git-sha>"
+
+      - name: Push images to ECR
+        run: |
+          echo "AWS deployment disabled."
+          echo "Would authenticate using GitHub OIDC."
+          echo "Would push immutable images to ECR."
+
+      - name: Update ECS service
+        run: |
+          echo "AWS deployment disabled."
+          echo "Would register the ECS task definition."
+          echo "Would update the ECS service."
+
+      - name: Deployment summary
+        run: |
+          echo "Deployment workflow structure validated."
+          echo "No AWS resources were modified."
