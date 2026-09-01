@@ -91,3 +91,23 @@ output "alb_dns_name" {
   description = "DNS name of the application load balancer."
   value       = aws_lb.main.dns_name
 }
+
+output "mysql_endpoint" {
+  description = "RDS MySQL endpoint."
+  value       = aws_db_instance.mysql.address
+}
+
+output "postgres_endpoint" {
+  description = "RDS PostgreSQL endpoint."
+  value       = aws_db_instance.postgres.address
+}
+
+output "redis_endpoint" {
+  description = "ElastiCache Redis primary endpoint."
+  value       = aws_elasticache_replication_group.redis.primary_endpoint_address
+}
+
+output "acm_certificate_arn" {
+  description = "ACM certificate ARN when HTTPS is enabled."
+  value       = var.enable_https && var.domain_name != "" ? aws_acm_certificate.main[0].arn : null
+}

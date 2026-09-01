@@ -1,0 +1,50 @@
+aws_region  = "ap-south-1"
+environment = "staging"
+
+project_name = "solar-energy-monitoring-platform"
+
+backend_image_tag = "demo"
+nginx_image_tag   = "demo"
+
+backend_cpu           = 512
+backend_memory        = 1024
+backend_desired_count = 1
+
+queue_worker_cpu           = 256
+queue_worker_memory        = 512
+queue_worker_desired_count = 1
+
+scheduler_cpu           = 256
+scheduler_memory        = 512
+scheduler_desired_count = 1
+
+database_host     = ""
+database_port     = "3306"
+database_name     = "solar_energy"
+database_username = ""
+
+telemetry_database_host     = ""
+telemetry_database_port     = "5432"
+telemetry_database_name     = "telemetry"
+telemetry_database_username = ""
+
+redis_host = ""
+redis_port = "6379"
+
+database_secret_arn          = ""
+telemetry_database_secret_arn = ""
+
+enable_https = false
+domain_name  = ""
+
+enable_deletion_protection = false
+
+mysql_instance_class         = "db.t4g.micro"
+mysql_allocated_storage      = 20
+mysql_max_allocated_storage  = 50
+
+postgres_instance_class        = "db.t4g.micro"
+postgres_allocated_storage     = 20
+postgres_max_allocated_storage = 50
+
+redis_node_type = "cache.t4g.micro"

@@ -130,6 +130,22 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
 
+
+      secrets = concat(
+        var.database_secret_arn != "" ? [
+          {
+            name      = "DB_PASSWORD"
+            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
+          }
+        ] : [],
+        var.telemetry_database_secret_arn != "" ? [
+          {
+            name      = "TELEMETRY_DB_PASSWORD"
+            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
+          }
+        ] : []
+      )
+
       logConfiguration = {
         logDriver = "awslogs"
 
@@ -159,6 +175,22 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
 
+
+      secrets = concat(
+        var.database_secret_arn != "" ? [
+          {
+            name      = "DB_PASSWORD"
+            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
+          }
+        ] : [],
+        var.telemetry_database_secret_arn != "" ? [
+          {
+            name      = "TELEMETRY_DB_PASSWORD"
+            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
+          }
+        ] : []
+      )
+
       logConfiguration = {
         logDriver = "awslogs"
 
@@ -183,6 +215,11 @@ resource "aws_ecs_service" "backend" {
 
   desired_count = var.backend_desired_count
   launch_type   = "FARGATE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.backend.arn
@@ -234,6 +271,22 @@ resource "aws_ecs_task_definition" "queue_worker" {
         "--timeout=60"
       ]
 
+
+      secrets = concat(
+        var.database_secret_arn != "" ? [
+          {
+            name      = "DB_PASSWORD"
+            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
+          }
+        ] : [],
+        var.telemetry_database_secret_arn != "" ? [
+          {
+            name      = "TELEMETRY_DB_PASSWORD"
+            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
+          }
+        ] : []
+      )
+
       logConfiguration = {
         logDriver = "awslogs"
 
@@ -258,6 +311,11 @@ resource "aws_ecs_service" "queue_worker" {
 
   desired_count = var.queue_worker_desired_count
   launch_type   = "FARGATE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
     subnets = aws_subnet.private_app[*].id
@@ -321,6 +379,11 @@ resource "aws_ecs_service" "scheduler" {
 
   desired_count = var.scheduler_desired_count
   launch_type   = "FARGATE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
     subnets = aws_subnet.private_app[*].id

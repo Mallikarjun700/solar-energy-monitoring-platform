@@ -1,38 +1,17 @@
 # Terraform Infrastructure
 
-This directory contains the AWS infrastructure for the solar energy monitoring platform.
+This directory contains the AWS infrastructure for the Solar Energy Monitoring Platform.
 
 ## Required Tooling
 
 - Terraform `1.16.0`
-- AWS CLI configured with credentials for the target account
+- AWS CLI configured with credentials only when AWS deployment is intentionally required
 
-## Local Setup
+## Local Validation
 
-If Terraform is not installed on your machine, install it with Homebrew:
-
-```bash
-brew tap hashicorp/tap
-brew install hashicorp/tap/terraform
-```
-
-If Homebrew reports outdated Command Line Tools, update Xcode Command Line Tools first and rerun the install.
-
-## Validate
-
-From this directory:
+These commands do not create AWS resources:
 
 ```bash
-terraform init
-terraform fmt -check
+terraform init -backend=false
+terraform fmt -check -recursive
 terraform validate
-```
-
-## Deploy
-
-Use the environment-specific variable files under `environments/` when planning or applying:
-
-```bash
-terraform plan -var-file=environments/staging.tfvars
-terraform apply -var-file=environments/staging.tfvars
-```

@@ -209,3 +209,63 @@ variable "queue_worker_cpu_target" {
   type        = number
   default     = 60
 }
+
+variable "mysql_instance_class" {
+  description = "RDS MySQL instance class."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "mysql_allocated_storage" {
+  description = "Initial MySQL storage in GiB."
+  type        = number
+  default     = 20
+}
+
+variable "mysql_max_allocated_storage" {
+  description = "Maximum MySQL storage in GiB."
+  type        = number
+  default     = 50
+}
+
+variable "postgres_instance_class" {
+  description = "RDS PostgreSQL instance class."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "postgres_allocated_storage" {
+  description = "Initial PostgreSQL storage in GiB."
+  type        = number
+  default     = 20
+}
+
+variable "postgres_max_allocated_storage" {
+  description = "Maximum PostgreSQL storage in GiB."
+  type        = number
+  default     = 50
+}
+
+variable "redis_node_type" {
+  description = "ElastiCache Redis node type."
+  type        = string
+  default     = "cache.t4g.micro"
+}
+
+variable "domain_name" {
+  description = "DNS name used for HTTPS."
+  type        = string
+  default     = ""
+}
+
+variable "enable_https" {
+  description = "Whether the ALB HTTPS listener should be provisioned."
+  type        = bool
+  default     = false
+}
+
+variable "enable_deletion_protection" {
+  description = "Enable deletion protection for production resources."
+  type        = bool
+  default     = false
+}

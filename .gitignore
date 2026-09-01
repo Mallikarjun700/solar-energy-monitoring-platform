@@ -17,3 +17,7 @@ docker-data/
 *.log
 
 .terraform/
+
+# Terraform environment values
+infrastructure/terraform/environments/*.tfvars
+!infrastructure/terraform/environments/*.tfvars.example
