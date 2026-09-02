@@ -14,14 +14,19 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: deploy-${{ inputs.environment }}
   cancel-in-progress: false
 
+env:
+  AWS_REGION: ap-south-1
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
   deployment:
-    name: Deployment Placeholder
+    name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
 
     environment:
@@ -31,36 +36,137 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate production branch
+        if: ${{ inputs.environment == 'production' }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "Production deployments are only allowed from main."
+            echo "Current branch: $GITHUB_REF_NAME"
+            exit 1
+          fi
+
       - name: Build deployment metadata
         run: |
           echo "Environment: ${{ inputs.environment }}"
           echo "Commit SHA: $GITHUB_SHA"
-          echo "Backend image tag: $GITHUB_SHA"
-          echo "Nginx image tag: $GITHUB_SHA"
+          echo "Image tag: $IMAGE_TAG"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOYMENT_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build backend image
         run: |
-          echo "AWS deployment disabled."
-          echo "Would build: backend:<git-sha>"
+          docker build \
+            -f backend/docker/php/Dockerfile \
+            -t "${{ vars.ECR_BACKEND_REPOSITORY }}:${IMAGE_TAG}" \
+            backend
 
       - name: Build Nginx image
         run: |
-          echo "AWS deployment disabled."
-          echo "Would build: nginx:<git-sha>"
+          docker build \
+            -f docker/nginx/Dockerfile \
+            -t "${{ vars.ECR_NGINX_REPOSITORY }}:${IMAGE_TAG}" \
+            backend
 
-      - name: Push images to ECR
+      - name: Push backend image
         run: |
-          echo "AWS deployment disabled."
-          echo "Would authenticate using GitHub OIDC."
-          echo "Would push immutable images to ECR."
+          docker push \
+            "${{ vars.ECR_BACKEND_REPOSITORY }}:${IMAGE_TAG}"
 
-      - name: Update ECS service
+      - name: Push Nginx image
         run: |
-          echo "AWS deployment disabled."
-          echo "Would register the ECS task definition."
-          echo "Would update the ECS service."
+          docker push \
+            "${{ vars.ECR_NGINX_REPOSITORY }}:${IMAGE_TAG}"
+
+      - name: Download current backend task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.ECS_BACKEND_TASK_FAMILY }}" \
+            --query taskDefinition \
+            > backend-task-definition.json
+
+      - name: Render backend task definition
+        id: render-backend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: backend-task-definition.json
+          container-name: app
+          image: ${{ vars.ECR_BACKEND_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Render Nginx task definition
+        id: render-nginx
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-backend.outputs.task-definition }}
+          container-name: nginx
+          image: ${{ vars.ECR_NGINX_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy backend service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-nginx.outputs.task-definition }}
+          service: ${{ vars.ECS_BACKEND_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+
+      - name: Download current queue worker task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.ECS_QUEUE_TASK_FAMILY }}" \
+            --query taskDefinition \
+            > queue-task-definition.json
+
+      - name: Render queue worker task definition
+        id: render-queue
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: queue-task-definition.json
+          container-name: queue-worker
+          image: ${{ vars.ECR_BACKEND_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy queue worker
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-queue.outputs.task-definition }}
+          service: ${{ vars.ECS_QUEUE_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+
+      - name: Download current scheduler task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.ECS_SCHEDULER_TASK_FAMILY }}" \
+            --query taskDefinition \
+            > scheduler-task-definition.json
+
+      - name: Render scheduler task definition
+        id: render-scheduler
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: scheduler-task-definition.json
+          container-name: scheduler
+          image: ${{ vars.ECR_BACKEND_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy scheduler
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-scheduler.outputs.task-definition }}
+          service: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
 
       - name: Deployment summary
         run: |
-          echo "Deployment workflow structure validated."
-          echo "No AWS resources were modified."
+          echo "========================================"
+          echo "Deployment completed"
+          echo "Environment : ${{ inputs.environment }}"
+          echo "Commit SHA  : $GITHUB_SHA"
+          echo "Backend     : ${{ vars.ECR_BACKEND_REPOSITORY }}:${IMAGE_TAG}"
+          echo "Nginx       : ${{ vars.ECR_NGINX_REPOSITORY }}:${IMAGE_TAG}"
+          echo "========================================"
