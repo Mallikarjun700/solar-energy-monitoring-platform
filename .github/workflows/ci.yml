@@ -31,6 +31,12 @@ jobs:
           extensions: mbstring, xml, curl, zip, bcmath, pdo_sqlite
           coverage: none
 
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/logs
+          chmod -R 775 bootstrap/cache storage
+
       - name: Validate Composer files
         run: composer validate --strict
 
@@ -93,7 +99,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.12.2
+          terraform_version: 1.16.0
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
