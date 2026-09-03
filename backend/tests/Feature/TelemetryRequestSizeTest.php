@@ -50,8 +50,8 @@ class TelemetryRequestSizeTest extends TestCase
     {
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'request-size-too-large')
             ->withHeader('Content-Length', (string) (6 * 1024 * 1024))->postJson('/api/v1/telemetry/events', [
-            'events' => [],
-        ]);
+                'events' => [],
+            ]);
         $response->assertStatus(422);
     }
 }
