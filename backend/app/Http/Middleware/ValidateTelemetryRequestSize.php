@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ValidateTelemetryRequestSize
 {
     private const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
     /**
      * Handle an incoming request.
      *
@@ -24,6 +25,7 @@ class ValidateTelemetryRequestSize
                 'max_bytes' => self::MAX_BYTES,
             ], 413);
         }
+
         return $next($request);
     }
 }

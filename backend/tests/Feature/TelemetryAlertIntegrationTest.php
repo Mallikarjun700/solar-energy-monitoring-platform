@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\AlertOperator;
 use App\Enums\AlertSeverity;
-use App\Models\Alert;
 use App\Models\AlertRule;
 use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

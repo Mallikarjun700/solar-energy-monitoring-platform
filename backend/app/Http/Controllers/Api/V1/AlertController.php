@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\AlertStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Enums\AlertStatus;
-use Illuminate\Http\Response;
 
 class AlertController extends Controller
 {
@@ -74,38 +73,31 @@ class AlertController extends Controller
             ->where('tenant_id', $validated['tenant_id'])
             ->when(
                 $validated['status'] ?? null,
-                fn ($query, $status) =>
-                    $query->where('status', $status)
+                fn ($query, $status) => $query->where('status', $status)
             )
             ->when(
                 $validated['severity'] ?? null,
-                fn ($query, $severity) =>
-                    $query->where('severity', $severity)
+                fn ($query, $severity) => $query->where('severity', $severity)
             )
             ->when(
                 $validated['alert_type'] ?? null,
-                fn ($query, $type) =>
-                    $query->where('alert_type', $type)
+                fn ($query, $type) => $query->where('alert_type', $type)
             )
             ->when(
                 $validated['device_id'] ?? null,
-                fn ($query, $deviceId) =>
-                    $query->where('device_id', $deviceId)
+                fn ($query, $deviceId) => $query->where('device_id', $deviceId)
             )
             ->when(
                 $validated['rule_id'] ?? null,
-                fn ($query, $ruleId) =>
-                    $query->where('rule_id', $ruleId)
+                fn ($query, $ruleId) => $query->where('rule_id', $ruleId)
             )
             ->when(
                 $validated['from'] ?? null,
-                fn ($query, $from) =>
-                    $query->where('triggered_at', '>=', $from)
+                fn ($query, $from) => $query->where('triggered_at', '>=', $from)
             )
             ->when(
                 $validated['to'] ?? null,
-                fn ($query, $to) =>
-                    $query->where('triggered_at', '<=', $to)
+                fn ($query, $to) => $query->where('triggered_at', '<=', $to)
             )
             ->orderByDesc('triggered_at')
             ->orderByDesc('id')
@@ -128,7 +120,8 @@ class AlertController extends Controller
         );
     }
 
-    public function acknowledge(Request $request,Alert $alert): JsonResponse {
+    public function acknowledge(Request $request, Alert $alert): JsonResponse
+    {
         abort_unless(
             $alert->tenant_id === $request->query('tenant_id'),
             404
@@ -151,24 +144,25 @@ class AlertController extends Controller
         );
     }
 
-    public function resolve(Request $request,Alert $alert): JsonResponse {
+    public function resolve(Request $request, Alert $alert): JsonResponse
+    {
         abort_unless(
             $alert->tenant_id === $request->query('tenant_id'),
             404
         );
 
         if (! in_array(
-                $alert->status,[
-                    AlertStatus::OPEN,
-                    AlertStatus::ACKNOWLEDGED,
-                ],true)
+            $alert->status, [
+                AlertStatus::OPEN,
+                AlertStatus::ACKNOWLEDGED,
+            ], true)
         ) {
             return response()->json([
                 'message' => 'Only active alerts can be resolved.',
             ], 409);
         }
 
-        $alert->update(['status' => AlertStatus::RESOLVED,'resolved_at' => now(),]);
+        $alert->update(['status' => AlertStatus::RESOLVED, 'resolved_at' => now()]);
 
         return response()->json(
             $alert->fresh(),

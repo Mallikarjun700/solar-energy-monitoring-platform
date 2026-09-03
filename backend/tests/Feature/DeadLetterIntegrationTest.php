@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Enums\DeadLetterStatus;
 use App\Enums\TokenAbility;
+use App\Jobs\ProcessTelemetryBatchJob;
 use App\Models\Asset;
 use App\Models\DeadLetterEvent;
 use App\Models\Device;
 use App\Models\Plant;
 use App\Models\Telemetry;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DeadLetterIntegrationTest extends TestCase
@@ -309,13 +312,13 @@ class DeadLetterIntegrationTest extends TestCase
 
     public function test_exhausted_retry_creates_dlq_event_new(): void
     {
-        $eventId = (string) \Illuminate\Support\Str::uuid();
+        $eventId = (string) Str::uuid();
 
         $events = [
             [
                 'event_id' => $eventId,
-                'tenant_id' => (string) \Illuminate\Support\Str::uuid(),
-                'source_id' => (string) \Illuminate\Support\Str::uuid(),
+                'tenant_id' => (string) Str::uuid(),
+                'source_id' => (string) Str::uuid(),
                 'event_type' => 'telemetry.power',
                 'timestamp' => now()->toISOString(),
                 'schema_version' => 1,
@@ -331,7 +334,7 @@ class DeadLetterIntegrationTest extends TestCase
             ],
         ];
 
-        $job = new \App\Jobs\ProcessTelemetryBatchJob($events);
+        $job = new ProcessTelemetryBatchJob($events);
 
         // Execute the job directly and verify that it fails.
         $this->expectException(\RuntimeException::class);
@@ -339,6 +342,6 @@ class DeadLetterIntegrationTest extends TestCase
             'Intentional telemetry queue failure.'
         );
 
-        $job->handle(app(\App\Services\TelemetryService::class));
+        $job->handle(app(TelemetryService::class));
     }
 }

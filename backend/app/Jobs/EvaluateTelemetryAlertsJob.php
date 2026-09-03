@@ -21,12 +21,11 @@ class EvaluateTelemetryAlertsJob implements ShouldQueue
     public int $backoff = 10;
 
     /**
-     * @param array<string, mixed> $telemetry
+     * @param  array<string, mixed>  $telemetry
      */
     public function __construct(
         public array $telemetry
-    ) {
-    }
+    ) {}
 
     public function handle(
         AlertCreationService $alertCreationService

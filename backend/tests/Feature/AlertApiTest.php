@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\TokenAbility;
 use App\Models\Alert;
-use App\Models\AlertRule;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -35,7 +34,7 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts?' . http_build_query([
+                '/api/v1/alerts?'.http_build_query([
                     'tenant_id' => $tenantId,
                 ])
             );
@@ -62,7 +61,7 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts?' . http_build_query([
+                '/api/v1/alerts?'.http_build_query([
                     'tenant_id' => $tenantId,
                     'status' => 'open',
                 ])
@@ -80,7 +79,7 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts?' . http_build_query([
+                '/api/v1/alerts?'.http_build_query([
                     'tenant_id' => $tenantId,
                     'per_page' => 101,
                 ])
@@ -96,7 +95,7 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts?' . http_build_query([
+                '/api/v1/alerts?'.http_build_query([
                     'tenant_id' => $tenantId,
                     'from' => '2026-08-28',
                     'to' => '2026-08-01',
@@ -120,7 +119,7 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($token)
             ->getJson(
-                '/api/v1/alerts?tenant_id=' . $tenantId
+                '/api/v1/alerts?tenant_id='.$tenantId
             );
 
         $response->assertStatus(403);
@@ -137,8 +136,8 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts/' . $alert->id
-                . '?tenant_id=' . $tenantId
+                '/api/v1/alerts/'.$alert->id
+                .'?tenant_id='.$tenantId
             );
 
         $response
@@ -158,8 +157,8 @@ class AlertApiTest extends TestCase
         $response = $this
             ->withToken($this->alertReadToken())
             ->getJson(
-                '/api/v1/alerts/' . $alert->id
-                . '?tenant_id=' . $requestedTenant
+                '/api/v1/alerts/'.$alert->id
+                .'?tenant_id='.$requestedTenant
             );
 
         $response->assertStatus(404);

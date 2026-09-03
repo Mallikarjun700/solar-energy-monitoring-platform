@@ -6,6 +6,7 @@ use App\Enums\DeadLetterStatus;
 use App\Models\DeadLetterEvent;
 use App\Services\DeadLetterService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DeadLetterServiceTest extends TestCase
@@ -71,14 +72,14 @@ class DeadLetterServiceTest extends TestCase
 
     public function test_duplicate_event_id_creates_only_one_dlq_record(): void
     {
-        $service = app(\App\Services\DeadLetterService::class);
+        $service = app(DeadLetterService::class);
 
-        $eventId = (string) \Illuminate\Support\Str::uuid();
+        $eventId = (string) Str::uuid();
 
         $payload = [
             'event_id' => $eventId,
-            'tenant_id' => (string) \Illuminate\Support\Str::uuid(),
-            'source_id' => (string) \Illuminate\Support\Str::uuid(),
+            'tenant_id' => (string) Str::uuid(),
+            'source_id' => (string) Str::uuid(),
             'event_type' => 'telemetry',
             'timestamp' => now()->toISOString(),
             'schema_version' => 1,

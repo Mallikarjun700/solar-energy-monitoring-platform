@@ -11,11 +11,11 @@ class AssetService
     {
         $query = Asset::query();
 
-        if (!empty($filters['plant_id'])) {
+        if (! empty($filters['plant_id'])) {
             $query->where('plant_id', $filters['plant_id']);
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 

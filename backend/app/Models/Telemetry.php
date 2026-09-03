@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Telemetry extends Model
 {
     protected $table = 'telemetry';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -29,6 +30,7 @@ class Telemetry extends Model
     {
         if ($value === null) {
             $this->attributes['recorded_at'] = null;
+
             return;
         }
 

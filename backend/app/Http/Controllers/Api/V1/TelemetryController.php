@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TelemetryEventRequest;
 use App\Http\Requests\TelemetryQueryRequest;
+use App\Jobs\ProcessTelemetryBatchJob;
+use App\Services\TelemetryHealthService;
 use App\Services\TelemetryService;
 use Illuminate\Http\JsonResponse;
-use App\Jobs\ProcessTelemetryBatchJob;
 use Illuminate\Http\Request;
 
 class TelemetryController extends Controller
 {
     public function __construct(
         private readonly TelemetryService $telemetryService
-    ) {
-    }
+    ) {}
 
     public function ingest(TelemetryEventRequest $request): JsonResponse
     {
@@ -56,7 +56,7 @@ class TelemetryController extends Controller
 
     public function health(): JsonResponse
     {
-        $health = app(\App\Services\TelemetryHealthService::class)
+        $health = app(TelemetryHealthService::class)
             ->check();
 
         $statusCode = $health['status'] === 'healthy' ? 200 : 503;
@@ -67,7 +67,8 @@ class TelemetryController extends Controller
         );
     }
 
-    public function latest(Request $request,string $deviceId): JsonResponse {
+    public function latest(Request $request, string $deviceId): JsonResponse
+    {
         $tenantId = $request->query('tenant_id');
 
         if (! $tenantId) {

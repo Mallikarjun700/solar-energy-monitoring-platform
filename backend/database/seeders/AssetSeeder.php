@@ -16,9 +16,9 @@ class AssetSeeder extends Seeder
             foreach ($assetTypes as $index => $type) {
                 Asset::create([
                     'plant_id' => $plant->id,
-                    'name' => $plant->code . '-' . $type,
+                    'name' => $plant->code.'-'.$type,
                     'asset_type' => $type,
-                    'serial_number' => strtoupper(substr($plant->code, 0, 3)) . '-' . ($index + 1) . '-' . rand(1000, 9999),
+                    'serial_number' => strtoupper(substr($plant->code, 0, 3)).'-'.($index + 1).'-'.rand(1000, 9999),
                     'status' => ['ACTIVE', 'ACTIVE', 'MAINTENANCE', 'ACTIVE'][array_rand(['ACTIVE', 'ACTIVE', 'MAINTENANCE', 'ACTIVE'])],
                 ]);
             }

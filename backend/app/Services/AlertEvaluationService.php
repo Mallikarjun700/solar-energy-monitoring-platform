@@ -10,7 +10,7 @@ class AlertEvaluationService
     /**
      * Evaluate a telemetry payload against an alert rule.
      *
-     * @param array<string, mixed> $telemetry
+     * @param  array<string, mixed>  $telemetry
      */
     public function evaluate(
         array $telemetry,
@@ -71,20 +71,15 @@ class AlertEvaluationService
         float $threshold
     ): bool {
         return match ($operator) {
-            AlertOperator::GREATER_THAN =>
-                $value > $threshold,
+            AlertOperator::GREATER_THAN => $value > $threshold,
 
-            AlertOperator::GREATER_THAN_OR_EQUAL =>
-                $value >= $threshold,
+            AlertOperator::GREATER_THAN_OR_EQUAL => $value >= $threshold,
 
-            AlertOperator::LESS_THAN =>
-                $value < $threshold,
+            AlertOperator::LESS_THAN => $value < $threshold,
 
-            AlertOperator::LESS_THAN_OR_EQUAL =>
-                $value <= $threshold,
+            AlertOperator::LESS_THAN_OR_EQUAL => $value <= $threshold,
 
-            AlertOperator::EQUAL =>
-                $value === $threshold,
+            AlertOperator::EQUAL => $value === $threshold,
         };
     }
 }

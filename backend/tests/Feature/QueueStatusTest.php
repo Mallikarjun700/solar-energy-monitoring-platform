@@ -11,7 +11,7 @@ class QueueStatusTest extends TestCase
 {
     /**
      * A basic feature test example.
-    */
+     */
     use RefreshDatabase;
 
     public function test_queue_status_reports_healthy_when_queue_is_empty_and_no_failures_exist(): void

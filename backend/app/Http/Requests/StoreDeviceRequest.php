@@ -23,7 +23,7 @@ class StoreDeviceRequest extends FormRequest
      */
     public function rules(): array
     {
-         return [
+        return [
             'asset_id' => [
                 'required',
                 'integer',

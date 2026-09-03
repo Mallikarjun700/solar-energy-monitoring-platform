@@ -2,19 +2,21 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-#[Signature('queue:status {--json}')] 
+#[Signature('queue:status {--json}')]
 #[Description('Display telemetry queue status')]
 class QueueStatus extends Command
 {
     protected $signature = 'queue:status {--json}';
 
     protected $description = 'Display telemetry queue status';
+
     /**
      * Execute the console command.
      */
@@ -43,7 +45,7 @@ class QueueStatus extends Command
 
         if ($oldestJob) {
             $oldestJobAge = now()->diffInSeconds(
-                \Carbon\Carbon::createFromTimestamp($oldestJob->created_at)
+                Carbon::createFromTimestamp($oldestJob->created_at)
             );
         }
 

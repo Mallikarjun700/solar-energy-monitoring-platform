@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AlertStatus;
 use App\Enums\AlertSeverity;
+use App\Enums\AlertStatus;
 use App\Enums\NotificationDeliveryStatus;
 use App\Models\Alert;
 use App\Models\NotificationDelivery;
@@ -20,13 +20,11 @@ class NotificationDeliveryIdempotencyTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['ok' => true], 200),
+            'https://example.test/webhook' => Http::response(['ok' => true], 200),
         ]);
 
         $alert = Alert::factory()->create([
@@ -55,13 +53,11 @@ class NotificationDeliveryIdempotencyTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['ok' => true], 200),
+            'https://example.test/webhook' => Http::response(['ok' => true], 200),
         ]);
 
         $alert = Alert::factory()->create();
@@ -89,13 +85,11 @@ class NotificationDeliveryIdempotencyTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['error' => true], 500),
+            'https://example.test/webhook' => Http::response(['error' => true], 500),
         ]);
 
         $alert = Alert::factory()->create();
@@ -127,8 +121,7 @@ class NotificationDeliveryIdempotencyTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fakeSequence()

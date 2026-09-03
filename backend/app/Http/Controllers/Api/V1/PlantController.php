@@ -10,7 +10,7 @@ use App\Services\PlantService;
 class PlantController extends Controller
 {
     public function __construct(protected PlantService $plantService) {}
-    
+
     /**
      * Display a listing of the resource.
      */

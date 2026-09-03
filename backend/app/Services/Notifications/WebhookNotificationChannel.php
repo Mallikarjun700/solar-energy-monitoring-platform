@@ -4,13 +4,14 @@ namespace App\Services\Notifications;
 
 use App\Contracts\Notifications\NotificationChannel;
 use App\Models\Alert;
+use App\Models\NotificationPreference;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
-use App\Models\NotificationPreference;
 
 class WebhookNotificationChannel implements NotificationChannel
 {
-    public function send(Alert $alert,?NotificationPreference $preference = null): void {
+    public function send(Alert $alert, ?NotificationPreference $preference = null): void
+    {
         $url = $preference?->webhook_url ?? config('services.notifications.webhook.url');
 
         if (! $url) {
@@ -38,7 +39,7 @@ class WebhookNotificationChannel implements NotificationChannel
         ];
 
         $request = Http::timeout(
-            (int) config('services.notifications.webhook.timeout',5)
+            (int) config('services.notifications.webhook.timeout', 5)
         );
 
         $secret = $preference?->webhook_secret ?? config('services.notifications.webhook.secret');

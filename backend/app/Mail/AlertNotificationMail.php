@@ -2,14 +2,13 @@
 
 namespace App\Mail;
 
+use App\Models\Alert;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Alert;
 
 class AlertNotificationMail extends Mailable
 {
@@ -29,7 +28,7 @@ class AlertNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Solar Energy Alert: ' . $this->alert->alert_type,
+            subject: 'Solar Energy Alert: '.$this->alert->alert_type,
         );
     }
 
@@ -55,5 +54,4 @@ class AlertNotificationMail extends Mailable
     {
         return [];
     }
-
 }

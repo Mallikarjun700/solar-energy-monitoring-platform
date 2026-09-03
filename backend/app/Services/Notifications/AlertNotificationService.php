@@ -5,9 +5,8 @@ namespace App\Services\Notifications;
 use App\Enums\NotificationDeliveryStatus;
 use App\Models\Alert;
 use App\Models\NotificationDelivery;
-use InvalidArgumentException;
-use RuntimeException;
 use App\Models\NotificationPreference;
+use InvalidArgumentException;
 
 class AlertNotificationService
 {
@@ -16,8 +15,7 @@ class AlertNotificationService
         private readonly EmailNotificationChannel $emailChannel,
         private readonly WebhookNotificationChannel $webhookChannel,
         private readonly NotificationPreferenceResolver $preferenceResolver,
-    ) {
-    }
+    ) {}
 
     public function send(Alert $alert): void
     {
@@ -67,7 +65,7 @@ class AlertNotificationService
         $this->markAttempt($delivery);
 
         try {
-            $this->sendThroughChannel($channel,$alert,$preference);
+            $this->sendThroughChannel($channel, $alert, $preference);
 
             $delivery->update([
                 'status' => NotificationDeliveryStatus::SENT,
@@ -128,7 +126,8 @@ class AlertNotificationService
         };
     }
 
-    private function sendThroughChannel(string $channel,Alert $alert,?NotificationPreference $preference): void {
+    private function sendThroughChannel(string $channel, Alert $alert, ?NotificationPreference $preference): void
+    {
         match ($channel) {
             'log' => $this->logChannel->send($alert),
 

@@ -3,9 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\AlertCreated;
+use App\Services\Notifications\AlertNotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use App\Services\Notifications\AlertNotificationService;
 
 class HandleAlertCreated implements ShouldQueue
 {
@@ -22,9 +22,7 @@ class HandleAlertCreated implements ShouldQueue
      */
     public function __construct(
         private readonly ?AlertNotificationService $notificationService = null
-    )
-    {
-    }
+    ) {}
 
     /**
      * Handle the event.

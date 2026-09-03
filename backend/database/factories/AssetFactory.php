@@ -14,9 +14,9 @@ class AssetFactory extends Factory
     {
         return [
             'plant_id' => Plant::factory(),
-            'name' => $this->faker->word() . ' Asset',
+            'name' => $this->faker->word().' Asset',
             'asset_type' => $this->faker->randomElement(['INVERTER', 'TRACKER', 'TRANSFORMER']),
-            'serial_number' => 'ASSET-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'serial_number' => 'ASSET-'.$this->faker->unique()->numberBetween(1000, 9999),
             'status' => 'ACTIVE',
         ];
     }

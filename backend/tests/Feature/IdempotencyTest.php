@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TokenAbility;
 use App\Jobs\ProcessTelemetryBatchJob;
+use App\Models\IdempotencyKey;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -40,7 +43,7 @@ class IdempotencyTest extends TestCase
 
         $token = $user->createToken(
             'idempotency-test',
-            [\App\Enums\TokenAbility::TELEMETRY_WRITE->value]
+            [TokenAbility::TELEMETRY_WRITE->value]
         )->plainTextToken;
 
         return [$user, $token];
@@ -108,7 +111,7 @@ class IdempotencyTest extends TestCase
 
         $secondResponse
             ->assertStatus(202);
-            // ->assertJson($firstResponse->json());
+        // ->assertJson($firstResponse->json());
 
         Queue::assertPushed(ProcessTelemetryBatchJob::class, 1);
     }
@@ -170,16 +173,16 @@ class IdempotencyTest extends TestCase
 
     public function test_duplicate_idempotency_key_is_protected_by_database_constraint(): void
     {
-        $first = \App\Models\IdempotencyKey::create([
+        $first = IdempotencyKey::create([
             'key' => 'race-condition-test',
             'request_hash' => hash('sha256', 'payload-a'),
         ]);
 
         $this->assertNotNull($first->id);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
-        \App\Models\IdempotencyKey::create([
+        IdempotencyKey::create([
             'key' => 'race-condition-test',
             'request_hash' => hash('sha256', 'payload-a'),
         ]);

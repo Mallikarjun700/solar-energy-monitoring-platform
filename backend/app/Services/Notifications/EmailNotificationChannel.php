@@ -5,9 +5,9 @@ namespace App\Services\Notifications;
 use App\Contracts\Notifications\NotificationChannel;
 use App\Mail\AlertNotificationMail;
 use App\Models\Alert;
+use App\Models\NotificationPreference;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
-use App\Models\NotificationPreference;
 
 class EmailNotificationChannel implements NotificationChannel
 {

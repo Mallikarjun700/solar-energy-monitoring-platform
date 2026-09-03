@@ -13,7 +13,7 @@ class TelemetryCacheServiceTest extends TestCase
 
     public function test_it_generates_tenant_isolated_latest_telemetry_key(): void
     {
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $key = $service->latestKey(
             'tenant-123',
@@ -28,7 +28,7 @@ class TelemetryCacheServiceTest extends TestCase
 
     public function test_it_stores_and_retrieves_latest_telemetry(): void
     {
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $telemetry = [
             'event_id' => 'event-123',
@@ -51,7 +51,7 @@ class TelemetryCacheServiceTest extends TestCase
 
     public function test_tenant_data_isolation_is_preserved(): void
     {
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $tenantATelemetry = [
             'event_id' => 'event-a',
@@ -88,7 +88,7 @@ class TelemetryCacheServiceTest extends TestCase
 
     public function test_missing_latest_telemetry_returns_null(): void
     {
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $this->assertNull(
             $service->getLatest('tenant-missing', 999)
@@ -97,7 +97,7 @@ class TelemetryCacheServiceTest extends TestCase
 
     public function test_forget_removes_latest_telemetry(): void
     {
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $service->putLatest(
             'tenant-123',
@@ -125,7 +125,7 @@ class TelemetryCacheServiceTest extends TestCase
             ->with('redis')
             ->andThrow(new \RuntimeException('Redis unavailable'));
 
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $this->assertNull(
             $service->getLatest('tenant-123', 456)
@@ -138,7 +138,7 @@ class TelemetryCacheServiceTest extends TestCase
             ->with('redis')
             ->andThrow(new \RuntimeException('Redis unavailable'));
 
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $service->putLatest(
             'tenant-123',
@@ -155,7 +155,7 @@ class TelemetryCacheServiceTest extends TestCase
             ->with('redis')
             ->andThrow(new \RuntimeException('Redis unavailable'));
 
-        $service = new TelemetryCacheService();
+        $service = new TelemetryCacheService;
 
         $service->forgetLatest(
             'tenant-123',

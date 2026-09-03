@@ -1,13 +1,18 @@
 <?php
 
+use App\Http\Middleware\CorrelationIdMiddleware;
+use App\Http\Middleware\IdempotencyMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Auth\AuthenticationException;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,14 +26,14 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') ? null : route('login')
         );
         $middleware->append(
-            \App\Http\Middleware\CorrelationIdMiddleware::class
+            CorrelationIdMiddleware::class
         );
         $middleware->alias([
-            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
-            'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
+            'abilities' => CheckAbilities::class,
+            'idempotency' => IdempotencyMiddleware::class,
         ]);
         $middleware->append(
-            \App\Http\Middleware\SecurityHeadersMiddleware::class
+            SecurityHeadersMiddleware::class
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -75,7 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     : null,
             ], 401);
         });
-        $exceptions->render(function (AccessDeniedHttpException $exception,Request $request) {
+        $exceptions->render(function (AccessDeniedHttpException $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
@@ -88,7 +93,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     : null,
             ], 403);
         });
-        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $exception, Request $request) {
+        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
@@ -101,14 +106,14 @@ return Application::configure(basePath: dirname(__DIR__))
                     : null,
             ], 429, $exception->getHeaders());
         });
-        $exceptions->render(function (\Throwable $exception, Request $request) {
+        $exceptions->render(function (Throwable $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
             logger()->error('Unhandled API exception', [
                 'exception' => get_class($exception),
-               // 'message' => $exception->getMessage(),
+                // 'message' => $exception->getMessage(),
                 'correlation_id' => app()->bound('correlation_id')
                     ? app('correlation_id')
                     : null,

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class TelemetryEvent extends Model
-{    
+{
     protected $connection = 'pgsql_telemetry';
 
     protected $table = 'telemetry_events';

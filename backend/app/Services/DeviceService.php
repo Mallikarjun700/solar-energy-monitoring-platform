@@ -11,11 +11,11 @@ class DeviceService
     {
         $query = Device::query();
 
-        if (!empty($filters['asset_id'])) {
+        if (! empty($filters['asset_id'])) {
             $query->where('asset_id', $filters['asset_id']);
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 

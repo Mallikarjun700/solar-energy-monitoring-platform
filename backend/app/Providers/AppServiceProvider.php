@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Queue\Events\JobProcessed;
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Support\Facades\Event;
+use App\Events\AlertCreated;
 use App\Jobs\ProcessTelemetryBatchJob;
+use App\Listeners\HandleAlertCreated;
 use App\Services\DeadLetterService;
+use App\Services\ProductionConfigurationValidator;
 use App\Services\QueueMetricsService;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
-use App\Services\ProductionConfigurationValidator;
-use App\Events\AlertCreated;
-use App\Listeners\HandleAlertCreated;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(QueueMetricsService::class, fn () => new QueueMetricsService());
+        $this->app->singleton(QueueMetricsService::class, fn () => new QueueMetricsService);
     }
 
     /**
@@ -32,20 +32,20 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         app(ProductionConfigurationValidator::class)->validate();
-        
+
         RateLimiter::for('telemetry', function ($request) {
-            $limit = (int) config('telemetry.rate_limit.requests_per_minute',60);
+            $limit = (int) config('telemetry.rate_limit.requests_per_minute', 60);
 
             $user = $request->user();
 
-            $key = $user ? 'user:' . $user->getAuthIdentifier() : 'ip:' . $request->ip();
+            $key = $user ? 'user:'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
 
             return Limit::perMinute($limit)->by($key);
         });
-        
+
         $metricsService = app(QueueMetricsService::class);
 
-        Event::listen(AlertCreated::class,HandleAlertCreated::class);
+        Event::listen(AlertCreated::class, HandleAlertCreated::class);
 
         Event::listen(JobProcessing::class, function (JobProcessing $event) use ($metricsService) {
             $jobId = $event->job->getJobId();
@@ -89,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
                 'exception' => $event->exception->getMessage(),
             ]);
 
-            if ($event->job->resolveName() !== \App\Jobs\ProcessTelemetryBatchJob::class) {
+            if ($event->job->resolveName() !== ProcessTelemetryBatchJob::class) {
                 return;
             }
 
@@ -104,11 +104,11 @@ class AppServiceProvider extends ServiceProvider
 
                 $job = unserialize($command);
 
-                if (!$job instanceof \App\Jobs\ProcessTelemetryBatchJob) {
+                if (! $job instanceof ProcessTelemetryBatchJob) {
                     return;
                 }
 
-                $deadLetterService = app(\App\Services\DeadLetterService::class);
+                $deadLetterService = app(DeadLetterService::class);
 
                 foreach ($job->events as $telemetryEvent) {
                     $deadLetterService->captureFailedEvent(

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 
 class CleanupTelemetry extends Command
 {
@@ -231,7 +230,7 @@ class CleanupTelemetry extends Command
 
                     $this->info(
                         "Processed {$events->count()} telemetry records; "
-                        . "archived {$inserted} new records."
+                        ."archived {$inserted} new records."
                     );
                 },
                 'id'

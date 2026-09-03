@@ -16,8 +16,7 @@ class AssetController extends Controller
 {
     public function __construct(
         private readonly AssetService $assetService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {

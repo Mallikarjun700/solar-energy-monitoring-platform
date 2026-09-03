@@ -12,25 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('telemetry', function (Blueprint $table) {
-        $table->id();
+            $table->id();
 
-        $table->foreignId('device_id')
-            ->constrained()
-            ->cascadeOnDelete();
+            $table->foreignId('device_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-        $table->timestamp('recorded_at');
+            $table->timestamp('recorded_at');
 
-        $table->decimal('temperature', 10, 2)->nullable();
-        $table->decimal('voltage', 10, 2)->nullable();
-        $table->decimal('current', 10, 2)->nullable();
-        $table->decimal('power', 12, 2)->nullable();
-        $table->decimal('energy_generated', 15, 4)->nullable();
+            $table->decimal('temperature', 10, 2)->nullable();
+            $table->decimal('voltage', 10, 2)->nullable();
+            $table->decimal('current', 10, 2)->nullable();
+            $table->decimal('power', 12, 2)->nullable();
+            $table->decimal('energy_generated', 15, 4)->nullable();
 
-        $table->string('status')->nullable();
+            $table->string('status')->nullable();
 
-
-        $table->index(['device_id', 'recorded_at']);
-    });
+            $table->index(['device_id', 'recorded_at']);
+        });
     }
 
     /**

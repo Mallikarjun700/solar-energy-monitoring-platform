@@ -9,11 +9,10 @@ use Tests\TestCase;
 class MonitorQueueHealthTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     /**
      * A basic feature test example.
      */
-
     public function test_monitor_reports_healthy_queue(): void
     {
         $this->artisan('queue:monitor-health')

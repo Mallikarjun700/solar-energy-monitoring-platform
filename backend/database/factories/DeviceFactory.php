@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Device;
 use App\Models\Asset;
+use App\Models\Device;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +17,7 @@ class DeviceFactory extends Factory
      * @return array<string, mixed>
      */
     protected $model = Device::class;
+
     public function definition(): array
     {
         return [

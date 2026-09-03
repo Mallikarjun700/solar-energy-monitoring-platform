@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -88,7 +89,7 @@ class TelemetryHealthService
 
             if ($oldestJob) {
                 $oldestJobAge = now()->diffInSeconds(
-                    \Carbon\Carbon::createFromTimestamp(
+                    Carbon::createFromTimestamp(
                         $oldestJob->created_at
                     )
                 );

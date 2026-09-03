@@ -79,11 +79,11 @@ class AutomaticTelemetryDlqTest extends TestCase
          */
         event(new JobFailed(
             'sync',
-            new class($queuePayload) {
+            new class($queuePayload)
+            {
                 public function __construct(
                     private array $payload
-                ) {
-                }
+                ) {}
 
                 public function resolveName(): string
                 {

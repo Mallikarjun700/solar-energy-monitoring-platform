@@ -2,21 +2,19 @@
 
 namespace App\Services;
 
+use App\Jobs\EvaluateTelemetryAlertsJob;
+use App\Models\AlertRule;
 use App\Models\Telemetry;
 use App\Models\TelemetryEvent;
+use App\Services\Cache\TelemetryCacheService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use App\Models\AlertRule;
-use App\Services\AlertCreationService;
-use App\Jobs\EvaluateTelemetryAlertsJob;
-use App\Services\Cache\TelemetryCacheService;
 
 class TelemetryService
 {
     public function __construct(private readonly TelemetryCacheService $telemetryCacheService,
-    ) {
-    }
+    ) {}
 
     public function ingest(array $events): array
     {
@@ -84,7 +82,7 @@ class TelemetryService
             $alertCreationService = app(AlertCreationService::class);
 
             foreach ($storedEvents as $storedEvent) {
-                $deviceId = $storedEvent->attributes['device_id']  ?? $storedEvent->payload['device_id'] ?? null;
+                $deviceId = $storedEvent->attributes['device_id'] ?? $storedEvent->payload['device_id'] ?? null;
 
                 if ($deviceId !== null) {
                     $this->telemetryCacheService->putLatest(
@@ -203,7 +201,8 @@ class TelemetryService
             ->paginate($perPage);
     }
 
-    public function getLatest(string $tenantId,int|string $deviceId): ?array {
+    public function getLatest(string $tenantId, int|string $deviceId): ?array
+    {
         $cached = $this->telemetryCacheService->getLatest(
             $tenantId,
             $deviceId

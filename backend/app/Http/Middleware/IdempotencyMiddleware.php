@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Models\IdempotencyKey;
 use Closure;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class IdempotencyMiddleware
@@ -36,8 +36,8 @@ class IdempotencyMiddleware
 
         $requestHash = hash(
             'sha256',
-            $request->method() . '|' .
-            $request->path() . '|' .
+            $request->method().'|'.
+            $request->path().'|'.
             $request->getContent()
         );
 
@@ -88,7 +88,7 @@ class IdempotencyMiddleware
                 'correlation_id' => app()->bound('correlation_id') ? app('correlation_id') : null,
                 'expires_at' => now()->addHours(24),
             ]);
-        } catch (\Illuminate\Database\QueryException $exception) {
+        } catch (QueryException $exception) {
             /*
              * Another concurrent request may have claimed the same key
              * between our lookup and INSERT.

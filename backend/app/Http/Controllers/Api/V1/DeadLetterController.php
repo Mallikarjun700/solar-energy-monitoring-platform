@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\DeadLetterStatus;
 use App\Http\Controllers\Controller;
 use App\Models\DeadLetterEvent;
+use App\Services\TelemetryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Enums\DeadLetterStatus;
-use App\Services\TelemetryService;
 
 class DeadLetterController extends Controller
 {
@@ -31,7 +31,8 @@ class DeadLetterController extends Controller
         return response()->json($events);
     }
 
-    public function replay(DeadLetterEvent $deadLetterEvent, TelemetryService $telemetryService): JsonResponse {
+    public function replay(DeadLetterEvent $deadLetterEvent, TelemetryService $telemetryService): JsonResponse
+    {
         if ($deadLetterEvent->status === DeadLetterStatus::RESOLVED) {
             return response()->json([
                 'status' => 'error',

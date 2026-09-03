@@ -16,8 +16,7 @@ class DeviceController extends Controller
 {
     public function __construct(
         private readonly DeviceService $deviceService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -43,7 +42,8 @@ class DeviceController extends Controller
         return new DeviceResource($device);
     }
 
-    public function update(UpdateDeviceRequest $request, Device $device): DeviceResource {
+    public function update(UpdateDeviceRequest $request, Device $device): DeviceResource
+    {
         $device = $this->deviceService->update(
             $device,
             $request->validated()

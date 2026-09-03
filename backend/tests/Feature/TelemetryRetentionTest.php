@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\TestCase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class TelemetryRetentionTest extends TestCase
 {
-
     private string $connection = 'pgsql_telemetry';
 
     protected function setUp(): void

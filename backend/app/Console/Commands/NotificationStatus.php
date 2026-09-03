@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\NotificationDeliveryStatus;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +37,7 @@ class NotificationStatus extends Command
 
         if ($oldestPending) {
             $oldestPendingAge = now()->diffInSeconds(
-                \Carbon\Carbon::parse($oldestPending->last_attempted_at)
+                Carbon::parse($oldestPending->last_attempted_at)
             );
         }
 

@@ -3,23 +3,22 @@
 namespace App\Services;
 
 use App\Enums\AlertStatus;
+use App\Events\AlertCreated;
 use App\Models\Alert;
 use App\Models\AlertRule;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-use App\Events\AlertCreated;
 
 class AlertCreationService
 {
     public function __construct(
         private AlertEvaluationService $evaluationService
-    ) {
-    }
+    ) {}
 
     /**
      * Evaluate telemetry and create an alert when the rule is violated.
      *
-     * @param array<string, mixed> $telemetry
+     * @param  array<string, mixed>  $telemetry
      */
     public function evaluateAndCreate(
         array $telemetry,
@@ -104,7 +103,7 @@ class AlertCreationService
                 AlertCreated::dispatch($alert);
 
                 return $alert;
-                
+
             });
         } catch (Throwable $exception) {
             /*
@@ -132,7 +131,8 @@ class AlertCreationService
         }
     }
 
-    private function buildMessage(AlertRule $rule,array $telemetry): string {
+    private function buildMessage(AlertRule $rule, array $telemetry): string
+    {
         $value = $telemetry[$rule->metric]
             ?? $telemetry['payload'][$rule->metric]
             ?? null;
@@ -146,7 +146,8 @@ class AlertCreationService
         );
     }
 
-    public function evaluateAndResolve(array $telemetry,AlertRule $rule): ?Alert {
+    public function evaluateAndResolve(array $telemetry, AlertRule $rule): ?Alert
+    {
         if (! $rule->enabled) {
             return null;
         }

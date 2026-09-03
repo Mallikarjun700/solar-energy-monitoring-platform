@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AlertOperator;
 use App\Jobs\EvaluateTelemetryAlertsJob;
 use App\Models\AlertRule;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -30,7 +31,7 @@ class EvaluateTelemetryAlertsJobTest extends TestCase
 
         $eventId = (string) Str::uuid();
 
-        app(\App\Services\TelemetryService::class)->ingest([
+        app(TelemetryService::class)->ingest([
             [
                 'event_id' => $eventId,
                 'tenant_id' => $tenantId,

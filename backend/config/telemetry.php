@@ -6,6 +6,6 @@ return [
         'archive_days' => (int) env('TELEMETRY_ARCHIVE_RETENTION_DAYS', 365),
     ],
     'rate_limit' => [
-        'requests_per_minute' => (int) env('TELEMETRY_RATE_LIMIT',60),
+        'requests_per_minute' => (int) env('TELEMETRY_RATE_LIMIT', 60),
     ],
 ];

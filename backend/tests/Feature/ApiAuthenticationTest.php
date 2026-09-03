@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DeadLetterStatus;
+use App\Enums\TokenAbility;
+use App\Models\DeadLetterEvent;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
-use App\Models\DeadLetterEvent;
 
 class ApiAuthenticationTest extends TestCase
 {
@@ -24,7 +27,7 @@ class ApiAuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $token = $user->createToken('telemetry-test',[\App\Enums\TokenAbility::TELEMETRY_WRITE->value])->plainTextToken;
+        $token = $user->createToken('telemetry-test', [TokenAbility::TELEMETRY_WRITE->value])->plainTextToken;
 
         $response = $this
             ->withToken($token)
@@ -64,7 +67,7 @@ class ApiAuthenticationTest extends TestCase
 
         $token = $user->createToken(
             'read-only-token',
-            [\App\Enums\TokenAbility::TELEMETRY_READ->value]
+            [TokenAbility::TELEMETRY_READ->value]
         )->plainTextToken;
 
         $response = $this
@@ -83,7 +86,7 @@ class ApiAuthenticationTest extends TestCase
 
         $token = $user->createToken(
             'telemetry-token',
-            [\App\Enums\TokenAbility::TELEMETRY_WRITE->value]
+            [TokenAbility::TELEMETRY_WRITE->value]
         )->plainTextToken;
 
         $response = $this
@@ -99,7 +102,7 @@ class ApiAuthenticationTest extends TestCase
 
         $token = $user->createToken(
             'dlq-reader',
-            [\App\Enums\TokenAbility::DLQ_READ->value]
+            [TokenAbility::DLQ_READ->value]
         )->plainTextToken;
 
         $response = $this
@@ -112,23 +115,23 @@ class ApiAuthenticationTest extends TestCase
     public function test_dlq_read_token_cannot_replay_dlq_event(): void
     {
         $deadLetterEvent = DeadLetterEvent::create([
-            'event_id' => (string) \Illuminate\Support\Str::uuid(),
+            'event_id' => (string) Str::uuid(),
             'device_id' => 1,
             'original_payload' => [
-                'event_id' => (string) \Illuminate\Support\Str::uuid(),
+                'event_id' => (string) Str::uuid(),
                 'device_id' => 1,
             ],
             'error_type' => 'RuntimeException',
             'failure_reason' => 'Test failure',
             'attempt_count' => 3,
-            'status' => \App\Enums\DeadLetterStatus::PENDING,
+            'status' => DeadLetterStatus::PENDING,
         ]);
 
         $user = User::factory()->create();
 
         $token = $user->createToken(
             'dlq-reader',
-            [\App\Enums\TokenAbility::DLQ_READ->value]
+            [TokenAbility::DLQ_READ->value]
         )->plainTextToken;
 
         $response = $this

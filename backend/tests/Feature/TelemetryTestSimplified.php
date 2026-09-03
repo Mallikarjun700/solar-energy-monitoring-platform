@@ -2,13 +2,12 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Jobs\ProcessTelemetryBatchJob;
-use Illuminate\Support\Facades\Queue;
-use App\Models\TelemetryEvent;
-use App\Services\TelemetryService;
 use App\Enums\TokenAbility;
+use App\Jobs\ProcessTelemetryBatchJob;
+use App\Services\TelemetryService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class TelemetryTestSimplified extends TestCase
 {

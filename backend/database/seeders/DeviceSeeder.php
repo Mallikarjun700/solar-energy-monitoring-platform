@@ -17,7 +17,7 @@ class DeviceSeeder extends Seeder
                 Device::create([
                     'asset_id' => $asset->id,
                     'device_type' => $type,
-                    'serial_number' => 'DEV-' . strtoupper(substr($asset->serial_number, 0, 3)) . '-' . ($index + 1) . '-' . rand(10000, 99999),
+                    'serial_number' => 'DEV-'.strtoupper(substr($asset->serial_number, 0, 3)).'-'.($index + 1).'-'.rand(10000, 99999),
                     'status' => ['ONLINE', 'OFFLINE', 'FAULT'][array_rand(['ONLINE', 'OFFLINE', 'FAULT'])],
                     'last_seen_at' => now()->subMinutes(rand(5, 180)),
                 ]);

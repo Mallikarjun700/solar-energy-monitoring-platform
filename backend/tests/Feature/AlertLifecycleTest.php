@@ -41,7 +41,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/acknowledge"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             );
 
         $response->assertStatus(200);
@@ -73,7 +73,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/resolve"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             );
 
         $response->assertStatus(200);
@@ -101,7 +101,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/resolve"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             )
             ->assertStatus(200);
 
@@ -128,7 +128,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/acknowledge"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             )
             ->assertStatus(409);
     }
@@ -150,7 +150,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/resolve"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             )
             ->assertStatus(409);
     }
@@ -171,7 +171,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/acknowledge"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             )
             ->assertStatus(403);
     }
@@ -192,7 +192,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/resolve"
-                . "?tenant_id={$tenantId}"
+                ."?tenant_id={$tenantId}"
             )
             ->assertStatus(403);
     }
@@ -214,7 +214,7 @@ class AlertLifecycleTest extends TestCase
             )
             ->postJson(
                 "/api/v1/alerts/{$alert->id}/acknowledge"
-                . "?tenant_id={$requestedTenant}"
+                ."?tenant_id={$requestedTenant}"
             )
             ->assertStatus(404);
     }

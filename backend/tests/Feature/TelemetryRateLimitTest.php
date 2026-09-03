@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TokenAbility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -17,7 +19,7 @@ class TelemetryRateLimitTest extends TestCase
         $user = User::factory()->create();
 
         Sanctum::actingAs($user, [
-            \App\Enums\TokenAbility::TELEMETRY_WRITE->value,
+            TokenAbility::TELEMETRY_WRITE->value,
         ]);
 
         Queue::fake();
@@ -26,9 +28,9 @@ class TelemetryRateLimitTest extends TestCase
         $payload = [
             'events' => [
                 [
-                    'event_id' => (string) \Illuminate\Support\Str::uuid(),
-                    'tenant_id' => (string) \Illuminate\Support\Str::uuid(),
-                    'source_id' => (string) \Illuminate\Support\Str::uuid(),
+                    'event_id' => (string) Str::uuid(),
+                    'tenant_id' => (string) Str::uuid(),
+                    'source_id' => (string) Str::uuid(),
                     'event_type' => 'telemetry.power',
                     'timestamp' => now()->toISOString(),
                     'schema_version' => 1,
@@ -45,16 +47,16 @@ class TelemetryRateLimitTest extends TestCase
         $this
             ->withHeader('Idempotency-Key', 'telemetry-rate-limit-001')
             ->postJson(
-            '/api/v1/telemetry/events',
-            $payload
-        );
+                '/api/v1/telemetry/events',
+                $payload
+            );
 
         $response = $this
             ->withHeader('Idempotency-Key', 'telemetry-rate-limit-002')
             ->postJson(
-            '/api/v1/telemetry/events',
-            $payload
-        );
+                '/api/v1/telemetry/events',
+                $payload
+            );
 
         $response->assertStatus(429);
 

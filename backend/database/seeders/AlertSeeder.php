@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AlertOperator;
 use App\Enums\AlertSeverity;
 use App\Enums\AlertStatus;
-use App\Enums\AlertOperator;
 use App\Enums\NotificationDeliveryStatus;
 use App\Models\Alert;
 use App\Models\AlertRule;

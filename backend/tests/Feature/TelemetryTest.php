@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use App\Enums\TokenAbility;
 use App\Jobs\ProcessTelemetryBatchJob;
-use Illuminate\Support\Facades\Queue;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
+use Tests\TestCase;
 
 class TelemetryTest extends TestCase
 {
@@ -41,7 +42,7 @@ class TelemetryTest extends TestCase
         ];
 
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'unique-test-key')
-            ->postJson('/api/v1/telemetry/events',$payload);
+            ->postJson('/api/v1/telemetry/events', $payload);
 
         $response->assertStatus(202);
 
@@ -62,9 +63,9 @@ class TelemetryTest extends TestCase
 
         for ($i = 0; $i < 1000; $i++) {
             $events[] = [
-                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_id' => Str::uuid()->toString(),
+                'tenant_id' => Str::uuid()->toString(),
+                'source_id' => Str::uuid()->toString(),
                 'event_type' => 'telemetry',
                 'timestamp' => now()->toISOString(),
                 'schema_version' => 1,
@@ -76,10 +77,10 @@ class TelemetryTest extends TestCase
             ];
         }
 
-       $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-events')
-        ->postJson('/api/v1/telemetry/events', [
-            'events' => $events,
-        ]);
+        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-events')
+            ->postJson('/api/v1/telemetry/events', [
+                'events' => $events,
+            ]);
 
         $response->assertStatus(202);
     }
@@ -90,9 +91,9 @@ class TelemetryTest extends TestCase
 
         for ($i = 0; $i < 1001; $i++) {
             $events[] = [
-                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_id' => Str::uuid()->toString(),
+                'tenant_id' => Str::uuid()->toString(),
+                'source_id' => Str::uuid()->toString(),
                 'event_type' => 'telemetry',
                 'timestamp' => now()->toISOString(),
                 'schema_version' => 1,
@@ -105,9 +106,9 @@ class TelemetryTest extends TestCase
         }
 
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1001-events')
-        ->postJson('/api/v1/telemetry/events', [
-            'events' => $events,
-        ]);
+            ->postJson('/api/v1/telemetry/events', [
+                'events' => $events,
+            ]);
 
         $response->assertStatus(422);
     }
@@ -120,9 +121,9 @@ class TelemetryTest extends TestCase
 
         for ($i = 0; $i < 1000; $i++) {
             $events[] = [
-                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_id' => Str::uuid()->toString(),
+                'tenant_id' => Str::uuid()->toString(),
+                'source_id' => Str::uuid()->toString(),
                 'event_type' => 'telemetry',
                 'timestamp' => now()->toISOString(),
                 'schema_version' => 1,
@@ -136,10 +137,10 @@ class TelemetryTest extends TestCase
 
         $jobs = [];
 
-        $response = $this ->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-batches')
-        ->postJson('/api/v1/telemetry/events', [
-            'events' => $events,
-        ]);
+        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-batches')
+            ->postJson('/api/v1/telemetry/events', [
+                'events' => $events,
+            ]);
 
         $response->assertStatus(202);
 
@@ -167,9 +168,9 @@ class TelemetryTest extends TestCase
 
         for ($i = 0; $i < 600; $i++) {
             $events[] = [
-                'event_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'tenant_id' => \Illuminate\Support\Str::uuid()->toString(),
-                'source_id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_id' => Str::uuid()->toString(),
+                'tenant_id' => Str::uuid()->toString(),
+                'source_id' => Str::uuid()->toString(),
                 'event_type' => 'telemetry',
                 'timestamp' => now()->toISOString(),
                 'schema_version' => 1,
@@ -184,9 +185,9 @@ class TelemetryTest extends TestCase
         $jobs = [];
 
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-600-batches')
-        ->postJson('/api/v1/telemetry/events', [
-            'events' => $events,
-        ]);
+            ->postJson('/api/v1/telemetry/events', [
+                'events' => $events,
+            ]);
 
         $response->assertStatus(202);
 
@@ -212,14 +213,14 @@ class TelemetryTest extends TestCase
         $this->assertSame(3, $job->tries);
         $this->assertSame(60, $job->timeout);
     }
+
     private function telemetryToken(): string
     {
         $user = User::factory()->create();
 
         return $user->createToken(
             'telemetry-test',
-            [\App\Enums\TokenAbility::TELEMETRY_WRITE->value]
+            [TokenAbility::TELEMETRY_WRITE->value]
         )->plainTextToken;
     }
-
 }

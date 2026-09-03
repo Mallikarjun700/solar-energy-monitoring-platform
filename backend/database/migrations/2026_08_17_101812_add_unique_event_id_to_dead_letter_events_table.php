@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dead_letter_events', function (Blueprint $table) {
-            $table->dropIndex(['event_id']); 
+            $table->dropIndex(['event_id']);
         });
     }
 };

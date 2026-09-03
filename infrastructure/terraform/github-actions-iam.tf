@@ -11,26 +11,26 @@ data "aws_iam_policy_document" "github_actions_deployment" {
   }
 
   statement {
-      sid    = "PassECSTaskRoles"
-      effect = "Allow"
+    sid    = "PassECSTaskRoles"
+    effect = "Allow"
 
-      actions = [
-        "iam:PassRole"
+    actions = [
+      "iam:PassRole"
+    ]
+
+    resources = [
+      aws_iam_role.ecs_task_execution.arn,
+      aws_iam_role.ecs_task.arn
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values = [
+        "ecs-tasks.amazonaws.com"
       ]
-
-      resources = [
-        aws_iam_role.ecs_task_execution.arn,
-        aws_iam_role.ecs_task.arn
-      ]
-
-      condition {
-        test     = "StringEquals"
-        variable = "iam:PassedToService"
-        values   = [
-          "ecs-tasks.amazonaws.com"
-        ]
-      }
     }
+  }
 
   statement {
     sid    = "ECRPushImages"

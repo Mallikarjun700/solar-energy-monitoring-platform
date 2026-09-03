@@ -2,10 +2,9 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Enums\TokenAbility;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ApiErrorResponseTest extends TestCase
 {
@@ -23,7 +22,6 @@ class ApiErrorResponseTest extends TestCase
     /**
      * A basic feature test example.
      */
-
     public function test_validation_error_has_standard_structure(): void
     {
         $correlationId = 'test-error-correlation-001';
@@ -62,7 +60,7 @@ class ApiErrorResponseTest extends TestCase
                 ],
             ]);
     }
-    
+
     public function test_not_found_error_has_standard_structure(): void
     {
         $correlationId = 'test-not-found-001';

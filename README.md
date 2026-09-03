@@ -31,7 +31,7 @@ The system is designed to monitor renewable energy assets, process device teleme
 ## Project Status
 
 🚧 Architecture and requirements
-![High Level Architecture](diagrams/high-level-architecture.drawio.png)
+![High Level Architecture](diagrams/high-level-architecture.drawio.jpg)
 
 ## Infrastructure
 

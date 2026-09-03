@@ -20,13 +20,11 @@ class NotificationRetryExhaustionTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['error' => true], 500),
+            'https://example.test/webhook' => Http::response(['error' => true], 500),
         ]);
 
         $alert = Alert::factory()->create([

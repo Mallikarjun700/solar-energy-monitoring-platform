@@ -15,7 +15,7 @@ class RoleAbilityServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->service = new RoleAbilityService();
+        $this->service = new RoleAbilityService;
     }
 
     public function test_admin_has_all_abilities(): void

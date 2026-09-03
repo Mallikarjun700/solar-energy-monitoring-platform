@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TokenAbility;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
-use App\Enums\TokenAbility;
 
 class TelemetryRequestSizeTest extends TestCase
 {
@@ -42,17 +42,16 @@ class TelemetryRequestSizeTest extends TestCase
         ];
 
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'request-size-valid')
-        ->postJson('/api/v1/telemetry/events', $payload);
+            ->postJson('/api/v1/telemetry/events', $payload);
         $response->assertStatus(202);
     }
 
     public function test_telemetry_request_over_size_limit_is_rejected(): void
     {
         $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'request-size-too-large')
-        ->withHeader('Content-Length', (string) (6 * 1024 * 1024))->postJson('/api/v1/telemetry/events', [
+            ->withHeader('Content-Length', (string) (6 * 1024 * 1024))->postJson('/api/v1/telemetry/events', [
             'events' => [],
         ]);
         $response->assertStatus(422);
     }
-    
 }

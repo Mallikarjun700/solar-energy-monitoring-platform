@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Events\AlertCreated;
 use App\Enums\AlertOperator;
+use App\Events\AlertCreated;
+use App\Listeners\HandleAlertCreated;
 use App\Models\AlertRule;
 use App\Services\AlertCreationService;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -86,10 +88,10 @@ class AlertCreatedEventTest extends TestCase
 
     public function test_alert_created_listener_is_queueable(): void
     {
-        $listener = new \App\Listeners\HandleAlertCreated();
+        $listener = new HandleAlertCreated;
 
         $this->assertInstanceOf(
-            \Illuminate\Contracts\Queue\ShouldQueue::class,
+            ShouldQueue::class,
             $listener
         );
 
@@ -97,5 +99,4 @@ class AlertCreatedEventTest extends TestCase
         $this->assertSame(30, $listener->timeout);
         $this->assertSame([10, 30, 60], $listener->backoff);
     }
-
 }

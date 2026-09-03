@@ -18,16 +18,13 @@ class AlertWebhookNotificationTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
-            'services.notifications.webhook.secret' =>
-                'test-secret',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
+            'services.notifications.webhook.secret' => 'test-secret',
             'services.notifications.webhook.timeout' => 5,
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['ok' => true], 200),
+            'https://example.test/webhook' => Http::response(['ok' => true], 200),
         ]);
 
         $alert = Alert::factory()->create([
@@ -51,13 +48,11 @@ class AlertWebhookNotificationTest extends TestCase
     {
         config([
             'services.notifications.channel' => 'webhook',
-            'services.notifications.webhook.url' =>
-                'https://example.test/webhook',
+            'services.notifications.webhook.url' => 'https://example.test/webhook',
         ]);
 
         Http::fake([
-            'https://example.test/webhook' =>
-                Http::response(['error' => true], 500),
+            'https://example.test/webhook' => Http::response(['error' => true], 500),
         ]);
 
         $alert = Alert::factory()->create();

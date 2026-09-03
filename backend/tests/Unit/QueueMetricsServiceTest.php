@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use App\Services\QueueMetricsService;
+use PHPUnit\Framework\TestCase;
 
 class QueueMetricsServiceTest extends TestCase
 {
@@ -12,7 +12,7 @@ class QueueMetricsServiceTest extends TestCase
      */
     public function test_it_records_and_returns_job_duration(): void
     {
-        $service = new QueueMetricsService();
+        $service = new QueueMetricsService;
 
         $service->start('job-123');
 
@@ -26,7 +26,7 @@ class QueueMetricsServiceTest extends TestCase
 
     public function test_unknown_job_returns_null(): void
     {
-        $service = new QueueMetricsService();
+        $service = new QueueMetricsService;
 
         $this->assertNull(
             $service->finish('unknown-job')

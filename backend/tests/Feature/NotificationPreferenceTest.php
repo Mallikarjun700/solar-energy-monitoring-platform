@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Enums\AlertSeverity;
-use App\Enums\AlertStatus;
+use App\Mail\AlertNotificationMail;
 use App\Models\Alert;
 use App\Models\NotificationPreference;
 use App\Services\Notifications\AlertNotificationService;
 use App\Services\Notifications\NotificationPreferenceResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class NotificationPreferenceTest extends TestCase
@@ -112,7 +113,7 @@ class NotificationPreferenceTest extends TestCase
             'services.notifications.email' => 'global@example.com',
         ]);
 
-        \Illuminate\Support\Facades\Mail::fake();
+        Mail::fake();
 
         $tenantId = '550e8400-e29b-41d4-a716-446655440001';
 
@@ -123,12 +124,12 @@ class NotificationPreferenceTest extends TestCase
             'email' => 'tenant@example.com',
         ]);
 
-        $alert = Alert::factory()->create(['tenant_id' => $tenantId,]);
+        $alert = Alert::factory()->create(['tenant_id' => $tenantId]);
 
         app(AlertNotificationService::class)->send($alert);
 
-        \Illuminate\Support\Facades\Mail::assertSent(
-            \App\Mail\AlertNotificationMail::class,
+        Mail::assertSent(
+            AlertNotificationMail::class,
             function ($mail) {
                 return $mail->hasTo('tenant@example.com');
             }
@@ -137,14 +138,13 @@ class NotificationPreferenceTest extends TestCase
 
     public function test_tenant_webhook_preference_is_used(): void
     {
-        config(['services.notifications.channel' => 'log',]);
+        config(['services.notifications.channel' => 'log']);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://tenant.example.com/alerts' =>
-                \Illuminate\Support\Facades\Http::response(
-                    ['ok' => true],
-                    200
-                ),
+        Http::fake([
+            'https://tenant.example.com/alerts' => Http::response(
+                ['ok' => true],
+                200
+            ),
         ]);
 
         $tenantId = '550e8400-e29b-41d4-a716-446655440002';
@@ -157,11 +157,11 @@ class NotificationPreferenceTest extends TestCase
             'webhook_secret' => 'tenant-secret',
         ]);
 
-        $alert = Alert::factory()->create(['tenant_id' => $tenantId,]);
+        $alert = Alert::factory()->create(['tenant_id' => $tenantId]);
 
         app(AlertNotificationService::class)->send($alert);
 
-        \Illuminate\Support\Facades\Http::assertSent(
+        Http::assertSent(
             function ($request) {
                 return $request->url() ===
                     'https://tenant.example.com/alerts';
