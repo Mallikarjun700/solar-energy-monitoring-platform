@@ -7,6 +7,7 @@ use App\Enums\NotificationDeliveryStatus;
 use App\Models\Alert;
 use App\Models\NotificationDelivery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class NotificationStatusTest extends TestCase
@@ -66,11 +67,17 @@ class NotificationStatusTest extends TestCase
 
     public function test_notification_status_supports_json_output(): void
     {
-        $this->artisan('notification:status --json')
-            ->expectsOutputToContain('"pending_deliveries"')
-            ->expectsOutputToContain('"failed_deliveries"')
-            ->expectsOutputToContain('"sent_deliveries"')
-            ->expectsOutputToContain('"oldest_pending_age_seconds"')
-            ->assertExitCode(0);
+        $exitCode = Artisan::call('notification:status', ['--json' => true]);
+
+        $this->assertSame(0, $exitCode);
+
+        $output = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame([
+            'pending_deliveries' => 0,
+            'failed_deliveries' => 0,
+            'sent_deliveries' => 0,
+            'oldest_pending_age_seconds' => 0,
+        ], $output);
     }
 }

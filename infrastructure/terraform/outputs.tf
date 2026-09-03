@@ -111,3 +111,33 @@ output "acm_certificate_arn" {
   description = "ACM certificate ARN when HTTPS is enabled."
   value       = var.enable_https && var.domain_name != "" ? aws_acm_certificate.main[0].arn : null
 }
+
+output "github_actions_deployment_role_arn" {
+  description = "IAM role ARN used by GitHub Actions through OIDC."
+  value       = aws_iam_role.github_actions_deployment.arn
+}
+
+output "ecs_backend_task_family" {
+  description = "ECS task definition family for the backend."
+  value       = aws_ecs_task_definition.backend.family
+}
+
+output "ecs_queue_task_family" {
+  description = "ECS task definition family for the queue worker."
+  value       = aws_ecs_task_definition.queue_worker.family
+}
+
+output "ecs_queue_service_name" {
+  description = "ECS service name for the queue worker."
+  value       = aws_ecs_service.queue_worker.name
+}
+
+output "ecs_scheduler_task_family" {
+  description = "ECS task definition family for the scheduler."
+  value       = aws_ecs_task_definition.scheduler.family
+}
+
+output "ecs_scheduler_service_name" {
+  description = "ECS service name for the scheduler."
+  value       = aws_ecs_service.scheduler.name
+}
