@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\DeadLetterStatus;
+use App\Models\Device;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -10,6 +11,8 @@ class DeadLetterControllerTestDataSeeder extends Seeder
 {
     public function run(): void
     {
+        $deviceId = Device::query()->value('id');
+
         DB::table('dead_letter_events')->insert([
             [
                 'event_id' => 'evt-123',
@@ -59,7 +62,7 @@ class DeadLetterControllerTestDataSeeder extends Seeder
 
         DB::table('telemetry')->insert([
             [
-                'device_id' => 109,
+                'device_id' => $deviceId,
                 'recorded_at' => now(),
                 'temperature' => 35.5,
                 'voltage' => 230,
