@@ -36,6 +36,9 @@ RUN composer install \
 
 COPY . .
 
+RUN mkdir -p bootstrap/cache storage/logs \
+    && chown -R www-data:www-data bootstrap/cache storage
+
 RUN composer dump-autoload \
     --no-dev \
     --no-scripts \
