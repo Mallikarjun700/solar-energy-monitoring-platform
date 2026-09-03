@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/auth/me', [AuthController::class, 'me']);
         Route::apiResource('plants', PlantController::class);
         Route::apiResource('assets', AssetController::class);
         Route::apiResource('devices', DeviceController::class);

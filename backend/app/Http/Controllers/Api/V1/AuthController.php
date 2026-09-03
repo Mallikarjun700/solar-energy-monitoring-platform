@@ -50,4 +50,23 @@ class AuthController extends Controller
             ],
         ], 200);
     }
+
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Authenticated user.',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role->value,
+                ],
+                'abilities' => $user->currentAccessToken()?->abilities ?? [],
+            ],
+        ], 200);
+    }
 }
