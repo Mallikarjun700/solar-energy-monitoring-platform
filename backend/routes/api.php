@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\TelemetryController;
 use App\Http\Controllers\Api\V1\DeadLetterController;
 use App\Http\Controllers\Api\V1\AlertController;
+use App\Http\Controllers\Api\V1\AuthController;
 
 
 Route::prefix('v1')->group(function () {
@@ -43,6 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/alerts/{alert}/resolve',[AlertController::class, 'resolve'])->middleware('abilities:alerts:resolve');
 
     });
+    Route::post('/auth/login', [AuthController::class, 'login']);
 });
 
 
