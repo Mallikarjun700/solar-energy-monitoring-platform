@@ -36,9 +36,12 @@ RUN composer install \
 
 COPY . .
 
-RUN APP_ENV=local composer dump-autoload \
+RUN composer dump-autoload \
     --no-dev \
+    --no-scripts \
     --optimize
+
+RUN APP_ENV=local php artisan package:discover --ansi
 
 RUN chown -R www-data:www-data \
     storage \
