@@ -7,14 +7,14 @@ import {
   AuthData,
   AuthMeData,
 } from '../../models/auth/auth-response.model';
+import { TokenStorageService } from '../../auth/token-storage.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly api = inject(ApiService);
-
-  private readonly tokenKey = 'solar_energy_access_token';
+  private readonly tokenStorage = inject(TokenStorageService);
 
   login(email: string, password: string): Observable<ApiResponse<AuthData>> {
     return this.api
@@ -24,7 +24,7 @@ export class AuthService {
       })
       .pipe(
         tap((response) => {
-          this.setToken(response.data.token);
+          this.tokenStorage.setToken(response.data.token);
         }),
       );
   }
@@ -36,28 +36,16 @@ export class AuthService {
   logout(): Observable<unknown> {
     return this.api.post<unknown>('/auth/logout', {}).pipe(
       tap(() => {
-        this.clearToken();
+        this.tokenStorage.clearToken();
       }),
     );
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return this.tokenStorage.getToken();
   }
 
   isAuthenticated(): boolean {
-    return this.getToken() !== null;
-  }
-
-  setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
-  }
-
-  clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
-  }
-
-  getCurrentUser(): Observable<ApiResponse<AuthMeData>> {
-    return this.me();
+    return this.tokenStorage.hasToken();
   }
 }
