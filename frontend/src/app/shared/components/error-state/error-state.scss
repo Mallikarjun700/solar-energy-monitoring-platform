@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+.error-state {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  flex-direction: column;
+  text-align: center;
+}
+
+.error-state__icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.error-state__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.error-state__message {
+  max-width: 480px;
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.error-state__retry {
+  margin-top: 20px;
+  padding: 9px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+}
+
+.error-state__retry:hover {
+  background: #f9fafb;
+}
+
+.error-state__retry:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

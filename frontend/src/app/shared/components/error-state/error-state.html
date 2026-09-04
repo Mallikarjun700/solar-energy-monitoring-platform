@@ -1,0 +1,9 @@
+<section class="error-state" role="alert">
+  <div class="error-state__icon" aria-hidden="true">!</div>
+
+  <h2 class="error-state__title">{{ title() }}</h2>
+
+  <p class="error-state__message">{{ message() }}</p>
+
+  <button type="button" class="error-state__retry" (click)="onRetry()">Try again</button>
+</section>

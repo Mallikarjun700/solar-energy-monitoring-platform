@@ -1,0 +1,51 @@
+<header class="app-header">
+  <div class="app-header__brand">
+    <div class="app-header__logo" aria-hidden="true">☀</div>
+
+    <div class="app-header__identity">
+      <span class="app-header__title">Solar Energy Monitoring</span>
+      <span class="app-header__subtitle">Plant Operations Platform</span>
+    </div>
+  </div>
+
+  @if (authState.user(); as user) {
+    <div class="app-header__user-menu">
+      <button
+        type="button"
+        class="app-header__user-trigger"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="userMenuOpen()"
+        (click)="toggleUserMenu()"
+      >
+        <span class="app-header__avatar" aria-hidden="true">
+          {{ user.name.charAt(0).toUpperCase() }}
+        </span>
+
+        <span class="app-header__user-summary">
+          <span class="app-header__user-name">{{ user.name }}</span>
+          <span class="app-header__user-role">{{ user.role }}</span>
+        </span>
+
+        <span class="app-header__chevron" aria-hidden="true">
+          {{ userMenuOpen() ? '▲' : '▼' }}
+        </span>
+      </button>
+
+      @if (userMenuOpen()) {
+        <div class="app-header__menu" role="menu">
+          <div class="app-header__menu-user">
+            <span class="app-header__menu-name">{{ user.name }}</span>
+            <span class="app-header__menu-email">{{ user.email }}</span>
+            <span class="app-header__menu-role">{{ user.role }}</span>
+          </div>
+
+          <div class="app-header__menu-divider"></div>
+
+          <button type="button" class="app-header__menu-action" role="menuitem" (click)="logout()">
+            Logout
+          </button>
+        </div>
+      }
+    </div>
+  }
+</header>
