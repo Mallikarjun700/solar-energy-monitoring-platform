@@ -54,6 +54,7 @@ jobs:
           mkdir -p storage/logs
           touch database/testing.sqlite
           chmod -R 775 bootstrap/cache storage
+          cp .env.testing .env
 
       - name: Validate Composer files
         run: composer validate --strict
