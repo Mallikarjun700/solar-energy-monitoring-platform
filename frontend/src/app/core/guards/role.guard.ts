@@ -4,9 +4,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthStateService } from '../services/auth/auth-state.service';
 import { UserRole } from '../models/auth/auth-user.model';
 
-export const roleGuard = (
-  allowedRoles: UserRole[],
-): CanActivateFn => {
+export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
   return () => {
     const authState = inject(AuthStateService);
     const router = inject(Router);

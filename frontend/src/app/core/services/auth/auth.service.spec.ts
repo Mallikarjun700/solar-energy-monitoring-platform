@@ -68,14 +68,9 @@ describe('AuthService', () => {
       }),
     );
 
-    service.login(
-      'admin@example.com',
-      'password',
-    ).subscribe();
+    service.login('admin@example.com', 'password').subscribe();
 
-    expect(tokenStorage.setToken).toHaveBeenCalledWith(
-      'test-token',
-    );
+    expect(tokenStorage.setToken).toHaveBeenCalledWith('test-token');
   });
 
   it('clears the token after successful logout', () => {
@@ -83,10 +78,7 @@ describe('AuthService', () => {
 
     service.logout().subscribe();
 
-    expect(api.post).toHaveBeenCalledWith(
-      '/auth/logout',
-      {},
-    );
+    expect(api.post).toHaveBeenCalledWith('/auth/logout', {});
 
     expect(tokenStorage.clearToken).toHaveBeenCalled();
   });
@@ -94,9 +86,7 @@ describe('AuthService', () => {
   it('clears the token when logout fails', () => {
     const logoutError = new Error('Network error');
 
-    api.post.mockReturnValue(
-      throwError(() => logoutError),
-    );
+    api.post.mockReturnValue(throwError(() => logoutError));
 
     service.logout().subscribe({
       error: (error) => {
@@ -106,5 +96,4 @@ describe('AuthService', () => {
 
     expect(tokenStorage.clearToken).toHaveBeenCalled();
   });
-
 });

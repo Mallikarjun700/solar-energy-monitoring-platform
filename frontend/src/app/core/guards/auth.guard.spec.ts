@@ -40,10 +40,7 @@ describe('authGuard', () => {
     authService.isAuthenticated.mockReturnValue(true);
 
     const result = TestBed.runInInjectionContext(() =>
-      authGuard(
-        {} as ActivatedRouteSnapshot,
-        { url: '/dashboard' } as RouterStateSnapshot,
-      ),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
     );
 
     expect(result).toBe(true);
@@ -59,20 +56,14 @@ describe('authGuard', () => {
     router.createUrlTree.mockReturnValue(loginUrlTree);
 
     const result = TestBed.runInInjectionContext(() =>
-      authGuard(
-        {} as ActivatedRouteSnapshot,
-        { url: '/dashboard' } as RouterStateSnapshot,
-      ),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
     );
 
-    expect(router.createUrlTree).toHaveBeenCalledWith(
-      ['/login'],
-      {
-        queryParams: {
-          returnUrl: '/dashboard',
-        },
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], {
+      queryParams: {
+        returnUrl: '/dashboard',
       },
-    );
+    });
 
     expect(result).toBe(loginUrlTree);
   });

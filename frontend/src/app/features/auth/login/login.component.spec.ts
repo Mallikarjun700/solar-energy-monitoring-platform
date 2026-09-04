@@ -28,7 +28,6 @@ describe('LoginComponent', () => {
   };
 
   beforeEach(async () => {
-
     router = {
       navigate: vi.fn().mockResolvedValue(true),
     };
@@ -97,10 +96,7 @@ describe('LoginComponent', () => {
             role: 'viewer',
           },
           token: 'test-token',
-          abilities: [
-            'telemetry:read',
-            'alerts:read',
-          ],
+          abilities: ['telemetry:read', 'alerts:read'],
         },
       }),
     );
@@ -112,34 +108,22 @@ describe('LoginComponent', () => {
 
     component.submit();
 
-    expect(router.navigate).toHaveBeenCalledWith([
-      '/dashboard',
-    ]);
-    expect(authService.login).toHaveBeenCalledWith(
-      'admin@example.com',
-      'password',
-    );
+    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(authService.login).toHaveBeenCalledWith('admin@example.com', 'password');
 
-    expect(
-      authState.setAuthenticatedUser,
-    ).toHaveBeenCalledWith(
+    expect(authState.setAuthenticatedUser).toHaveBeenCalledWith(
       {
         id: 1,
         name: 'Admin',
         email: 'admin@example.com',
         role: 'viewer',
       },
-      [
-        'telemetry:read',
-        'alerts:read',
-      ],
+      ['telemetry:read', 'alerts:read'],
     );
   });
 
   it('shows an API error when login fails', () => {
-    authService.login.mockReturnValue(
-      throwError(() => new Error('Unauthorized')),
-    );
+    authService.login.mockReturnValue(throwError(() => new Error('Unauthorized')));
 
     component.loginForm.setValue({
       email: 'admin@example.com',
@@ -148,8 +132,6 @@ describe('LoginComponent', () => {
 
     component.submit();
 
-    expect(component.errorMessage).toBe(
-      'Invalid credentials.',
-    );
+    expect(component.errorMessage).toBe('Invalid credentials.');
   });
 });

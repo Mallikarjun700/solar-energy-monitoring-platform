@@ -65,17 +65,11 @@ describe('Authentication flow', () => {
       role: 'viewer' as const,
     };
 
-    const abilities = [
-      'telemetry:read',
-      'alerts:read',
-    ];
+    const abilities = ['telemetry:read', 'alerts:read'];
 
     tokenStorage.setToken('test-token');
 
-    authState.setAuthenticatedUser(
-      user,
-      abilities,
-    );
+    authState.setAuthenticatedUser(user, abilities);
 
     expect(tokenStorage.getToken()).toBe('test-token');
     expect(authState.isAuthenticated()).toBe(true);
@@ -99,9 +93,7 @@ describe('Authentication flow', () => {
       role: 'viewer',
     });
 
-    expect(authState.abilities()).toEqual([
-      'telemetry:read',
-    ]);
+    expect(authState.abilities()).toEqual(['telemetry:read']);
 
     expect(authState.role()).toBe('viewer');
   });

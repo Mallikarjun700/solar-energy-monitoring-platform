@@ -1,7 +1,4 @@
-import {
-  HttpHandlerFn,
-  HttpRequest,
-} from '@angular/common/http';
+import { HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
@@ -31,15 +28,10 @@ describe('authInterceptor', () => {
   it('adds the bearer token when a token exists', () => {
     tokenStorage.getToken.mockReturnValue('test-token');
 
-    const request = new HttpRequest(
-      'GET',
-      '/api/v1/auth/me',
-    );
+    const request = new HttpRequest('GET', '/api/v1/auth/me');
 
     const next: HttpHandlerFn = (req) => {
-      expect(req.headers.get('Authorization')).toBe(
-        'Bearer test-token',
-      );
+      expect(req.headers.get('Authorization')).toBe('Bearer test-token');
 
       return of();
     };
@@ -52,10 +44,7 @@ describe('authInterceptor', () => {
   it('does not add authorization when no token exists', () => {
     tokenStorage.getToken.mockReturnValue(null);
 
-    const request = new HttpRequest(
-      'GET',
-      '/api/v1/health',
-    );
+    const request = new HttpRequest('GET', '/api/v1/health');
 
     const next: HttpHandlerFn = (req) => {
       expect(req.headers.has('Authorization')).toBe(false);

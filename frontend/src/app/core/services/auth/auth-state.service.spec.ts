@@ -45,69 +45,35 @@ describe('AuthStateService', () => {
   });
 
   it('sets authenticated user state', () => {
-    service.setAuthenticatedUser(user, [
-      'telemetry:read',
-      'alerts:read',
-    ]);
+    service.setAuthenticatedUser(user, ['telemetry:read', 'alerts:read']);
 
     expect(service.isAuthenticated()).toBe(true);
     expect(service.user()).toEqual(user);
     expect(service.role()).toBe('viewer');
-    expect(service.abilities()).toEqual([
-      'telemetry:read',
-      'alerts:read',
-    ]);
+    expect(service.abilities()).toEqual(['telemetry:read', 'alerts:read']);
   });
 
   it('checks abilities', () => {
-    service.setAuthenticatedUser(user, [
-      'telemetry:read',
-      'alerts:read',
-    ]);
+    service.setAuthenticatedUser(user, ['telemetry:read', 'alerts:read']);
 
     expect(service.hasAbility('telemetry:read')).toBe(true);
     expect(service.hasAbility('telemetry:write')).toBe(false);
   });
 
   it('checks any ability', () => {
-    service.setAuthenticatedUser(user, [
-      'telemetry:read',
-    ]);
+    service.setAuthenticatedUser(user, ['telemetry:read']);
 
-    expect(
-      service.hasAnyAbility([
-        'telemetry:write',
-        'telemetry:read',
-      ]),
-    ).toBe(true);
+    expect(service.hasAnyAbility(['telemetry:write', 'telemetry:read'])).toBe(true);
 
-    expect(
-      service.hasAnyAbility([
-        'alerts:resolve',
-        'telemetry:write',
-      ]),
-    ).toBe(false);
+    expect(service.hasAnyAbility(['alerts:resolve', 'telemetry:write'])).toBe(false);
   });
 
   it('checks all abilities', () => {
-    service.setAuthenticatedUser(user, [
-      'telemetry:read',
-      'alerts:read',
-    ]);
+    service.setAuthenticatedUser(user, ['telemetry:read', 'alerts:read']);
 
-    expect(
-      service.hasAllAbilities([
-        'telemetry:read',
-        'alerts:read',
-      ]),
-    ).toBe(true);
+    expect(service.hasAllAbilities(['telemetry:read', 'alerts:read'])).toBe(true);
 
-    expect(
-      service.hasAllAbilities([
-        'telemetry:read',
-        'telemetry:write',
-      ]),
-    ).toBe(false);
+    expect(service.hasAllAbilities(['telemetry:read', 'telemetry:write'])).toBe(false);
   });
 
   it('initializes from the current token', () => {
@@ -129,15 +95,11 @@ describe('AuthStateService', () => {
     expect(authService.me).toHaveBeenCalled();
     expect(service.isAuthenticated()).toBe(true);
     expect(service.user()).toEqual(user);
-    expect(service.abilities()).toEqual([
-      'telemetry:read',
-    ]);
+    expect(service.abilities()).toEqual(['telemetry:read']);
   });
 
   it('clears state', () => {
-    service.setAuthenticatedUser(user, [
-      'telemetry:read',
-    ]);
+    service.setAuthenticatedUser(user, ['telemetry:read']);
 
     service.clearState();
 

@@ -1,7 +1,4 @@
-import {
-  HttpErrorResponse,
-  HttpHeaders
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { describe, expect, it } from 'vitest';
 
 import { ApiErrorService } from './api-error.service';
@@ -16,12 +13,12 @@ describe('ApiErrorService', () => {
         message: 'Validation failed.',
         error: 'validation_error',
         errors: {
-          email: ['The email field is required.']
-        }
+          email: ['The email field is required.'],
+        },
       },
       headers: new HttpHeaders({
-        'X-Correlation-ID': 'correlation-123'
-      })
+        'X-Correlation-ID': 'correlation-123',
+      }),
     });
 
     const result = service.normalize(error);
@@ -30,15 +27,13 @@ describe('ApiErrorService', () => {
     expect(result.message).toBe('Validation failed.');
     expect(result.error).toBe('validation_error');
     expect(result.correlationId).toBe('correlation-123');
-    expect(result.errors?.['email']).toEqual([
-      'The email field is required.'
-    ]);
+    expect(result.errors?.['email']).toEqual(['The email field is required.']);
   });
 
   it('handles network errors', () => {
     const error = new HttpErrorResponse({
       status: 0,
-      error: new ProgressEvent('error')
+      error: new ProgressEvent('error'),
     });
 
     const result = service.normalize(error);
@@ -51,8 +46,8 @@ describe('ApiErrorService', () => {
     const error = new HttpErrorResponse({
       status: 500,
       error: {
-        unexpected: true
-      }
+        unexpected: true,
+      },
     });
 
     const result = service.normalize(error);

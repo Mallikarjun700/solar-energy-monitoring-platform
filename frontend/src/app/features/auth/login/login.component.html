@@ -6,20 +6,12 @@
     </header>
 
     @if (errorMessage) {
-      <div
-        class="login-error"
-        role="alert"
-        aria-live="polite"
-      >
+      <div class="login-error" role="alert" aria-live="polite">
         {{ errorMessage }}
       </div>
     }
 
-    <form
-      [formGroup]="loginForm"
-      (ngSubmit)="submit()"
-      novalidate
-    >
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
       <div class="form-field">
         <label for="email">Email</label>
 
@@ -28,19 +20,11 @@
           type="email"
           formControlName="email"
           autocomplete="email"
-          [attr.aria-invalid]="
-            loginForm.controls.email.invalid &&
-            loginForm.controls.email.touched
-          "
+          [attr.aria-invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched"
         />
 
-        @if (
-          loginForm.controls.email.invalid &&
-          loginForm.controls.email.touched
-        ) {
-          <span class="field-error">
-            Enter a valid email address.
-          </span>
+        @if (loginForm.controls.email.invalid && loginForm.controls.email.touched) {
+          <span class="field-error"> Enter a valid email address. </span>
         }
       </div>
 
@@ -53,25 +37,16 @@
           formControlName="password"
           autocomplete="current-password"
           [attr.aria-invalid]="
-            loginForm.controls.password.invalid &&
-            loginForm.controls.password.touched
+            loginForm.controls.password.invalid && loginForm.controls.password.touched
           "
         />
 
-        @if (
-          loginForm.controls.password.invalid &&
-          loginForm.controls.password.touched
-        ) {
-          <span class="field-error">
-            Password is required.
-          </span>
+        @if (loginForm.controls.password.invalid && loginForm.controls.password.touched) {
+          <span class="field-error"> Password is required. </span>
         }
       </div>
 
-      <button
-        type="submit"
-        [disabled]="loginForm.invalid || isSubmitting"
-      >
+      <button type="submit" [disabled]="loginForm.invalid || isSubmitting">
         @if (isSubmitting) {
           Signing in...
         } @else {

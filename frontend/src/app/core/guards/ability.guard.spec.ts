@@ -40,10 +40,7 @@ describe('abilityGuard', () => {
     authState.hasAllAbilities.mockReturnValue(true);
 
     const result = TestBed.runInInjectionContext(() =>
-      abilityGuard(['telemetry:read'])(
-        {} as ActivatedRouteSnapshot,
-        {} as RouterStateSnapshot,
-      ),
+      abilityGuard(['telemetry:read'])({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
     expect(result).toBe(true);
@@ -59,19 +56,12 @@ describe('abilityGuard', () => {
     router.createUrlTree.mockReturnValue(forbiddenUrlTree);
 
     const result = TestBed.runInInjectionContext(() =>
-      abilityGuard(['telemetry:write'])(
-        {} as ActivatedRouteSnapshot,
-        {} as RouterStateSnapshot,
-      ),
+      abilityGuard(['telemetry:write'])({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
-    expect(authState.hasAllAbilities).toHaveBeenCalledWith([
-      'telemetry:write',
-    ]);
+    expect(authState.hasAllAbilities).toHaveBeenCalledWith(['telemetry:write']);
 
-    expect(router.createUrlTree).toHaveBeenCalledWith([
-      '/forbidden',
-    ]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/forbidden']);
 
     expect(result).toBe(forbiddenUrlTree);
   });

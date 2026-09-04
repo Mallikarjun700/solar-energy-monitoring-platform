@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ApiError } from '../models/api-error.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiErrorService {
   normalize(error: HttpErrorResponse): ApiError {
@@ -15,26 +15,19 @@ export class ApiErrorService {
       error: this.resolveError(body),
       status: error.status,
       correlationId: this.resolveCorrelationId(error, body),
-      errors: this.resolveValidationErrors(body)
+      errors: this.resolveValidationErrors(body),
     };
   }
 
   private toRecord(value: unknown): Record<string, unknown> {
-    if (
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value)
-    ) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       return value as Record<string, unknown>;
     }
 
     return {};
   }
 
-  private resolveMessage(
-    body: Record<string, unknown>,
-    error: HttpErrorResponse
-  ): string {
+  private resolveMessage(body: Record<string, unknown>, error: HttpErrorResponse): string {
     if (typeof body['message'] === 'string') {
       return body['message'];
     }
@@ -46,17 +39,13 @@ export class ApiErrorService {
     return 'An unexpected error occurred.';
   }
 
-  private resolveError(
-    body: Record<string, unknown>
-  ): string | undefined {
-    return typeof body['error'] === 'string'
-      ? body['error']
-      : undefined;
+  private resolveError(body: Record<string, unknown>): string | undefined {
+    return typeof body['error'] === 'string' ? body['error'] : undefined;
   }
 
   private resolveCorrelationId(
     error: HttpErrorResponse,
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
   ): string | undefined {
     const headerValue = error.headers.get('X-Correlation-ID');
 
@@ -64,21 +53,15 @@ export class ApiErrorService {
       return headerValue;
     }
 
-    return typeof body['correlation_id'] === 'string'
-      ? body['correlation_id']
-      : undefined;
+    return typeof body['correlation_id'] === 'string' ? body['correlation_id'] : undefined;
   }
 
   private resolveValidationErrors(
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
   ): Record<string, string[]> | undefined {
     const errors = body['errors'];
 
-    if (
-      typeof errors !== 'object' ||
-      errors === null ||
-      Array.isArray(errors)
-    ) {
+    if (typeof errors !== 'object' || errors === null || Array.isArray(errors)) {
       return undefined;
     }
 

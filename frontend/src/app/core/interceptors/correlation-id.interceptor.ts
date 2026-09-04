@@ -5,8 +5,8 @@ export const correlationIdInterceptor: HttpInterceptorFn = (req, next) => {
 
   const request = req.clone({
     setHeaders: {
-      'X-Correlation-ID': correlationId
-    }
+      'X-Correlation-ID': correlationId,
+    },
   });
 
   return next(request);

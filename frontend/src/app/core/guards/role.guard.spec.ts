@@ -40,10 +40,7 @@ describe('roleGuard', () => {
     authState.role.mockReturnValue('admin');
 
     const result = TestBed.runInInjectionContext(() =>
-      roleGuard(['admin'])(
-        {} as ActivatedRouteSnapshot,
-        {} as RouterStateSnapshot,
-      ),
+      roleGuard(['admin'])({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
     expect(result).toBe(true);
@@ -53,10 +50,7 @@ describe('roleGuard', () => {
     authState.role.mockReturnValue('operator');
 
     const result = TestBed.runInInjectionContext(() =>
-      roleGuard(['admin', 'operator'])(
-        {} as ActivatedRouteSnapshot,
-        {} as RouterStateSnapshot,
-      ),
+      roleGuard(['admin', 'operator'])({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
     expect(result).toBe(true);
@@ -71,15 +65,10 @@ describe('roleGuard', () => {
     router.createUrlTree.mockReturnValue(forbiddenUrlTree);
 
     const result = TestBed.runInInjectionContext(() =>
-      roleGuard(['admin'])(
-        {} as ActivatedRouteSnapshot,
-        {} as RouterStateSnapshot,
-      ),
+      roleGuard(['admin'])({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
     );
 
-    expect(router.createUrlTree).toHaveBeenCalledWith([
-      '/forbidden',
-    ]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/forbidden']);
 
     expect(result).toBe(forbiddenUrlTree);
   });

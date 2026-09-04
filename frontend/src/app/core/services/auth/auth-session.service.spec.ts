@@ -52,9 +52,7 @@ describe('AuthSessionService', () => {
   });
 
   it('clears authentication state when logout request fails', () => {
-    authService.logout.mockReturnValue(
-      throwError(() => new Error('Network error')),
-    );
+    authService.logout.mockReturnValue(throwError(() => new Error('Network error')));
 
     service.logout().subscribe({
       error: () => {

@@ -34,18 +34,12 @@ export class AuthStateService {
 
     return this.authService.me().pipe(
       tap((response) => {
-        this.setState(
-          response.data.user,
-          response.data.abilities,
-        );
+        this.setState(response.data.user, response.data.abilities);
       }),
     );
   }
 
-  setAuthenticatedUser(
-    user: AuthUser,
-    abilities: string[],
-  ): void {
+  setAuthenticatedUser(user: AuthUser, abilities: string[]): void {
     this.setState(user, abilities);
   }
 
@@ -64,21 +58,14 @@ export class AuthStateService {
   }
 
   hasAnyAbility(abilities: string[]): boolean {
-    return abilities.some((ability) =>
-      this.hasAbility(ability),
-    );
+    return abilities.some((ability) => this.hasAbility(ability));
   }
 
   hasAllAbilities(abilities: string[]): boolean {
-    return abilities.every((ability) =>
-      this.hasAbility(ability),
-    );
+    return abilities.every((ability) => this.hasAbility(ability));
   }
 
-  private setState(
-    user: AuthUser,
-    abilities: string[],
-  ): void {
+  private setState(user: AuthUser, abilities: string[]): void {
     this.userSignal.set(user);
     this.abilitiesSignal.set([...abilities]);
     this.authenticatedSignal.set(true);

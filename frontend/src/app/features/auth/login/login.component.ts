@@ -1,9 +1,5 @@
 import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth/auth.service';
@@ -45,16 +41,12 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe({
       next: (response) => {
-        this.authState.setAuthenticatedUser(
-          response.data.user,
-          response.data.abilities,
-        );
+        this.authState.setAuthenticatedUser(response.data.user, response.data.abilities);
 
         void this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        this.errorMessage =
-          this.apiErrorService.normalize(error).message;
+        this.errorMessage = this.apiErrorService.normalize(error).message;
 
         this.isSubmitting = false;
       },
