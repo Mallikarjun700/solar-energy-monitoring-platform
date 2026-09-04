@@ -1,12 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, finalize } from 'rxjs';
 
 import { ApiService } from '../api.service';
 import { ApiResponse } from '../../models/api-response.model';
-import {
-  AuthData,
-  AuthMeData,
-} from '../../models/auth/auth-response.model';
+import { AuthData, AuthMeData, } from '../../models/auth/auth-response.model';
 import { TokenStorageService } from '../../auth/token-storage.service';
 
 @Injectable({
@@ -34,11 +31,13 @@ export class AuthService {
   }
 
   logout(): Observable<unknown> {
-    return this.api.post<unknown>('/auth/logout', {}).pipe(
-      tap(() => {
-        this.tokenStorage.clearToken();
-      }),
-    );
+    return this.api
+      .post<unknown>('/auth/logout', {})
+      .pipe(
+        finalize(() => {
+          this.tokenStorage.clearToken();
+        }),
+      );
   }
 
   getToken(): string | null {

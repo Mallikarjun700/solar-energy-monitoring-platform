@@ -92,14 +92,19 @@ describe('AuthService', () => {
   });
 
   it('clears the token when logout fails', () => {
+    const logoutError = new Error('Network error');
+
     api.post.mockReturnValue(
-      throwError(() => new Error('Network error')),
+      throwError(() => logoutError),
     );
 
     service.logout().subscribe({
-      error: () => {
-        expect(tokenStorage.clearToken).toHaveBeenCalled();
+      error: (error) => {
+        expect(error).toBe(logoutError);
       },
     });
+
+    expect(tokenStorage.clearToken).toHaveBeenCalled();
   });
+
 });
