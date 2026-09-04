@@ -55,6 +55,10 @@ export class AuthStateService {
     this.authenticatedSignal.set(false);
   }
 
+  logout(): void {
+    this.clearState();
+  }
+
   hasAbility(ability: string): boolean {
     return this.abilitiesSignal().includes(ability);
   }
