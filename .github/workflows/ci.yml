@@ -32,6 +32,7 @@ jobs:
           --health-retries 10
     env:
       APP_ENV: testing
+      REDIS_CLIENT: predis
       REDIS_HOST: 127.0.0.1
       REDIS_PORT: 6379
 
@@ -49,7 +50,9 @@ jobs:
       - name: Create required directories
         run: |
           mkdir -p bootstrap/cache
+          mkdir -p database
           mkdir -p storage/logs
+          touch database/testing.sqlite
           chmod -R 775 bootstrap/cache storage
 
       - name: Validate Composer files
