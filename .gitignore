@@ -6,6 +6,8 @@
 
 var/
 cache/
+!backend/app/Services/Cache/
+!backend/app/Services/Cache/*.php
 logs/
 
 .idea/
