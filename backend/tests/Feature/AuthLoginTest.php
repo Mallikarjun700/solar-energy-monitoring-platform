@@ -167,4 +167,23 @@ class AuthLoginTest extends TestCase
                 ]
             );
     }
+
+    public function test_authenticated_user_can_logout_and_revoke_current_token(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('logout-test')->plainTextToken;
+
+        $response = $this
+            ->withToken($token)
+            ->postJson('/api/v1/auth/logout');
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'status' => 'success',
+                'message' => 'Logout successful.',
+            ]);
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
 }

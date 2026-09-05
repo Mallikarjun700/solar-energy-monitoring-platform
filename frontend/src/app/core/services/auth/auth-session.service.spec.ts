@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthSessionService } from './auth-session.service';
@@ -16,6 +17,10 @@ describe('AuthSessionService', () => {
     logout: ReturnType<typeof vi.fn>;
   };
 
+  let router: {
+    navigate: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(() => {
     authService = {
       logout: vi.fn(),
@@ -23,6 +28,10 @@ describe('AuthSessionService', () => {
 
     authState = {
       logout: vi.fn(),
+    };
+
+    router = {
+      navigate: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -35,6 +44,10 @@ describe('AuthSessionService', () => {
         {
           provide: AuthStateService,
           useValue: authState,
+        },
+        {
+          provide: Router,
+          useValue: router,
         },
       ],
     });
@@ -49,6 +62,7 @@ describe('AuthSessionService', () => {
 
     expect(authService.logout).toHaveBeenCalled();
     expect(authState.logout).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('clears authentication state when logout request fails', () => {
@@ -57,6 +71,7 @@ describe('AuthSessionService', () => {
     service.logout().subscribe({
       error: () => {
         expect(authState.logout).toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(['/login']);
       },
     });
   });

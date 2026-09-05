@@ -198,7 +198,7 @@ describe('DashboardComponent', () => {
     expect(dashboardService.getDashboard).toHaveBeenCalledTimes(1);
     expect(component.loading()).toBe(false);
     expect(component.dashboard()).toBeNull();
-    expect(component.error()).toBe('Dashboard unavailable');
+    expect(component.error()).toBe('Unable to load dashboard data.');
 
     const errorState = fixture.nativeElement.querySelector('app-error-state');
 
@@ -213,7 +213,7 @@ describe('DashboardComponent', () => {
     createFixture();
     fixture.detectChanges();
 
-    expect(component.error()).toBe('Dashboard unavailable');
+    expect(component.error()).toBe('Unable to load dashboard data.');
     expect(dashboardService.getDashboard).toHaveBeenCalledTimes(1);
 
     component.retry();
