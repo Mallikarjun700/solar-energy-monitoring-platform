@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
@@ -7,15 +8,19 @@ import { AuthStateService } from '../../../core/services/auth/auth-state.service
 describe('Sidebar', () => {
   let fixture: ComponentFixture<Sidebar>;
 
+  let currentRole: ReturnType<typeof signal<string | null>>;
+  let availableAbilities: ReturnType<typeof signal<string[]>>;
   let authState: {
     role: () => string | null;
     hasAbility: (ability: string) => boolean;
   };
 
   beforeEach(async () => {
+    currentRole = signal('admin');
+    availableAbilities = signal(['telemetry:read', 'alerts:read']);
     authState = {
-      role: () => 'admin',
-      hasAbility: () => true,
+      role: currentRole,
+      hasAbility: (ability: string) => availableAbilities().includes(ability),
     };
 
     await TestBed.configureTestingModule({
@@ -40,7 +45,7 @@ describe('Sidebar', () => {
   });
 
   it('should hide administration for non-admin users', () => {
-    authState.role = () => 'operator';
+    currentRole.set('operator');
 
     fixture.detectChanges();
 
@@ -52,7 +57,7 @@ describe('Sidebar', () => {
   });
 
   it('should hide telemetry when telemetry:read is unavailable', () => {
-    authState.hasAbility = (ability: string) => ability !== 'telemetry:read';
+    availableAbilities.set(['alerts:read']);
 
     fixture.detectChanges();
 
@@ -64,7 +69,7 @@ describe('Sidebar', () => {
   });
 
   it('should hide alerts when alerts:read is unavailable', () => {
-    authState.hasAbility = (ability: string) => ability !== 'alerts:read';
+    availableAbilities.set(['telemetry:read']);
 
     fixture.detectChanges();
 

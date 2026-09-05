@@ -1,0 +1,49 @@
+<section class="recent-activity" aria-labelledby="recent-activity-title">
+  <header class="recent-activity__header">
+    <div>
+      <h2 id="recent-activity-title">Recent Activity</h2>
+      <p>Recent events across the monitoring platform.</p>
+    </div>
+  </header>
+
+  @if (activities().length === 0) {
+    <div class="recent-activity__empty">
+      <p>No recent activity.</p>
+    </div>
+  } @else {
+    <div class="activity-list">
+      @for (activity of activities(); track trackByActivityId($index, activity)) {
+        <article class="activity-item">
+          <div class="activity-item__indicator">
+            <span
+              class="activity-item__type"
+              [class.activity-item__type--telemetry]="activity.type === 'telemetry'"
+              [class.activity-item__type--alert]="activity.type === 'alert'"
+              [class.activity-item__type--device]="activity.type === 'device'"
+              [class.activity-item__type--plant]="activity.type === 'plant'"
+              [class.activity-item__type--system]="activity.type === 'system'"
+            >
+              {{ activity.type }}
+            </span>
+          </div>
+
+          <div class="activity-item__content">
+            <p class="activity-item__message">
+              {{ activity.message }}
+            </p>
+
+            <div class="activity-item__meta">
+              @if (activity.deviceId !== null && activity.deviceId !== undefined) {
+                <span>Device {{ activity.deviceId }}</span>
+              }
+
+              <time [attr.datetime]="activity.timestamp">
+                {{ formatTimestamp(activity.timestamp) }}
+              </time>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

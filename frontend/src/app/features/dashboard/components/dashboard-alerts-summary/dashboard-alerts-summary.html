@@ -1,0 +1,73 @@
+<section class="alerts-summary" aria-labelledby="alerts-summary-title">
+  <header class="alerts-summary__header">
+    <div>
+      <h2 id="alerts-summary-title">Alerts Summary</h2>
+      <p>Recent alerts requiring operational attention.</p>
+    </div>
+  </header>
+
+  <div class="alert-counts" aria-label="Alert counts">
+    <article class="alert-count alert-count--critical">
+      <span class="alert-count__label">Critical</span>
+      <strong class="alert-count__value">
+        {{ criticalCount() }}
+      </strong>
+    </article>
+
+    <article class="alert-count alert-count--warning">
+      <span class="alert-count__label">Warning</span>
+      <strong class="alert-count__value">
+        {{ warningCount() }}
+      </strong>
+    </article>
+
+    <article class="alert-count alert-count--info">
+      <span class="alert-count__label">Info</span>
+      <strong class="alert-count__value">
+        {{ infoCount() }}
+      </strong>
+    </article>
+  </div>
+
+  @if (alerts().length === 0) {
+    <div class="alerts-summary__empty">
+      <p>No recent alerts.</p>
+    </div>
+  } @else {
+    <div class="alert-list">
+      @for (alert of alerts(); track trackByAlertId($index, alert)) {
+        <article class="alert-item">
+          <div class="alert-item__main">
+            <div class="alert-item__heading">
+              <span
+                class="alert-item__severity"
+                [class.alert-item__severity--critical]="alert.severity === 'critical'"
+                [class.alert-item__severity--warning]="alert.severity === 'warning'"
+                [class.alert-item__severity--info]="alert.severity === 'info'"
+                [class.alert-item__severity--emergency]="alert.severity === 'emergency'"
+              >
+                {{ alert.severity }}
+              </span>
+
+              <strong>{{ alert.alert_type }}</strong>
+            </div>
+
+            @if (alert.message) {
+              <p class="alert-item__message">
+                {{ alert.message }}
+              </p>
+            }
+          </div>
+
+          <div class="alert-item__meta">
+            <span>{{ alert.status }}</span>
+
+            <time [attr.datetime]="alert.triggered_at">
+              {{ formatTimestamp(alert.triggered_at) }}
+            </time>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

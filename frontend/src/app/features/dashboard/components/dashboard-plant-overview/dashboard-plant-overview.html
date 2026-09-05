@@ -1,0 +1,53 @@
+<section class="plant-overview" aria-labelledby="plant-overview-title">
+  <header class="plant-overview__header">
+    <div>
+      <h2 id="plant-overview-title">Plant Overview</h2>
+      <p>Current operational status across monitored plants.</p>
+    </div>
+  </header>
+
+  @if (plants().length === 0) {
+    <div class="plant-overview__empty">
+      <p>No plants are available.</p>
+    </div>
+  } @else {
+    <div class="plant-list">
+      @for (plant of plants(); track trackByPlantId($index, plant)) {
+        <article class="plant-card">
+          <div class="plant-card__header">
+            <div>
+              <h3>{{ plant.name }}</h3>
+              <span class="plant-card__code">{{ plant.code }}</span>
+            </div>
+
+            <span class="plant-card__status">
+              {{ plant.status }}
+            </span>
+          </div>
+
+          <dl class="plant-card__details">
+            <div>
+              <dt>Location</dt>
+              <dd>{{ plant.location || '—' }}</dd>
+            </div>
+
+            <div>
+              <dt>Capacity</dt>
+              <dd>{{ formatCapacity(plant.capacityKw) }}</dd>
+            </div>
+
+            <div>
+              <dt>Current Power</dt>
+              <dd>{{ formatPower(plant.currentPowerKw) }}</dd>
+            </div>
+
+            <div>
+              <dt>Performance</dt>
+              <dd>{{ formatPerformance(plant.performancePercent) }}</dd>
+            </div>
+          </dl>
+        </article>
+      }
+    </div>
+  }
+</section>

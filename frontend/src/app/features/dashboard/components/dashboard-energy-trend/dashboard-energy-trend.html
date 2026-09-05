@@ -1,0 +1,28 @@
+<section class="energy-trend" aria-labelledby="energy-trend-title">
+  <header class="energy-trend__header">
+    <div>
+      <h2 id="energy-trend-title">Energy Trend</h2>
+      <p>Energy generation over the selected monitoring period.</p>
+    </div>
+  </header>
+
+  @if (points().length === 0) {
+    <div class="energy-trend__empty">
+      <p>Energy trend data is currently unavailable.</p>
+    </div>
+  } @else {
+    <div class="energy-trend__list">
+      @for (point of points(); track trackByTimestamp($index, point)) {
+        <div class="energy-point">
+          <time class="energy-point__timestamp" [attr.datetime]="point.timestamp">
+            {{ formatTimestamp(point.timestamp) }}
+          </time>
+
+          <strong class="energy-point__value">
+            {{ formatEnergy(point.energyKwh) }}
+          </strong>
+        </div>
+      }
+    </div>
+  }
+</section>

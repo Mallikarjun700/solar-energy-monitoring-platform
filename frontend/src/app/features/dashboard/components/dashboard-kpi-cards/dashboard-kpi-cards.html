@@ -1,0 +1,36 @@
+<section class="kpi-cards" aria-label="Dashboard key performance indicators">
+  <article class="kpi-card">
+    <span class="kpi-card__label">Total Plants</span>
+    <strong class="kpi-card__value">
+      {{ formatNumber(kpis().totalPlants) }}
+    </strong>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-card__label">Total Devices</span>
+    <strong class="kpi-card__value">
+      {{ formatNumber(kpis().totalDevices) }}
+    </strong>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-card__label">Active Devices</span>
+    <strong class="kpi-card__value">
+      {{ formatNumber(kpis().activeDevices) }}
+    </strong>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-card__label">Current Power</span>
+    <strong class="kpi-card__value">
+      {{ formatPower(kpis().currentPowerKw) }}
+    </strong>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-card__label">Today's Energy</span>
+    <strong class="kpi-card__value">
+      {{ formatEnergy(kpis().todayEnergyKwh) }}
+    </strong>
+  </article>
+</section>

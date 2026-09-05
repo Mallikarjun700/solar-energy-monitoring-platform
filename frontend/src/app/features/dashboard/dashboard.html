@@ -1,0 +1,32 @@
+<main class="dashboard-page">
+  <header class="dashboard-page__header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Monitor your solar energy platform at a glance.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-loading-state />
+  } @else if (error()) {
+    <app-error-state [message]="error()!" (retry)="retry()" />
+  } @else if (dashboard(); as dashboardData) {
+    <section class="dashboard-section dashboard-section--kpis">
+      <app-dashboard-kpi-cards [kpis]="dashboardData.kpis" />
+    </section>
+
+    <section class="dashboard-section">
+      <app-dashboard-plant-overview [plants]="dashboardData.plants" />
+    </section>
+
+    <section class="dashboard-grid">
+      <app-dashboard-energy-trend [points]="dashboardData.energyTrend" />
+
+      <app-dashboard-alerts-summary [alerts]="dashboardData.alerts" />
+    </section>
+
+    <section class="dashboard-section">
+      <app-dashboard-recent-activity [activities]="dashboardData.recentActivity" />
+    </section>
+  }
+</main>

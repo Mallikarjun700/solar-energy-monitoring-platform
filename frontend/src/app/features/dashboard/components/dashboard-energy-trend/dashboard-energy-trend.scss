@@ -1,0 +1,74 @@
+:host {
+  display: block;
+}
+
+.energy-trend {
+  display: grid;
+  gap: 16px;
+}
+
+.energy-trend__header {
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #666;
+  }
+}
+
+.energy-trend__list {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.energy-point {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.energy-point:last-child {
+  border-bottom: 0;
+}
+
+.energy-point__timestamp {
+  color: #666;
+  font-size: 13px;
+}
+
+.energy-point__value {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.energy-trend__empty {
+  padding: 32px 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: #666;
+  }
+}
+
+@media (max-width: 480px) {
+  .energy-point {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
