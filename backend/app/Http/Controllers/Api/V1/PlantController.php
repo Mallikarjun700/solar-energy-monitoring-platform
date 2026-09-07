@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePlantRequest;
 use App\Http\Resources\PlantResource;
+use App\Models\Plant;
 use App\Services\PlantService;
 
 class PlantController extends Controller
@@ -19,6 +20,14 @@ class PlantController extends Controller
         return response()->json([
             'data' => PlantResource::collection($this->plantService->getPlants()),
         ], 200);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Plant $plant): PlantResource
+    {
+        return new PlantResource($plant);
     }
 
     /**

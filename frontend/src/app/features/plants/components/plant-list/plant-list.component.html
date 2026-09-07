@@ -1,0 +1,11 @@
+@if (plants().length === 0) {
+  <div class="empty-list">
+    <p>No plants match the current filters.</p>
+  </div>
+} @else {
+  <div class="plant-grid">
+    @for (plant of plants(); track plant.id) {
+      <app-plant-card [plant]="plant" />
+    }
+  </div>
+}

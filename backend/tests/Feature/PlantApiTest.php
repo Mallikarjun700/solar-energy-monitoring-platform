@@ -74,4 +74,28 @@ class PlantApiTest extends TestCase
             'code' => 'PLANT-RAJ-001',
         ]);
     }
+
+    public function test_plant_show_returns_resource_fields(): void
+    {
+        $plant = Plant::factory()->create();
+
+        $response = $this->getJson("/api/v1/plants/{$plant->id}");
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'code',
+                    'location',
+                    'capacity_kw',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ],
+            ])
+            ->assertJsonPath('data.id', $plant->id)
+            ->assertJsonPath('data.code', $plant->code);
+    }
 }

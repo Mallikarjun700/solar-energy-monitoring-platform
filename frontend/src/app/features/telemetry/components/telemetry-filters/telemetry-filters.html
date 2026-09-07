@@ -1,0 +1,81 @@
+<section class="filters" aria-labelledby="telemetry-filter-heading">
+  <div class="filters__header">
+    <div>
+      <h2 id="telemetry-filter-heading">Filter telemetry</h2>
+      <p>Refine telemetry events by source, type, and time range.</p>
+    </div>
+  </div>
+
+  <div class="filters__grid">
+    <div class="field">
+      <label for="telemetry-source-id">Source ID</label>
+      <input
+        id="telemetry-source-id"
+        name="sourceId"
+        type="text"
+        autocomplete="off"
+        [value]="filters.sourceId"
+        placeholder="Enter source ID"
+        (input)="updateField('sourceId', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="telemetry-event-type">Event type</label>
+      <input
+        id="telemetry-event-type"
+        name="eventType"
+        type="text"
+        autocomplete="off"
+        [value]="filters.eventType"
+        placeholder="e.g. telemetry.power"
+        (input)="updateField('eventType', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="telemetry-from">From</label>
+      <input
+        id="telemetry-from"
+        name="from"
+        type="datetime-local"
+        [value]="filters.from"
+        [attr.aria-invalid]="hasDateRangeError"
+        (input)="updateField('from', $any($event.target).value)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="telemetry-to">To</label>
+      <input
+        id="telemetry-to"
+        name="to"
+        type="datetime-local"
+        [value]="filters.to"
+        [attr.aria-invalid]="hasDateRangeError"
+        (input)="updateField('to', $any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  @if (hasDateRangeError) {
+    <p class="filters__validation" role="alert">
+      The From date and time must be earlier than or equal to the To date and time.
+    </p>
+  }
+
+  <div class="filters__actions">
+    <button
+      type="button"
+      class="button button--primary"
+      [disabled]="hasDateRangeError"
+      (click)="applyFilters()"
+    >
+      Apply filters
+    </button>
+
+    <button type="button" class="button button--secondary" (click)="clearFilters()">
+      Clear filters
+    </button>
+  </div>
+</section>

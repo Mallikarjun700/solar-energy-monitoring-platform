@@ -1,0 +1,65 @@
+<app-page-header
+  title="Telemetry"
+  description="Review telemetry events received from monitored assets."
+></app-page-header>
+
+<div class="telemetry-page">
+  <app-telemetry-filters
+    [filters]="filters()"
+    (filtersChange)="updateFilters($event)"
+    (apply)="applyFilters()"
+    (clear)="clearFilters()"
+  ></app-telemetry-filters>
+
+  @if (!loading() && !error()) {
+    <app-telemetry-summary
+      [pagination]="pagination()"
+      [filters]="filters()"
+    ></app-telemetry-summary>
+  }
+
+  <section class="telemetry-results" aria-labelledby="telemetry-results-heading">
+    <div class="telemetry-results__header">
+      <div>
+        <h2 id="telemetry-results-heading">Telemetry events</h2>
+
+        @if (!loading()) {
+          <p>
+            @if (hasActiveFilters()) {
+              {{ resultCount() }} events on this page
+            } @else {
+              {{ resultCount() }} events on this page
+            }
+          </p>
+        }
+      </div>
+    </div>
+
+    @if (loading()) {
+      <app-loading-state message="Loading telemetry events..."></app-loading-state>
+    } @else if (error()) {
+      <app-error-state [message]="error()!"></app-error-state>
+    } @else if (!hasEvents) {
+      <app-empty-state
+        title="No telemetry events"
+        message="No telemetry events matched the current filters."
+      ></app-empty-state>
+    } @else {
+      <div class="telemetry-results__placeholder">
+        <p>Telemetry readings will be displayed here in the next implementation step.</p>
+      </div>
+
+      @if (pagination()) {
+        <nav class="pagination" aria-label="Telemetry pagination">
+          <button type="button" [disabled]="!hasPreviousPage()" (click)="goToPreviousPage()">
+            Previous
+          </button>
+
+          <span aria-live="polite"> Page {{ currentPage() }} of {{ lastPage() }} </span>
+
+          <button type="button" [disabled]="!hasNextPage()" (click)="goToNextPage()">Next</button>
+        </nav>
+      }
+    }
+  </section>
+</div>

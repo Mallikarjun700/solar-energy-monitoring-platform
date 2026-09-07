@@ -1,0 +1,38 @@
+<section class="summary" aria-labelledby="telemetry-summary-heading">
+  <div class="summary__header">
+    <div>
+      <h2 id="telemetry-summary-heading">Telemetry summary</h2>
+      <p>{{ filterDescription }}</p>
+    </div>
+  </div>
+
+  <div class="summary__grid">
+    <article class="summary-card">
+      <span class="summary-card__label">Total events</span>
+      <strong class="summary-card__value">
+        {{ totalEvents | number }}
+      </strong>
+      <span class="summary-card__description"> Matching the current query </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-card__label">Current page</span>
+      <strong class="summary-card__value"> {{ currentPage }} / {{ lastPage }} </strong>
+      <span class="summary-card__description"> Paginated telemetry results </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-card__label">Results shown</span>
+      <strong class="summary-card__value"> {{ resultFrom }}–{{ resultTo }} </strong>
+      <span class="summary-card__description"> Events on this page </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-card__label">Page size</span>
+      <strong class="summary-card__value">
+        {{ pageSize }}
+      </strong>
+      <span class="summary-card__description"> Events requested per page </span>
+    </article>
+  </div>
+</section>

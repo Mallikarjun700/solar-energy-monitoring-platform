@@ -1,0 +1,37 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.device-list-item {
+  min-width: 0;
+}
+
+.empty-list {
+  display: flex;
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+  color: #6b7280;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.empty-list p {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .device-grid {
+    grid-template-columns: 1fr;
+  }
+}

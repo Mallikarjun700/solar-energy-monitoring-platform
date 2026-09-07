@@ -1,0 +1,61 @@
+<main class="devices-page">
+  <app-page-header title="Devices" subtitle="Monitor devices connected to your solar assets." />
+
+  <section class="filters-section" aria-labelledby="device-filters-title">
+    <h2 id="device-filters-title" class="visually-hidden">Device filters</h2>
+
+    <app-device-filters
+      [filters]="filters()"
+      (searchChange)="updateSearch($event)"
+      (statusChange)="updateStatus($event)"
+      (assetIdChange)="updateAssetId($event)"
+      (clear)="clearFilters()"
+    />
+  </section>
+
+  @if (loading()) {
+    <section class="state-section" aria-live="polite" aria-busy="true">
+      <app-loading-state message="Loading devices..." />
+    </section>
+  } @else if (error()) {
+    <section class="state-section" aria-live="assertive">
+      <app-error-state [message]="error()!" (retry)="loadDevices()" />
+    </section>
+  } @else if (devices().length === 0) {
+    <section class="state-section" aria-live="polite">
+      <app-empty-state
+        title="No devices found"
+        message="There are currently no devices available."
+      />
+    </section>
+  } @else if (resultCount() === 0) {
+    <section class="state-section" aria-live="polite">
+      <app-empty-state
+        title="No matching devices"
+        message="No devices match the selected filters."
+      />
+
+      @if (hasActiveFilters()) {
+        <button type="button" class="clear-filters-button" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      }
+    </section>
+  } @else {
+    <section class="devices-section" aria-labelledby="devices-list-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="devices-list-title">Devices</h2>
+
+          <p class="result-count" aria-live="polite" aria-atomic="true">
+            {{ resultCount() }}
+            {{ resultCount() === 1 ? 'device' : 'devices' }}
+            shown
+          </p>
+        </div>
+      </div>
+
+      <app-device-list [devices]="filteredDevices()" />
+    </section>
+  }
+</main>

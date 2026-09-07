@@ -1,0 +1,25 @@
+<section class="plants-page" aria-labelledby="plants-page-title">
+  <app-page-header title="Plants" subtitle="Monitor and manage your solar energy plants." />
+
+  @if (loading()) {
+    <app-loading-state message="Loading plants..." />
+  } @else if (error()) {
+    <app-error-state title="Unable to load plants" [message]="error()!" (retry)="loadPlants()" />
+  } @else if (plants().length === 0) {
+    <app-empty-state
+      title="No plants found"
+      message="There are no plants available for your account."
+    />
+  } @else {
+    <section class="plants-content">
+      <app-plant-filters
+        [filters]="filters()"
+        (searchChange)="updateSearch($event)"
+        (statusChange)="updateStatus($event)"
+        (clear)="clearFilters()"
+      />
+
+      <app-plant-list [plants]="filteredPlants()" />
+    </section>
+  }
+</section>

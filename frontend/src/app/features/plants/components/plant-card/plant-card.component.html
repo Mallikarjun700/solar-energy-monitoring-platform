@@ -1,0 +1,38 @@
+<article class="plant-card">
+  <div class="plant-card__header">
+    <div class="plant-card__identity">
+      <h2>
+        <a [routerLink]="['/plants', plant().id]">
+          {{ plant().name }}
+        </a>
+      </h2>
+      <span class="plant-code">{{ plant().code }}</span>
+    </div>
+
+    <span
+      class="plant-status"
+      [attr.data-status]="plant().status"
+      [attr.aria-label]="'Plant status: ' + plant().status"
+    >
+      {{ plant().status }}
+    </span>
+  </div>
+
+  <dl class="plant-details">
+    <div>
+      <dt>Location</dt>
+      <dd>{{ plant().location || 'Not specified' }}</dd>
+    </div>
+
+    <div>
+      <dt>Capacity</dt>
+      <dd>
+        @if (plant().capacityKw !== null) {
+          {{ plant().capacityKw | number: '1.0-2' }} kW
+        } @else {
+          Not specified
+        }
+      </dd>
+    </div>
+  </dl>
+</article>

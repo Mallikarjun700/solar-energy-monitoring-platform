@@ -32,9 +32,23 @@ export const routes: Routes = [
           import('./features/plants/plants.component').then((m) => m.PlantsComponent),
       },
       {
+        path: 'plants/:id',
+        loadComponent: () =>
+          import('./features/plants/details/plant-details.component').then(
+            (m) => m.PlantDetailsComponent,
+          ),
+      },
+      {
         path: 'devices',
         loadComponent: () =>
           import('./features/devices/devices.component').then((m) => m.DevicesComponent),
+      },
+      {
+        path: 'devices/:id',
+        loadComponent: () =>
+          import('./features/devices/details/device-details.component').then(
+            (m) => m.DeviceDetailsComponent,
+          ),
       },
       {
         path: 'telemetry',

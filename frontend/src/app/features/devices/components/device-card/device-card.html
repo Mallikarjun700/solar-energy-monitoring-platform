@@ -1,0 +1,53 @@
+<article class="device-card" [attr.aria-labelledby]="'device-title-' + device().id">
+  <div class="card-header">
+    <div class="device-heading">
+      <p class="device-type">
+        {{ device().deviceType }}
+      </p>
+
+      <h3 [id]="'device-title-' + device().id">
+        <a
+          [routerLink]="['/devices', device().id]"
+          [attr.aria-label]="'View details for device ' + device().serialNumber"
+        >
+          {{ device().serialNumber }}
+        </a>
+      </h3>
+    </div>
+
+    <span
+      class="status-badge"
+      [class]="getStatusClass(device().status)"
+      [attr.aria-label]="'Status: ' + device().status"
+    >
+      {{ device().status }}
+    </span>
+  </div>
+
+  <dl class="device-details">
+    <div class="detail-row">
+      <dt>Asset ID</dt>
+      <dd>{{ device().assetId }}</dd>
+    </div>
+
+    <div class="detail-row">
+      <dt>Last Seen</dt>
+      <dd>
+        <time [attr.datetime]="device().lastSeenAt">
+          {{ formatLastSeen(device().lastSeenAt) }}
+        </time>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="card-footer">
+    <a
+      class="details-link"
+      [routerLink]="['/devices', device().id]"
+      [attr.aria-label]="'View full details for device ' + device().serialNumber"
+    >
+      View Device Details
+      <span aria-hidden="true">→</span>
+    </a>
+  </div>
+</article>

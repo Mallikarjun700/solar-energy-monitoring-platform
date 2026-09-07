@@ -1,0 +1,20 @@
+:host {
+  display: block;
+}
+
+.plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+
+.empty-list {
+  padding: 2rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.empty-list p {
+  margin: 0;
+}

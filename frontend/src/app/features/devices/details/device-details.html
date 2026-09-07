@@ -1,0 +1,146 @@
+<main class="device-details-page">
+  <header class="page-header">
+    <div class="header-navigation">
+      <a class="back-link" routerLink="/devices">
+        <span aria-hidden="true">←</span>
+        Back to Devices
+      </a>
+    </div>
+
+    @if (device()) {
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">
+            {{ device()!.deviceType }}
+          </p>
+
+          <h1>
+            {{ device()!.serialNumber }}
+          </h1>
+
+          <p class="page-description">Device information and operational details.</p>
+        </div>
+
+        <span
+          class="status-badge"
+          [class]="getStatusClass(device()!.status)"
+          [attr.aria-label]="'Status: ' + device()!.status"
+        >
+          {{ device()!.status }}
+        </span>
+      </div>
+    } @else {
+      <div>
+        <p class="eyebrow">Device</p>
+
+        <h1>Device Details</h1>
+
+        <p class="page-description">View device information and operational details.</p>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <section class="state-section" aria-live="polite" aria-busy="true">
+      <app-loading-state message="Loading device details..." />
+    </section>
+  } @else if (error()) {
+    <section class="state-section" aria-live="assertive">
+      <app-error-state [message]="error()!" (retry)="loadDevice()" />
+
+      <a class="secondary-link" routerLink="/devices"> Return to Devices </a>
+    </section>
+  } @else if (device()) {
+    <section class="details-section" aria-labelledby="device-information-title">
+      <div class="section-heading">
+        <h2 id="device-information-title">Device Information</h2>
+      </div>
+
+      <dl class="details-grid">
+        <div class="detail-item">
+          <dt>Device ID</dt>
+          <dd>{{ device()!.id }}</dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Device Type</dt>
+          <dd>{{ device()!.deviceType }}</dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Serial Number</dt>
+          <dd>{{ device()!.serialNumber }}</dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Status</dt>
+          <dd>{{ device()!.status }}</dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Asset ID</dt>
+          <dd>{{ device()!.assetId }}</dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Last Seen</dt>
+          <dd>
+            <time [attr.datetime]="device()!.lastSeenAt">
+              {{ formatLastSeen(device()!.lastSeenAt) }}
+            </time>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="details-section" aria-labelledby="device-metadata-title">
+      <div class="section-heading">
+        <h2 id="device-metadata-title">Record Information</h2>
+      </div>
+
+      <dl class="details-grid">
+        <div class="detail-item">
+          <dt>Created</dt>
+          <dd>
+            <time [attr.datetime]="device()!.createdAt">
+              {{ formatDate(device()!.createdAt) }}
+            </time>
+          </dd>
+        </div>
+
+        <div class="detail-item">
+          <dt>Last Updated</dt>
+          <dd>
+            <time [attr.datetime]="device()!.updatedAt">
+              {{ formatDate(device()!.updatedAt) }}
+            </time>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="details-section" aria-labelledby="device-relationship-title">
+      <div class="section-heading">
+        <h2 id="device-relationship-title">Asset Relationship</h2>
+      </div>
+
+      <div class="relationship-card">
+        <div>
+          <span class="relationship-label"> Asset ID </span>
+
+          <strong>
+            {{ device()!.assetId }}
+          </strong>
+        </div>
+
+        <p>This device is associated with the asset identified above.</p>
+      </div>
+    </section>
+
+    <section class="details-section" aria-labelledby="device-actions-title">
+      <h2 id="device-actions-title" class="visually-hidden">Device actions</h2>
+
+      <a class="secondary-link" routerLink="/devices"> Return to Devices </a>
+    </section>
+  }
+</main>

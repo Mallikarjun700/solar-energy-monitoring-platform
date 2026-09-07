@@ -1,0 +1,111 @@
+:host {
+  display: block;
+}
+
+.plants-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.plants-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.status-field {
+  flex: 0 1 12rem;
+}
+
+.plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+
+.plant-card {
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+
+.plant-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.plant-card h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.plant-code {
+  display: block;
+  margin-top: 0.25rem;
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+.plant-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
+
+.plant-status[data-status='ACTIVE'] {
+  background: #dcfce7;
+}
+
+.plant-status[data-status='INACTIVE'] {
+  background: #f3f4f6;
+}
+
+.plant-status[data-status='MAINTENANCE'] {
+  background: #fef3c7;
+}
+
+.plant-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+}
+
+.plant-details div {
+  min-width: 0;
+}
+
+.plant-details dt {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.plant-details dd {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.plants-toolbar {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.search-field,
+.status-field {
+  flex: auto;
+}
+
+@media (max-width: 640px) {
+  .plant-details {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,65 @@
+<div class="filters-container" role="search" aria-label="Filter devices">
+  <div class="filter-group search-group">
+    <label for="device-search"> Search devices </label>
+
+    <input
+      id="device-search"
+      type="search"
+      [value]="filters().search"
+      placeholder="Search by type, serial number, or status"
+      autocomplete="off"
+      spellcheck="false"
+      (input)="onSearchChange($any($event.target).value)"
+      aria-describedby="device-search-help"
+    />
+
+    <span id="device-search-help" class="filter-help">
+      Search loaded devices by type, serial number, or status.
+    </span>
+  </div>
+
+  <div class="filter-group">
+    <label for="device-status"> Status </label>
+
+    <select
+      id="device-status"
+      [value]="filters().status"
+      (change)="onStatusChange($any($event.target).value)"
+    >
+      <option value="">All statuses</option>
+
+      <option value="ACTIVE">ACTIVE</option>
+
+      <option value="INACTIVE">INACTIVE</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="device-asset-id"> Asset ID </label>
+
+    <input
+      id="device-asset-id"
+      type="number"
+      min="1"
+      step="1"
+      inputmode="numeric"
+      [value]="filters().assetId ?? ''"
+      placeholder="e.g. 1"
+      aria-describedby="device-asset-help"
+      (input)="onAssetIdChange($any($event.target).value)"
+    />
+
+    <span id="device-asset-help" class="filter-help"> Enter a positive asset ID. </span>
+  </div>
+
+  <div class="filter-actions">
+    <button
+      type="button"
+      class="clear-button"
+      (click)="onClear()"
+      [disabled]="!filters().search && !filters().status && filters().assetId === null"
+    >
+      Clear Filters
+    </button>
+  </div>
+</div>

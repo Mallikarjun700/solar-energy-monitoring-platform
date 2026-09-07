@@ -1,0 +1,13 @@
+@if (devices().length === 0) {
+  <div class="empty-list" role="status">
+    <p>No devices to display.</p>
+  </div>
+} @else {
+  <div class="device-grid" role="list" aria-label="Device list">
+    @for (device of devices(); track device.id) {
+      <div class="device-list-item" role="listitem">
+        <app-device-card [device]="device" />
+      </div>
+    }
+  </div>
+}

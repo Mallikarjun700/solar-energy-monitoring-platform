@@ -1,0 +1,127 @@
+<main class="plant-details-page">
+  <app-page-header title="Plant Details" subtitle="View information about this solar plant.">
+    <button type="button" class="back-button" (click)="goBack()" aria-label="Go back to plants">
+      <span aria-hidden="true">←</span>
+      Back to Plants
+    </button>
+  </app-page-header>
+
+  @if (loading()) {
+    <section class="state-section" aria-live="polite">
+      <app-loading-state message="Loading plant details..." />
+    </section>
+  } @else if (error()) {
+    <section class="state-section" aria-live="assertive">
+      <app-error-state [message]="error()!" (retry)="loadPlant()" />
+
+      <div class="state-actions">
+        <a routerLink="/plants" class="secondary-action"> Back to Plants </a>
+      </div>
+    </section>
+  } @else if (plant(); as currentPlant) {
+    <section class="plant-summary" aria-labelledby="plant-summary-title">
+      <div class="summary-heading">
+        <div>
+          <p class="eyebrow">Solar Plant</p>
+
+          <h2 id="plant-summary-title">
+            {{ currentPlant.name }}
+          </h2>
+
+          <p class="plant-code">
+            {{ currentPlant.code }}
+          </p>
+        </div>
+
+        <span
+          class="status-badge"
+          [attr.data-status]="currentPlant.status"
+          [attr.aria-label]="'Plant status: ' + currentPlant.status"
+        >
+          {{ currentPlant.status }}
+        </span>
+      </div>
+    </section>
+
+    <section class="information-section" aria-labelledby="plant-information-title">
+      <div class="section-heading">
+        <h2 id="plant-information-title">Plant Information</h2>
+        <p>Basic information and configuration of this plant.</p>
+      </div>
+
+      <div class="information-grid">
+        <article class="information-card">
+          <span class="information-label">Plant Name</span>
+          <strong class="information-value">
+            {{ currentPlant.name }}
+          </strong>
+        </article>
+
+        <article class="information-card">
+          <span class="information-label">Plant Code</span>
+          <strong class="information-value">
+            {{ currentPlant.code }}
+          </strong>
+        </article>
+
+        <article class="information-card">
+          <span class="information-label">Location</span>
+          <strong class="information-value">
+            {{ currentPlant.location || 'Not available' }}
+          </strong>
+        </article>
+
+        <article class="information-card">
+          <span class="information-label">Capacity</span>
+          <strong class="information-value">
+            {{ formatCapacity(currentPlant.capacityKw) }}
+          </strong>
+        </article>
+
+        <article class="information-card">
+          <span class="information-label">Status</span>
+          <strong class="information-value">
+            {{ currentPlant.status }}
+          </strong>
+        </article>
+
+        <article class="information-card">
+          <span class="information-label">Plant ID</span>
+          <strong class="information-value">
+            {{ currentPlant.id }}
+          </strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="metadata-section" aria-labelledby="metadata-title">
+      <div class="section-heading">
+        <h2 id="metadata-title">Record Information</h2>
+        <p>System timestamps for this plant record.</p>
+      </div>
+
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span class="information-label">Created</span>
+          <span class="metadata-value">
+            {{ formatDate(currentPlant.createdAt) }}
+          </span>
+        </div>
+
+        <div class="metadata-item">
+          <span class="information-label">Last Updated</span>
+          <span class="metadata-value">
+            {{ formatDate(currentPlant.updatedAt) }}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="navigation-section">
+      <a routerLink="/plants" class="secondary-action">
+        <span aria-hidden="true">←</span>
+        Back to Plants
+      </a>
+    </section>
+  }
+</main>

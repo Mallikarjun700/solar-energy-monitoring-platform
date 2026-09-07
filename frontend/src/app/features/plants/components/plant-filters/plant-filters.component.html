@@ -1,0 +1,36 @@
+<div class="plant-filters">
+  <div class="search-field">
+    <label for="plant-search">Search plants</label>
+
+    <input
+      id="plant-search"
+      type="search"
+      placeholder="Name, code or location"
+      [value]="filters().search"
+      (input)="onSearchChange($any($event.target).value)"
+      aria-describedby="plant-search-help"
+    />
+    <span id="plant-search-help" class="visually-hidden">
+      Search by plant name, code, or location.
+    </span>
+  </div>
+
+  <div class="status-field">
+    <label for="plant-status">Status</label>
+
+    <select
+      id="plant-status"
+      [value]="filters().status"
+      (change)="onStatusChange($any($event.target).value)"
+    >
+      <option value="ALL">All statuses</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+      <option value="MAINTENANCE">Maintenance</option>
+    </select>
+  </div>
+
+  @if (filters().search || filters().status !== 'ALL') {
+    <button type="button" class="clear-filters" (click)="onClear()">Clear filters</button>
+  }
+</div>
