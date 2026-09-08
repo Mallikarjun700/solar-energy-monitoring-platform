@@ -89,7 +89,7 @@ class TelemetryEventSeeder extends Seeder
                     'schema_version' => 1,
                     'attributes' => json_encode([
                         'device_type' => $readingIndex % 3 === 1 ? 'THERMAL_SENSOR' : 'POWER_METER',
-                        'site' => 'solar-site-' . ($sourceIndex + 1),
+                        'site' => 'solar-site-'.($sourceIndex + 1),
                     ]),
                     'payload' => json_encode([
                         'device_id' => ($sourceIndex * 30) + $readingIndex + 1,
