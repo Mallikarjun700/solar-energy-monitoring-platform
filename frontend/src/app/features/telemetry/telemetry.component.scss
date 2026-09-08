@@ -1,49 +1,66 @@
+:host {
+  display: block;
+}
+
 .telemetry-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.telemetry-results {
+.telemetry-section {
+  min-width: 0;
+}
+
+.telemetry-state {
   display: flex;
+  min-height: 180px;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
+}
+
+.telemetry-state__actions {
+  display: flex;
+  justify-content: center;
 }
 
 .telemetry-results__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .telemetry-results__header h2 {
   margin: 0;
   font-size: 1.125rem;
+  line-height: 1.4;
 }
 
-.telemetry-results__header p {
+.results-count {
   margin: 0.25rem 0 0;
   color: #667085;
   font-size: 0.875rem;
 }
 
-.telemetry-results__placeholder {
-  padding: 2rem;
-  border: 1px dashed #d0d5dd;
-  border-radius: 0.75rem;
-  text-align: center;
-  color: #667085;
-}
-
-.pagination {
-  display: flex;
+.refresh-status {
+  display: inline-flex;
+  min-height: 32px;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #475467;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
+.retry-button,
 .pagination button {
-  min-width: 96px;
   min-height: 44px;
   padding: 0.65rem 1rem;
   border: 1px solid #d0d5dd;
@@ -55,12 +72,84 @@
   cursor: pointer;
 }
 
+.retry-button:hover,
+.pagination button:not(:disabled):hover {
+  background: #f9fafb;
+}
+
+.retry-button:focus-visible,
 .pagination button:focus-visible {
   outline: 3px solid rgb(59 130 246 / 25%);
   outline-offset: 2px;
 }
 
+.retry-button:disabled,
 .pagination button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pagination__status {
+  min-width: 120px;
+  color: #475467;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .telemetry-page {
+    gap: 1rem;
+  }
+
+  .telemetry-results__header {
+    flex-direction: column;
+  }
+
+  .refresh-status {
+    align-self: flex-start;
+  }
+
+  .pagination {
+    width: 100%;
+  }
+
+  .pagination button {
+    flex: 1;
+  }
+
+  .pagination__status {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

@@ -1,0 +1,67 @@
+<section class="trend" aria-labelledby="telemetry-trend-heading">
+  <div class="trend__header">
+    <div>
+      <h2 id="telemetry-trend-heading">Telemetry trend</h2>
+
+      <p id="telemetry-trend-description">
+        Event activity across the currently loaded telemetry readings.
+      </p>
+    </div>
+  </div>
+
+  @if (trendPoints.length === 0) {
+    <div class="trend__empty" role="status" aria-live="polite">
+      <p>No event activity is available for the current results.</p>
+    </div>
+  } @else {
+    <p class="visually-hidden">
+      The trend contains {{ trendPoints.length }} time buckets. The largest bucket contains
+      {{ maxCount }} events.
+    </p>
+
+    <div
+      class="trend-chart"
+      role="img"
+      aria-labelledby="telemetry-trend-heading"
+      aria-describedby="telemetry-trend-description"
+    >
+      <div class="trend-chart__plot">
+        @for (point of trendPoints; track point.timestamp) {
+          <div class="trend-point">
+            <span class="visually-hidden"> {{ point.count }} events at {{ point.label }} </span>
+
+            <div class="trend-point__value" aria-hidden="true">
+              {{ point.count }}
+            </div>
+
+            <div
+              class="trend-point__bar"
+              [style.height.%]="point.percentage"
+              aria-hidden="true"
+            ></div>
+
+            <time
+              class="trend-point__label"
+              [attr.datetime]="point.timestamp"
+              [title]="point.label"
+              aria-hidden="true"
+            >
+              {{ point.timestamp | date: 'short' }}
+            </time>
+          </div>
+        }
+      </div>
+
+      <div class="trend-chart__legend">
+        <span>Events</span>
+
+        <span> Maximum bucket: {{ maxCount }} </span>
+      </div>
+    </div>
+
+    <p class="trend__note">
+      This visualization represents event frequency only. It does not represent power, energy,
+      voltage, current, or temperature.
+    </p>
+  }
+</section>

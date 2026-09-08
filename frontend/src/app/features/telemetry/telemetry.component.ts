@@ -10,6 +10,8 @@ import { TelemetryPaginationMeta } from './models/telemetry-response.model';
 import { TelemetryEventQuery, TelemetryService } from './services/telemetry.service';
 import { TelemetryFiltersComponent } from './components/telemetry-filters/telemetry-filters';
 import { TelemetrySummaryComponent } from './components/telemetry-summary/telemetry-summary';
+import { TelemetryReadingsComponent } from './components/telemetry-readings/telemetry-readings';
+import { TelemetryTrendComponent } from './components/telemetry-trend/telemetry-trend';
 
 @Component({
   selector: 'app-telemetry',
@@ -21,6 +23,8 @@ import { TelemetrySummaryComponent } from './components/telemetry-summary/teleme
     ErrorState,
     TelemetryFiltersComponent,
     TelemetrySummaryComponent,
+    TelemetryReadingsComponent,
+    TelemetryTrendComponent,
   ],
   templateUrl: './telemetry.component.html',
   styleUrl: './telemetry.component.scss',
@@ -38,6 +42,11 @@ export class TelemetryComponent {
   });
 
   readonly loading = signal(false);
+
+  readonly initialLoading = signal(true);
+
+  readonly refreshing = signal(false);
+
   readonly error = signal<string | null>(null);
 
   readonly hasEvents = computed(() => this.events().length > 0);
@@ -66,6 +75,10 @@ export class TelemetryComponent {
     this.loadPage(1);
   }
 
+  retry(): void {
+    this.loadPage(this.currentPage());
+  }
+
   updateFilters(changes: Partial<TelemetryFilters>): void {
     this.filters.update((current) => ({
       ...current,
@@ -86,7 +99,7 @@ export class TelemetryComponent {
   }
 
   goToPreviousPage(): void {
-    if (!this.hasPreviousPage()) {
+    if (this.loading() || !this.hasPreviousPage()) {
       return;
     }
 
@@ -94,7 +107,7 @@ export class TelemetryComponent {
   }
 
   goToNextPage(): void {
-    if (!this.hasNextPage()) {
+    if (this.loading() || !this.hasNextPage()) {
       return;
     }
 
@@ -102,8 +115,18 @@ export class TelemetryComponent {
   }
 
   private loadPage(page: number): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
+
+    if (this.initialLoading()) {
+      this.initialLoading.set(true);
+    } else {
+      this.refreshing.set(true);
+    }
 
     const currentFilters = this.filters();
 
@@ -120,13 +143,17 @@ export class TelemetryComponent {
       next: (result) => {
         this.events.set(result.events);
         this.pagination.set(result.pagination);
+
         this.loading.set(false);
+        this.initialLoading.set(false);
+        this.refreshing.set(false);
       },
       error: (error: { message?: string }) => {
-        this.events.set([]);
-        this.pagination.set(null);
-        this.error.set(error?.message ?? 'Unable to load telemetry events.');
         this.loading.set(false);
+        this.initialLoading.set(false);
+        this.refreshing.set(false);
+
+        this.error.set(error?.message ?? 'Unable to load telemetry events.');
       },
     });
   }

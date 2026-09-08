@@ -1,65 +1,121 @@
-<app-page-header
-  title="Telemetry"
-  description="Review telemetry events received from monitored assets."
-></app-page-header>
+<main class="telemetry-page">
+  <app-page-header
+    title="Telemetry"
+    description="Review telemetry events received from monitored assets."
+  ></app-page-header>
 
-<div class="telemetry-page">
-  <app-telemetry-filters
-    [filters]="filters()"
-    (filtersChange)="updateFilters($event)"
-    (apply)="applyFilters()"
-    (clear)="clearFilters()"
-  ></app-telemetry-filters>
-
-  @if (!loading() && !error()) {
-    <app-telemetry-summary
-      [pagination]="pagination()"
+  <section aria-labelledby="telemetry-filters-heading" class="telemetry-section">
+    <app-telemetry-filters
       [filters]="filters()"
-    ></app-telemetry-summary>
-  }
-
-  <section class="telemetry-results" aria-labelledby="telemetry-results-heading">
-    <div class="telemetry-results__header">
-      <div>
-        <h2 id="telemetry-results-heading">Telemetry events</h2>
-
-        @if (!loading()) {
-          <p>
-            @if (hasActiveFilters()) {
-              {{ resultCount() }} events on this page
-            } @else {
-              {{ resultCount() }} events on this page
-            }
-          </p>
-        }
-      </div>
-    </div>
-
-    @if (loading()) {
-      <app-loading-state message="Loading telemetry events..."></app-loading-state>
-    } @else if (error()) {
-      <app-error-state [message]="error()!"></app-error-state>
-    } @else if (!hasEvents) {
-      <app-empty-state
-        title="No telemetry events"
-        message="No telemetry events matched the current filters."
-      ></app-empty-state>
-    } @else {
-      <div class="telemetry-results__placeholder">
-        <p>Telemetry readings will be displayed here in the next implementation step.</p>
-      </div>
-
-      @if (pagination()) {
-        <nav class="pagination" aria-label="Telemetry pagination">
-          <button type="button" [disabled]="!hasPreviousPage()" (click)="goToPreviousPage()">
-            Previous
-          </button>
-
-          <span aria-live="polite"> Page {{ currentPage() }} of {{ lastPage() }} </span>
-
-          <button type="button" [disabled]="!hasNextPage()" (click)="goToNextPage()">Next</button>
-        </nav>
-      }
-    }
+      (filtersChange)="updateFilters($event)"
+      (apply)="applyFilters()"
+      (clear)="clearFilters()"
+    ></app-telemetry-filters>
   </section>
-</div>
+
+  @if (initialLoading()) {
+    <section
+      class="telemetry-state"
+      aria-labelledby="telemetry-loading-heading"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <h2 id="telemetry-loading-heading" class="visually-hidden">Loading telemetry</h2>
+
+      <app-loading-state message="Loading telemetry events..."></app-loading-state>
+    </section>
+  } @else if (error()) {
+    <section
+      class="telemetry-state"
+      aria-labelledby="telemetry-error-heading"
+      aria-live="assertive"
+      aria-busy="false"
+    >
+      <h2 id="telemetry-error-heading" class="visually-hidden">Telemetry loading error</h2>
+
+      <app-error-state [message]="error()!"></app-error-state>
+
+      <div class="telemetry-state__actions">
+        <button type="button" class="retry-button" [disabled]="loading()" (click)="retry()">
+          Try again
+        </button>
+      </div>
+    </section>
+  } @else {
+    <section class="telemetry-section" aria-labelledby="telemetry-summary-heading">
+      <app-telemetry-summary
+        [pagination]="pagination()"
+        [filters]="filters()"
+      ></app-telemetry-summary>
+    </section>
+
+    @if (hasEvents()) {
+      <section class="telemetry-section" aria-labelledby="telemetry-trend-heading">
+        <app-telemetry-trend [events]="events()"></app-telemetry-trend>
+      </section>
+
+      <section
+        class="telemetry-section"
+        aria-labelledby="telemetry-results-heading"
+        [attr.aria-busy]="refreshing()"
+      >
+        <div class="telemetry-results__header">
+          <div>
+            <h2 id="telemetry-results-heading">Telemetry events</h2>
+
+            <p class="results-count" aria-live="polite">{{ resultCount() }} events on this page</p>
+          </div>
+
+          @if (refreshing()) {
+            <span class="refresh-status" role="status" aria-live="polite">
+              Updating results...
+            </span>
+          }
+        </div>
+
+        <app-telemetry-readings [events]="events()"></app-telemetry-readings>
+
+        @if (pagination()) {
+          <nav class="pagination" aria-label="Telemetry event pages">
+            <button
+              type="button"
+              [disabled]="loading() || !hasPreviousPage()"
+              [attr.aria-label]="
+                hasPreviousPage()
+                  ? 'Go to previous telemetry page'
+                  : 'Previous telemetry page unavailable'
+              "
+              (click)="goToPreviousPage()"
+            >
+              Previous
+            </button>
+
+            <span class="pagination__status" aria-live="polite">
+              Page {{ currentPage() }} of {{ lastPage() }}
+            </span>
+
+            <button
+              type="button"
+              [disabled]="loading() || !hasNextPage()"
+              [attr.aria-label]="
+                hasNextPage() ? 'Go to next telemetry page' : 'Next telemetry page unavailable'
+              "
+              (click)="goToNextPage()"
+            >
+              Next
+            </button>
+          </nav>
+        }
+      </section>
+    } @else {
+      <section class="telemetry-state" aria-labelledby="telemetry-empty-heading" aria-live="polite">
+        <h2 id="telemetry-empty-heading" class="visually-hidden">No telemetry events</h2>
+
+        <app-empty-state
+          title="No telemetry events"
+          message="No telemetry events matched the current filters."
+        ></app-empty-state>
+      </section>
+    }
+  }
+</main>

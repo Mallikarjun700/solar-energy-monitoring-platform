@@ -1,0 +1,113 @@
+<section class="readings" aria-labelledby="telemetry-readings-heading">
+  <div class="readings__header">
+    <div>
+      <h2 id="telemetry-readings-heading">Telemetry readings</h2>
+
+      <p>Individual telemetry events returned by the telemetry API.</p>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <caption class="visually-hidden">
+        Telemetry event readings including event identifiers, sources, types, timestamps, schema
+        versions, and details.
+      </caption>
+
+      <thead>
+        <tr>
+          <th scope="col">Event ID</th>
+          <th scope="col">Source ID</th>
+          <th scope="col">Event type</th>
+          <th scope="col">Event timestamp</th>
+          <th scope="col">Received at</th>
+          <th scope="col">Schema</th>
+          <th scope="col">Details</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (event of events; track trackByEventId($index, event)) {
+          <tr>
+            <td>
+              <span
+                class="event-id"
+                [title]="event.eventId"
+                [attr.aria-label]="'Event ID ' + event.eventId"
+              >
+                {{ event.eventId }}
+              </span>
+            </td>
+
+            <td>
+              <span class="source-id" [title]="event.sourceId">
+                {{ event.sourceId }}
+              </span>
+            </td>
+
+            <td>
+              <span class="event-type">
+                {{ event.eventType }}
+              </span>
+            </td>
+
+            <td>
+              <time [attr.datetime]="event.eventTimestamp">
+                {{ event.eventTimestamp | date: 'medium' }}
+              </time>
+            </td>
+
+            <td>
+              <time [attr.datetime]="event.receivedAt">
+                {{ event.receivedAt | date: 'medium' }}
+              </time>
+            </td>
+
+            <td>
+              {{ event.schemaVersion }}
+            </td>
+
+            <td>
+              <button
+                type="button"
+                class="details-button"
+                [attr.aria-expanded]="isExpanded(event.id)"
+                [attr.aria-controls]="'telemetry-details-' + event.id"
+                [attr.aria-label]="
+                  (isExpanded(event.id) ? 'Hide' : 'View') + ' details for event ' + event.eventId
+                "
+                (click)="toggleDetails(event.id)"
+              >
+                @if (isExpanded(event.id)) {
+                  Hide details
+                } @else {
+                  View details
+                }
+              </button>
+            </td>
+          </tr>
+
+          @if (isExpanded(event.id)) {
+            <tr class="details-row" [id]="'telemetry-details-' + event.id">
+              <td colspan="7">
+                <div class="details" [attr.aria-label]="'Details for event ' + event.eventId">
+                  <div class="details__section">
+                    <h3>Attributes</h3>
+
+                    <pre>{{ formatJson(event.attributes) }}</pre>
+                  </div>
+
+                  <div class="details__section">
+                    <h3>Payload</h3>
+
+                    <pre>{{ formatJson(event.payload) }}</pre>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
