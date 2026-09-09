@@ -1,0 +1,64 @@
+<section class="role-permissions" aria-labelledby="role-permissions-heading">
+  <header class="section-heading">
+    <div>
+      <p class="section-eyebrow">Authorization</p>
+      <h2 id="role-permissions-heading">Role &amp; Permissions</h2>
+      <p>Effective permissions for the current authenticated role.</p>
+    </div>
+
+    <div class="role-summary">
+      <span class="role-label">Current role</span>
+      <span class="role-badge">{{ user().role }}</span>
+    </div>
+  </header>
+
+  <div class="permission-summary" aria-live="polite">
+    <strong>{{ grantedPermissionCount() }}</strong>
+    <span> of {{ totalPermissionCount() }} supported permissions granted </span>
+  </div>
+
+  <div class="permission-groups">
+    @for (group of permissionGroups; track group.name) {
+      <section class="permission-group" [attr.aria-labelledby]="'permission-group-' + group.name">
+        <header class="group-heading">
+          <h3 [id]="'permission-group-' + group.name">
+            {{ group.name }}
+          </h3>
+
+          <span class="group-count">
+            {{ group.permissions.filter((permission) => hasPermission(permission.name)).length }} /
+            {{ group.permissions.length }}
+          </span>
+        </header>
+
+        <ul class="permission-list">
+          @for (permission of group.permissions; track permission.name) {
+            <li
+              class="permission-item"
+              [class.permission-granted]="hasPermission(permission.name)"
+              [class.permission-denied]="!hasPermission(permission.name)"
+            >
+              <span
+                class="permission-indicator"
+                [attr.aria-label]="
+                  hasPermission(permission.name) ? 'Permission granted' : 'Permission not granted'
+                "
+              >
+                {{ hasPermission(permission.name) ? '✓' : '—' }}
+              </span>
+
+              <div class="permission-content">
+                <strong>{{ permission.label }}</strong>
+                <code>{{ permission.name }}</code>
+              </div>
+
+              <span class="permission-state">
+                {{ hasPermission(permission.name) ? 'Granted' : 'Not granted' }}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</section>

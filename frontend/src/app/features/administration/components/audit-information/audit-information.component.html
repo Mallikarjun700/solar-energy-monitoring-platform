@@ -1,0 +1,53 @@
+<section class="audit-information" aria-labelledby="audit-information-heading">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Audit Information</p>
+      <h2 id="audit-information-heading">Audit &amp; Traceability</h2>
+    </div>
+
+    <span class="status-badge">Partially available</span>
+  </div>
+
+  <div class="notice" role="status">
+    <strong>Audit history is not currently exposed.</strong>
+    <p>
+      The backend currently provides operational traceability through correlation IDs and structured
+      logging, but it does not expose a persistent user-facing audit history API.
+    </p>
+  </div>
+
+  <div class="capability-section">
+    <h3>Operational Traceability</h3>
+
+    <div class="capability-list">
+      @for (capability of traceabilityCapabilities; track capability.name) {
+        <article class="capability">
+          <div>
+            <h4>{{ capability.name }}</h4>
+            <p>{{ capability.description }}</p>
+          </div>
+
+          <span class="implemented">{{ capability.status }}</span>
+        </article>
+      }
+    </div>
+  </div>
+
+  <div class="capability-section">
+    <h3>Audit Capabilities</h3>
+
+    <div class="capability-list">
+      @for (capability of auditCapabilities; track capability.name) {
+        <article class="capability">
+          <h4>{{ capability.name }}</h4>
+          <span class="not-implemented">{{ capability.status }}</span>
+        </article>
+      }
+    </div>
+  </div>
+
+  <p class="security-note">
+    Operational logs and correlation IDs support troubleshooting and incident investigation. They
+    should not be treated as a replacement for a persistent security audit trail.
+  </p>
+</section>

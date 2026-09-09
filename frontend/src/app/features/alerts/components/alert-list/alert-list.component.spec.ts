@@ -105,7 +105,15 @@ describe('AlertListComponent', () => {
       (header: unknown) => (header as Element).textContent?.trim(),
     );
 
-    expect(headers).toEqual(['Alert', 'Severity', 'Status', 'Device', 'Rule', 'Triggered', 'Actions']);
+    expect(headers).toEqual([
+      'Alert',
+      'Severity',
+      'Status',
+      'Device',
+      'Rule',
+      'Triggered',
+      'Actions',
+    ]);
   });
 
   it('should emit the selected alert', () => {

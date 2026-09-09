@@ -1,0 +1,165 @@
+<main class="administration-page" aria-labelledby="administration-heading">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+
+      <h1 id="administration-heading">Administration</h1>
+
+      <p class="page-description">
+        View your account role and the permissions assigned to your current session.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      [disabled]="loading()"
+      [attr.aria-busy]="loading()"
+      [attr.aria-label]="loading() ? 'Refreshing administration' : 'Refresh administration'"
+      (click)="retry()"
+    >
+      {{ loading() ? 'Refreshing…' : 'Refresh' }}
+    </button>
+  </header>
+
+  @if (error()) {
+    <section class="state-card error-state" aria-labelledby="admin-error-heading" role="alert">
+      <div>
+        <p class="state-eyebrow">Something went wrong</p>
+
+        <h2 id="admin-error-heading">Unable to load administration</h2>
+
+        <p>{{ error() }}</p>
+      </div>
+
+      <button type="button" class="secondary-button" [disabled]="loading()" (click)="retry()">
+        Retry
+      </button>
+    </section>
+  } @else if (loading()) {
+    <section
+      class="state-card loading-state"
+      aria-labelledby="admin-loading-heading"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div class="loading-spinner" aria-hidden="true"></div>
+
+      <div>
+        <p class="state-eyebrow">Please wait</p>
+
+        <h2 id="admin-loading-heading">Loading administration</h2>
+
+        <p>Retrieving your account and permission information.</p>
+      </div>
+    </section>
+  } @else if (profile(); as currentProfile) {
+    <div class="administration-content">
+      <section class="profile-card" aria-labelledby="profile-heading">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Account</p>
+            <h2 id="profile-heading">Current User</h2>
+          </div>
+        </div>
+
+        <dl class="profile-grid">
+          <div class="profile-field">
+            <dt>Name</dt>
+            <dd>{{ currentProfile.user.name }}</dd>
+          </div>
+
+          <div class="profile-field">
+            <dt>Email</dt>
+            <dd>{{ currentProfile.user.email }}</dd>
+          </div>
+
+          <div class="profile-field">
+            <dt>User ID</dt>
+            <dd>{{ currentProfile.user.id }}</dd>
+          </div>
+
+          <div class="profile-field">
+            <dt>Role</dt>
+            <dd>
+              <span class="role-badge">
+                {{ currentProfile.user.role }}
+              </span>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <app-user-management [user]="currentProfile.user" [abilities]="currentProfile.abilities" />
+
+      <app-tenant-access-context
+        [tenantId]="tenantId"
+        [user]="currentProfile.user"
+        [abilities]="currentProfile.abilities"
+      />
+
+      <app-audit-information />
+
+      <app-role-permissions [user]="currentProfile.user" [abilities]="currentProfile.abilities" />
+
+      <section class="abilities-card" aria-labelledby="abilities-heading">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">Authorization</p>
+
+            <h2 id="abilities-heading">Permissions &amp; Abilities</h2>
+
+            <p>
+              These permissions are provided by the backend for your current authenticated session.
+            </p>
+          </div>
+
+          <span class="ability-count" aria-label="Permission count">
+            {{ currentProfile.abilities.length }}
+            {{ currentProfile.abilities.length === 1 ? 'ability' : 'abilities' }}
+          </span>
+        </div>
+
+        @if (currentProfile.abilities.length > 0) {
+          <ul class="ability-list">
+            @for (ability of currentProfile.abilities; track ability.name) {
+              <li class="ability-item">
+                <div class="ability-icon" aria-hidden="true">✓</div>
+
+                <div class="ability-content">
+                  <span class="ability-label">
+                    {{ formatAbilityLabel(ability.label) }}
+                  </span>
+
+                  <code>{{ ability.name }}</code>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="empty-abilities" role="status" aria-labelledby="empty-abilities-heading">
+            <div class="empty-icon" aria-hidden="true">—</div>
+
+            <div>
+              <h3 id="empty-abilities-heading">No abilities assigned</h3>
+
+              <p>Your current authentication session does not contain any permissions.</p>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  } @else {
+    <section class="state-card empty-state" aria-labelledby="admin-empty-heading">
+      <div>
+        <p class="state-eyebrow">No administration data</p>
+
+        <h2 id="admin-empty-heading">Administration information unavailable</h2>
+
+        <p>No authenticated administration profile is currently available.</p>
+      </div>
+
+      <button type="button" class="secondary-button" (click)="retry()">Try again</button>
+    </section>
+  }
+</main>

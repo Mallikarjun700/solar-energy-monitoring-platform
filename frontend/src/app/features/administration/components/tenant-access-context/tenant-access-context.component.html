@@ -1,0 +1,50 @@
+<section class="tenant-context" aria-labelledby="tenant-context-heading">
+  <header class="section-heading">
+    <div>
+      <p class="section-eyebrow">Access Scope</p>
+      <h2 id="tenant-context-heading">Tenant / Access Context</h2>
+      <p>The tenant context and authorization information used by this application session.</p>
+    </div>
+
+    <span class="role-badge">
+      {{ user().role }}
+    </span>
+  </header>
+
+  <dl class="context-grid">
+    <div class="context-field">
+      <dt>Tenant ID</dt>
+      <dd>
+        <code>{{ tenantId() }}</code>
+      </dd>
+    </div>
+
+    <div class="context-field">
+      <dt>Access Scope</dt>
+      <dd>{{ accessScope() }}</dd>
+    </div>
+
+    <div class="context-field">
+      <dt>Authenticated User</dt>
+      <dd>{{ user().name }}</dd>
+    </div>
+
+    <div class="context-field">
+      <dt>Role</dt>
+      <dd class="role-value">{{ user().role }}</dd>
+    </div>
+
+    <div class="context-field">
+      <dt>Effective Abilities</dt>
+      <dd>
+        {{ abilityCount() }}
+        {{ abilityCount() === 1 ? 'ability' : 'abilities' }}
+      </dd>
+    </div>
+  </dl>
+
+  <p class="security-note">
+    Tenant context identifies the application's current scope. Backend authorization and tenant
+    isolation remain authoritative.
+  </p>
+</section>

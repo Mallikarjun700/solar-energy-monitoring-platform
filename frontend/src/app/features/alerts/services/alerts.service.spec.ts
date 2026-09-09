@@ -235,10 +235,7 @@ describe('AlertsService', () => {
       expect(alert.acknowledgedAt).toBe('2026-09-08T11:00:00Z');
     });
 
-    expect(api.post).toHaveBeenCalledWith(
-      `/alerts/101/acknowledge?tenant_id=${tenantId}`,
-      {},
-    );
+    expect(api.post).toHaveBeenCalledWith(`/alerts/101/acknowledge?tenant_id=${tenantId}`, {});
   });
 
   it('should resolve an alert using tenant query parameter', () => {
@@ -302,10 +299,7 @@ describe('AlertsService', () => {
       });
   });
 
-
   function fail(arg0: string): void {
     throw new Error('Function not implemented.');
   }
-
-
 });

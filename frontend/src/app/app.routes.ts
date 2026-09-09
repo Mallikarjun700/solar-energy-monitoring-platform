@@ -66,9 +66,7 @@ export const routes: Routes = [
         path: 'alerts/:id',
         canActivate: [abilityGuard(['alerts:read'])],
         loadComponent: () =>
-          import(
-            './features/alerts/components/alert-details/alert-details.component'
-          ).then(
+          import('./features/alerts/components/alert-details/alert-details.component').then(
             (m) => m.AlertDetailsComponent,
           ),
       },
@@ -76,7 +74,7 @@ export const routes: Routes = [
         path: 'administration',
         canActivate: [roleGuard(['admin'])],
         loadComponent: () =>
-          import('./features/admin/admin.component').then((m) => m.AdminComponent),
+          import('./features/administration/administration.component').then((m) => m.AdministrationComponent),
       },
       {
         path: 'forbidden',
