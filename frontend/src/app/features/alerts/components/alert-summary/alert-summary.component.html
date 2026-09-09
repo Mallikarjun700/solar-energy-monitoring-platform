@@ -1,0 +1,78 @@
+<section class="summary" aria-labelledby="alert-summary-heading">
+  <div class="summary-header">
+    <div>
+      <h2 id="alert-summary-heading">Alert Summary</h2>
+      <p>Overview of alerts matching the current filters.</p>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <article class="summary-card">
+      <span class="summary-label"> Total matching </span>
+
+      <strong class="summary-value">
+        {{ summary().totalMatching }}
+      </strong>
+
+      <span class="summary-description"> Across all matching pages </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label"> Open </span>
+
+      <strong class="summary-value">
+        {{ summary().openOnPage }}
+      </strong>
+
+      <span class="summary-description"> On current page </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label"> Acknowledged </span>
+
+      <strong class="summary-value">
+        {{ summary().acknowledgedOnPage }}
+      </strong>
+
+      <span class="summary-description"> On current page </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label"> Resolved </span>
+
+      <strong class="summary-value">
+        {{ summary().resolvedOnPage }}
+      </strong>
+
+      <span class="summary-description"> On current page </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label"> Critical </span>
+
+      <strong class="summary-value">
+        {{ summary().criticalOnPage }}
+      </strong>
+
+      <span class="summary-description"> On current page </span>
+    </article>
+
+    <article class="summary-card">
+      <span class="summary-label"> Emergency </span>
+
+      <strong class="summary-value">
+        {{ summary().emergencyOnPage }}
+      </strong>
+
+      <span class="summary-description"> On current page </span>
+    </article>
+  </div>
+
+  @if (summary().totalMatching > 0) {
+    <p class="result-range" aria-live="polite">
+      Showing
+      {{ summary().pageFrom ?? 0 }}–{{ summary().pageTo ?? 0 }} of
+      {{ summary().totalMatching }} matching alerts.
+    </p>
+  }
+</section>

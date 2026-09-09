@@ -1,0 +1,281 @@
+<main class="alert-details-page" aria-labelledby="alert-details-heading">
+  <header class="page-header">
+    <div>
+      <button type="button" class="back-button" (click)="goBack()">← Back to alerts</button>
+
+      <h1 id="alert-details-heading">Alert Details</h1>
+
+      @if (alert(); as currentAlert) {
+        <p>Alert #{{ currentAlert.id }}</p>
+      }
+    </div>
+
+    @if (alert(); as currentAlert) {
+      <div class="header-badges">
+        <span
+          class="severity"
+          [class]="'severity severity--' + currentAlert.severity"
+          [attr.aria-label]="'Severity: ' + severityLabel(currentAlert.severity)"
+        >
+          {{ severityLabel(currentAlert.severity) }}
+        </span>
+
+        <span
+          class="status"
+          [class]="'status status--' + currentAlert.status"
+          [attr.aria-label]="'Status: ' + statusLabel(currentAlert.status)"
+        >
+          {{ statusLabel(currentAlert.status) }}
+        </span>
+      </div>
+    }
+  </header>
+
+  @if (alert(); as currentAlert) {
+    <section class="actions-card" aria-labelledby="actions-heading">
+      <div>
+        <h2 id="actions-heading">Actions</h2>
+
+        <p>Update the alert state using the available workflow actions.</p>
+      </div>
+
+      <div class="actions">
+        @if (canAcknowledge()) {
+          <button
+            type="button"
+            class="action-button"
+            [disabled]="actionLoading() !== null"
+            [attr.aria-busy]="actionLoading() === 'acknowledge'"
+            (click)="acknowledge()"
+          >
+            @if (actionLoading() === 'acknowledge') {
+              Acknowledging…
+            } @else {
+              Acknowledge
+            }
+          </button>
+        }
+
+        @if (canResolve()) {
+          <button
+            type="button"
+            class="action-button action-button--resolve"
+            [disabled]="actionLoading() !== null"
+            [attr.aria-busy]="actionLoading() === 'resolve'"
+            (click)="resolve()"
+          >
+            @if (actionLoading() === 'resolve') {
+              Resolving…
+            } @else {
+              Resolve
+            }
+          </button>
+        }
+
+        @if (currentAlert.status === 'resolved') {
+          <span class="completed-message"> This alert has been resolved. </span>
+        }
+      </div>
+
+      @if (actionSuccess(); as successMessage) {
+        <p class="action-success" role="status" aria-live="polite">
+          {{ successMessage }}
+        </p>
+      }
+
+      @if (actionError(); as actionErrorMessage) {
+        <p class="action-error" role="alert">
+          {{ actionErrorMessage }}
+        </p>
+      }
+    </section>
+  }
+  @if (loading()) {
+    <section class="state-card" role="status" aria-live="polite">Loading alert details…</section>
+  } @else if (error(); as errorMessage) {
+    <section class="state-card error-state" role="alert">
+      <h2>Unable to load alert</h2>
+      <p>{{ errorMessage }}</p>
+
+      <button type="button" class="primary-button" (click)="retry()">Retry</button>
+    </section>
+  } @else if (alert(); as currentAlert) {
+    <div class="details-content">
+      <section class="details-card overview-card" aria-labelledby="overview-heading">
+        <h2 id="overview-heading">Overview</h2>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <dt>Alert ID</dt>
+            <dd>{{ currentAlert.id }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Alert Type</dt>
+            <dd>{{ currentAlert.alertType }}</dd>
+          </div>
+
+          <div class="detail-item detail-item--wide">
+            <dt>Message</dt>
+            <dd>{{ currentAlert.message }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Severity</dt>
+            <dd>
+              {{ severityLabel(currentAlert.severity) }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Status</dt>
+            <dd>
+              {{ statusLabel(currentAlert.status) }}
+            </dd>
+          </div>
+        </div>
+      </section>
+
+      <section class="details-card" aria-labelledby="context-heading">
+        <h2 id="context-heading">Context</h2>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <dt>Tenant ID</dt>
+            <dd>{{ currentAlert.tenantId }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Plant ID</dt>
+            <dd>
+              {{ currentAlert.plantId ?? '—' }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Asset ID</dt>
+            <dd>
+              {{ currentAlert.assetId ?? '—' }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Device ID</dt>
+            <dd>
+              {{ currentAlert.deviceId ?? '—' }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Rule ID</dt>
+            <dd>{{ currentAlert.ruleId }}</dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Event ID</dt>
+            <dd class="breakable">
+              {{ currentAlert.eventId ?? '—' }}
+            </dd>
+          </div>
+        </div>
+      </section>
+
+      <section class="details-card" aria-labelledby="timeline-heading">
+        <h2 id="timeline-heading">Timeline</h2>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <dt>Triggered</dt>
+            <dd>
+              {{ formatDate(currentAlert.triggeredAt) }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Acknowledged</dt>
+            <dd>
+              {{
+                formatDate(
+                  currentAlert.acknowledgedAt
+                )
+              }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Resolved</dt>
+            <dd>
+              {{ formatDate(currentAlert.resolvedAt) }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Created</dt>
+            <dd>
+              {{ formatDate(currentAlert.createdAt) }}
+            </dd>
+          </div>
+
+          <div class="detail-item">
+            <dt>Last Updated</dt>
+            <dd>
+              {{ formatDate(currentAlert.updatedAt) }}
+            </dd>
+          </div>
+        </div>
+      </section>
+
+      @if (currentAlert.rule; as rule) {
+        <section class="details-card" aria-labelledby="rule-heading">
+          <h2 id="rule-heading">Alert Rule</h2>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <dt>Rule ID</dt>
+              <dd>{{ rule.id }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Name</dt>
+              <dd>{{ rule.name }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Metric</dt>
+              <dd>{{ rule.metric }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Operator</dt>
+              <dd>{{ rule.operator }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Threshold</dt>
+              <dd>{{ rule.threshold }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Severity</dt>
+              <dd>
+                {{ severityLabel(rule.severity) }}
+              </dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Alert Type</dt>
+              <dd>{{ rule.alertType }}</dd>
+            </div>
+
+            <div class="detail-item">
+              <dt>Enabled</dt>
+              <dd>
+                {{ rule.enabled ? 'Yes' : 'No' }}
+              </dd>
+            </div>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</main>

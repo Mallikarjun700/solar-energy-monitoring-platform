@@ -1,0 +1,68 @@
+<main class="alerts-page" aria-labelledby="alerts-heading">
+  <header class="page-header">
+    <div>
+      <h1 id="alerts-heading">Alerts</h1>
+      <p>Monitor and manage operational alerts.</p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      [disabled]="loading()"
+      [attr.aria-busy]="loading()"
+      (click)="refresh()"
+    >
+      @if (loading()) {
+        Refreshing…
+      } @else {
+        Refresh
+      }
+    </button>
+  </header>
+
+  @if (error(); as errorMessage) {
+    <section class="error-state" role="alert" aria-live="assertive">
+      <div>
+        <h2>Unable to load alerts</h2>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <button type="button" class="retry-button" [disabled]="loading()" (click)="retry()">
+        Retry
+      </button>
+    </section>
+  } @else {
+    <app-alert-filters
+      [initialFilters]="filters()"
+      (filtersApplied)="updateFilters($event)"
+      (filtersCleared)="clearFilters()"
+    />
+
+    @if (loading()) {
+      <section class="loading-state" role="status" aria-live="polite">
+        <div class="loading-indicator" aria-hidden="true"></div>
+
+        <div>
+          <h2>Loading alerts</h2>
+          <p>Retrieving the latest alert records…</p>
+        </div>
+      </section>
+    } @else if (alerts().length === 0) {
+      <section class="empty-state" role="status" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">!</div>
+
+        <h2>No alerts found</h2>
+
+        <p>There are no alerts matching the current filters.</p>
+
+        <button type="button" class="secondary-button" (click)="clearFilters()">
+          Clear filters
+        </button>
+      </section>
+    } @else {
+      <app-alert-summary [alerts]="alerts()" [pagination]="pagination()" />
+
+      <app-alert-list [alerts]="alerts()" (alertSelected)="onAlertSelected($event)" />
+    }
+  }
+</main>

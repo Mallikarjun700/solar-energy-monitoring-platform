@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 
 import { TelemetryEvent } from '../../models/telemetry-event.model';
 
@@ -17,8 +17,11 @@ export class TelemetryReadingsComponent {
 
   expandedEventId: number | null = null;
 
+  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
+
   toggleDetails(eventId: number): void {
     this.expandedEventId = this.expandedEventId === eventId ? null : eventId;
+    this.changeDetectorRef.markForCheck();
   }
 
   isExpanded(eventId: number): boolean {

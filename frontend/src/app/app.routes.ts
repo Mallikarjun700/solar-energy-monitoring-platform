@@ -63,6 +63,16 @@ export const routes: Routes = [
           import('./features/alerts/alerts.component').then((m) => m.AlertsComponent),
       },
       {
+        path: 'alerts/:id',
+        canActivate: [abilityGuard(['alerts:read'])],
+        loadComponent: () =>
+          import(
+            './features/alerts/components/alert-details/alert-details.component'
+          ).then(
+            (m) => m.AlertDetailsComponent,
+          ),
+      },
+      {
         path: 'administration',
         canActivate: [roleGuard(['admin'])],
         loadComponent: () =>

@@ -1,0 +1,132 @@
+:host {
+  display: block;
+}
+
+.filters {
+  padding: 1.25rem;
+  border: 1px solid var(--border-color, #d9dce1);
+  border-radius: 0.75rem;
+  background: var(--surface-color, #ffffff);
+}
+
+.filters-header {
+  margin-bottom: 1rem;
+}
+
+.filters-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.filters-header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary, #5f6368);
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border-color, #cfd3d8);
+  border-radius: 0.5rem;
+  background: var(--input-background, #ffffff);
+  color: var(--text-primary, #202124);
+  font: inherit;
+}
+
+.field input:focus-visible,
+.field select:focus-visible {
+  outline: 3px solid var(--focus-color, #2563eb);
+  outline-offset: 1px;
+}
+
+.help-text {
+  color: var(--text-secondary, #5f6368);
+  font-size: 0.75rem;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 44px;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 1px solid transparent;
+  background: var(--primary-color, #2563eb);
+  color: #ffffff;
+}
+
+.secondary-button {
+  border: 1px solid var(--border-color, #cfd3d8);
+  background: var(--surface-color, #ffffff);
+  color: var(--text-primary, #202124);
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 3px solid var(--focus-color, #2563eb);
+  outline-offset: 2px;
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1000px) {
+  .filters-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .filters {
+    padding: 1rem;
+  }
+
+  .filters-form {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+}

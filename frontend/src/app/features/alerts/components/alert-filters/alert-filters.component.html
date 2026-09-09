@@ -1,0 +1,112 @@
+<section class="filters" aria-labelledby="alert-filters-heading">
+  <div class="filters-header">
+    <div>
+      <h2 id="alert-filters-heading">Filters</h2>
+      <p>Refine the alerts displayed below.</p>
+    </div>
+  </div>
+
+  <form class="filters-form" (ngSubmit)="apply()">
+    <div class="field">
+      <label for="alert-status">Status</label>
+
+      <select id="alert-status" name="status" [(ngModel)]="filters.status">
+        <option value="">All statuses</option>
+
+        @for (status of statuses; track trackByValue($index, status)) {
+          <option [value]="status">
+            {{ status | titlecase }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="alert-severity">Severity</label>
+
+      <select id="alert-severity" name="severity" [(ngModel)]="filters.severity">
+        <option value="">All severities</option>
+
+        @for (severity of severities; track trackByValue($index, severity)) {
+          <option [value]="severity">
+            {{ severity | titlecase }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="alert-type">Alert type</label>
+
+      <input
+        id="alert-type"
+        name="alertType"
+        type="text"
+        maxlength="100"
+        [(ngModel)]="filters.alertType"
+        placeholder="e.g. temperature"
+      />
+
+      <span class="help-text"> Maximum 100 characters. </span>
+    </div>
+
+    <div class="field">
+      <label for="alert-device-id">Device ID</label>
+
+      <input
+        id="alert-device-id"
+        name="deviceId"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        [(ngModel)]="filters.deviceId"
+        placeholder="e.g. 42"
+      />
+    </div>
+
+    <div class="field">
+      <label for="alert-rule-id">Rule ID</label>
+
+      <input
+        id="alert-rule-id"
+        name="ruleId"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        [(ngModel)]="filters.ruleId"
+        placeholder="e.g. 7"
+      />
+    </div>
+
+    <div class="field">
+      <label for="alert-from">From</label>
+
+      <input id="alert-from" name="from" type="date" [(ngModel)]="filters.from" />
+    </div>
+
+    <div class="field">
+      <label for="alert-to">To</label>
+
+      <input id="alert-to" name="to" type="date" [(ngModel)]="filters.to" />
+    </div>
+
+    <div class="field">
+      <label for="alert-per-page">Results per page</label>
+
+      <select id="alert-per-page" name="perPage" [(ngModel)]="filters.perPage">
+        <option [ngValue]="25">25</option>
+        <option [ngValue]="50">50</option>
+        <option [ngValue]="75">75</option>
+        <option [ngValue]="100">100</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="primary-button">Apply filters</button>
+
+      <button type="button" class="secondary-button" (click)="clear()">Clear</button>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,103 @@
+<section class="alert-list" aria-labelledby="alert-list-heading">
+  <div class="list-header">
+    <div>
+      <h2 id="alert-list-heading">Alerts</h2>
+      <p>Alert events matching the current filters.</p>
+    </div>
+  </div>
+
+  @if (alerts().length > 0) {
+    <div class="table-wrapper">
+      <table>
+        <caption class="visually-hidden">
+          Alerts matching the current filters
+        </caption>
+
+        <thead>
+          <tr>
+            <th scope="col">Alert</th>
+            <th scope="col">Severity</th>
+            <th scope="col">Status</th>
+            <th scope="col">Device</th>
+            <th scope="col">Rule</th>
+            <th scope="col">Triggered</th>
+            <th scope="col">
+              <span class="visually-hidden">Actions</span>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (alert of alerts(); track trackByAlertId($index, alert)) {
+            <tr>
+              <td>
+                <div class="alert-cell">
+                  <strong>{{ alert.alertType }}</strong>
+
+                  <span class="message">
+                    {{ alert.message }}
+                  </span>
+                </div>
+              </td>
+
+              <td>
+                <span
+                  class="severity"
+                  [class]="'severity severity--' + alert.severity"
+                  [attr.aria-label]="'Severity: ' + severityLabel(alert.severity)"
+                >
+                  {{ severityLabel(alert.severity) }}
+                </span>
+              </td>
+
+              <td>
+                <span
+                  class="status"
+                  [class]="'status status--' + alert.status"
+                  [attr.aria-label]="'Status: ' + statusLabel(alert.status)"
+                >
+                  {{ statusLabel(alert.status) }}
+                </span>
+              </td>
+
+              <td>
+                @if (alert.deviceId !== null) {
+                  <span>Device #{{ alert.deviceId }}</span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+
+              <td>
+                @if (alert.ruleId !== null) {
+                  <span>Rule #{{ alert.ruleId }}</span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+
+              <td>
+                <time [attr.datetime]="alert.triggeredAt">
+                  {{ formatDate(alert.triggeredAt) }}
+                </time>
+              </td>
+
+              <td class="action-cell">
+                <button
+                  type="button"
+                  class="details-button"
+                  (click)="selectAlert(alert)"
+                  [attr.aria-label]="'View alert ' + alert.id"
+                >
+                  View
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="empty-list" aria-hidden="true"></div>
+  }
+</section>
