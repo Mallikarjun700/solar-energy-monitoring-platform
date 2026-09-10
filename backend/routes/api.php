@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AlertController;
 use App\Http\Controllers\Api\V1\AssetController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeadLetterController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\PlantController;
@@ -11,15 +12,13 @@ use App\Http\Middleware\ValidateTelemetryRequestSize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use App\Http\Controllers\Api\V1\DashboardController;
-
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
-        
+
         Route::apiResource('plants', PlantController::class);
         Route::apiResource('assets', AssetController::class);
         Route::apiResource('devices', DeviceController::class);
