@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('dead_letter_events', function (Blueprint $table) {
-            Schema::table('dead_letter_events', function (Blueprint $table) {
-                $table->unique('event_id');
-            });
+        Schema::table('dead_letter_events', function (Blueprint $table): void {
+            $table->unique('event_id');
         });
     }
 
@@ -23,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dead_letter_events', function (Blueprint $table) {
-            $table->dropIndex(['event_id']);
+        Schema::table('dead_letter_events', function (Blueprint $table): void {
+            $table->dropUnique(['event_id']);
         });
     }
 };
