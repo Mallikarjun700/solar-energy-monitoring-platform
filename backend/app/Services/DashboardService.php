@@ -8,7 +8,6 @@ use App\Models\Plant;
 use App\Models\Telemetry;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
@@ -124,8 +123,7 @@ class DashboardService
                     'currentPowerKw' => $hasTelemetry
                         ? round($power, 2)
                         : null,
-                    'performancePercent' =>
-                        $capacity !== null
+                    'performancePercent' => $capacity !== null
                         && $capacity > 0
                         && $hasTelemetry
                             ? round(($power / $capacity) * 100, 2)
@@ -168,8 +166,7 @@ class DashboardService
                     'current' => $telemetry?->current !== null
                         ? (float) $telemetry->current
                         : null,
-                    'telemetryTimestamp' =>
-                        $telemetry?->recorded_at?->toISOString(),
+                    'telemetryTimestamp' => $telemetry?->recorded_at?->toISOString(),
                 ];
             })
             ->all();
@@ -248,8 +245,7 @@ class DashboardService
                     ?? (string) $alert->status,
                 'message' => $alert->message,
                 'triggered_at' => $alert->triggered_at?->toISOString(),
-                'acknowledged_at' =>
-                    $alert->acknowledged_at?->toISOString(),
+                'acknowledged_at' => $alert->acknowledged_at?->toISOString(),
                 'resolved_at' => $alert->resolved_at?->toISOString(),
                 'created_at' => $alert->created_at?->toISOString(),
                 'updated_at' => $alert->updated_at?->toISOString(),
@@ -307,7 +303,7 @@ class DashboardService
             ->limit(10)
             ->get()
             ->map(fn (Alert $alert): array => [
-                'id' => 'alert-' . $alert->id,
+                'id' => 'alert-'.$alert->id,
                 'type' => 'alert',
                 'message' => $alert->message,
                 'timestamp' => $alert->triggered_at?->toISOString(),

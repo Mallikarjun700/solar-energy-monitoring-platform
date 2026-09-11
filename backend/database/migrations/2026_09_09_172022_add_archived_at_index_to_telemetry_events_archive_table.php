@@ -3,13 +3,16 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    protected $connection = 'pgsql_telemetry';
 
     public function up(): void
     {
+        if ($this->connection !== 'pgsql_telemetry') {
+            return;
+        }
         Schema::table('telemetry_events_archive', function (Blueprint $table): void {
             $table->index('archived_at', 'telemetry_events_archive_archived_at_index');
         });
@@ -17,6 +20,9 @@ return new class extends Migration
 
     public function down(): void
     {
+        if ($this->connection !== 'pgsql_telemetry') {
+            return;
+        }
         Schema::table('telemetry_events_archive', function (Blueprint $table): void {
             $table->dropIndex('telemetry_events_archive_archived_at_index');
         });

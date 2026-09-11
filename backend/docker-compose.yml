@@ -1,45 +1,54 @@
-services:
+x-app-env: &app-env
+  APP_ENV: local
+  APP_DEBUG: "true"
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_DATABASE: solar_energy
+  DB_USERNAME: solar
+  DB_PASSWORD: solar_password
+  TELEMETRY_DB_HOST: postgres
+  TELEMETRY_DB_PORT: 5432
+  TELEMETRY_DB_DATABASE: telemetry
+  TELEMETRY_DB_USERNAME: telemetry
+  TELEMETRY_DB_PASSWORD: telemetry_password
+  REDIS_CLIENT: predis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
 
+x-app-build: &app-build
+  build:
+    context: .
+    dockerfile: docker/php/Dockerfile
+
+x-app-volumes: &app-volumes
+  - .:/var/www/html
+
+x-app-depends: &app-depends
+  mysql:
+    condition: service_healthy
+  postgres:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+
+services:
   app:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
+    <<: *app-build
     container_name: solar-app
     restart: unless-stopped
     working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
+    volumes: *app-volumes
     environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: solar_energy
-      DB_USERNAME: solar
-      DB_PASSWORD: solar_password
-
-      TELEMETRY_DB_HOST: postgres
-      TELEMETRY_DB_PORT: 5432
-      TELEMETRY_DB_DATABASE: telemetry
-      TELEMETRY_DB_USERNAME: telemetry
-      TELEMETRY_DB_PASSWORD: telemetry_password
-
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
+      <<: *app-env
       QUEUE_CONNECTION: database
       CACHE_STORE: redis
-
+      SERVICE_TYPE: app
+    entrypoint: sh ./docker/entrypoint.sh
     depends_on:
-      mysql:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      <<: *app-depends
+      init-db:
+        condition: service_completed_successfully
 
   nginx:
     image: nginx:alpine
@@ -79,19 +88,24 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-uroot",
-          "-proot_password"
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
       interval: 5s
       timeout: 5s
       retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin:5.2-apache
+    container_name: solar-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: "0"
+    ports:
+      - "8081:80"
 
   postgres:
     image: postgres:16
@@ -106,11 +120,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U telemetry -d telemetry"
-        ]
+      test: ["CMD-SHELL", "pg_isready -U telemetry -d telemetry"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -124,99 +134,49 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test:
-        [
-          "CMD",
-          "redis-cli",
-          "ping"
-        ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
 
+  init-db:
+    <<: *app-build
+    container_name: solar-init-db
+    working_dir: /var/www/html
+    volumes: *app-volumes
+    environment:
+      <<: *app-env
+      SERVICE_TYPE: init-db
+    entrypoint: sh ./docker/entrypoint.sh
+    depends_on: *app-depends
+
   queue-worker:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
+    <<: *app-build
     container_name: solar-queue-worker
     restart: unless-stopped
     working_dir: /var/www/html
-    command: php artisan queue:work --sleep=3 --tries=3 --timeout=60
-    volumes:
-      - .:/var/www/html
+    volumes: *app-volumes
     environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: solar_energy
-      DB_USERNAME: solar
-      DB_PASSWORD: solar_password
-
-      TELEMETRY_DB_HOST: postgres
-      TELEMETRY_DB_PORT: 5432
-      TELEMETRY_DB_DATABASE: telemetry
-      TELEMETRY_DB_USERNAME: telemetry
-      TELEMETRY_DB_PASSWORD: telemetry_password
-
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
+      <<: *app-env
       QUEUE_CONNECTION: database
       CACHE_STORE: redis
-
-    depends_on:
-      mysql:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      SERVICE_TYPE: queue-worker
+    entrypoint: sh ./docker/entrypoint.sh
+    depends_on: *app-depends
 
   scheduler:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
+    <<: *app-build
     container_name: solar-scheduler
     restart: unless-stopped
     working_dir: /var/www/html
-    command: php artisan schedule:work
-    volumes:
-      - .:/var/www/html
+    volumes: *app-volumes
     environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: solar_energy
-      DB_USERNAME: solar
-      DB_PASSWORD: solar_password
-
-      TELEMETRY_DB_HOST: postgres
-      TELEMETRY_DB_PORT: 5432
-      TELEMETRY_DB_DATABASE: telemetry
-      TELEMETRY_DB_USERNAME: telemetry
-      TELEMETRY_DB_PASSWORD: telemetry_password
-
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
+      <<: *app-env
       QUEUE_CONNECTION: database
       CACHE_STORE: redis
-
-    depends_on:
-      mysql:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      SERVICE_TYPE: scheduler
+    entrypoint: sh ./docker/entrypoint.sh
+    depends_on: *app-depends
 
 volumes:
   mysql_data:
