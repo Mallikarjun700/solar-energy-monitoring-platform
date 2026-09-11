@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\DeadLetterStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DeadLetterEventSeeder extends Seeder
 {
@@ -12,7 +13,7 @@ class DeadLetterEventSeeder extends Seeder
     {
         DB::table('dead_letter_events')->insert([
             [
-                'event_id' => 'telemetry:site-1:001',
+                'event_id' => (string) Str::uuid(),
                 'device_id' => 1,
                 'original_payload' => json_encode([
                     'site_id' => 1,
@@ -30,7 +31,7 @@ class DeadLetterEventSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'event_id' => 'telemetry:site-2:002',
+                'event_id' => (string) Str::uuid(),
                 'device_id' => 2,
                 'original_payload' => json_encode([
                     'site_id' => 2,
@@ -47,7 +48,7 @@ class DeadLetterEventSeeder extends Seeder
                 'updated_at' => now()->subMinutes(10),
             ],
             [
-                'event_id' => 'battery:alert:010',
+                'event_id' => (string) Str::uuid(),
                 'device_id' => 10,
                 'original_payload' => json_encode([
                     'battery_id' => 10,

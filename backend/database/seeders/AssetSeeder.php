@@ -15,6 +15,7 @@ class AssetSeeder extends Seeder
         foreach (Plant::all() as $plant) {
             foreach ($assetTypes as $index => $type) {
                 Asset::create([
+                    'tenant_id' => $plant->tenant_id,
                     'plant_id' => $plant->id,
                     'name' => $plant->code.'-'.$type,
                     'asset_type' => $type,

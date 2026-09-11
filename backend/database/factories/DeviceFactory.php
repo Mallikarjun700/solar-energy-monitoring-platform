@@ -21,6 +21,7 @@ class DeviceFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => fake()->uuid(),
             'asset_id' => Asset::factory(),
             'device_type' => fake()->randomElement([
                 'INVERTER',

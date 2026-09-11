@@ -11,6 +11,7 @@ class PlantSeeder extends Seeder
     {
         $plants = [
             [
+                'tenant_id' => '11111111-1111-4111-8111-111111111111',
                 'name' => 'Mysore Solar Farm',
                 'code' => 'MSF-001',
                 'location' => 'Mysore, Karnataka',
@@ -18,6 +19,7 @@ class PlantSeeder extends Seeder
                 'status' => 'ACTIVE',
             ],
             [
+                'tenant_id' => '11111111-1111-4111-8111-111111111111',
                 'name' => 'Bengaluru Solar Park',
                 'code' => 'BSP-002',
                 'location' => 'Bengaluru, Karnataka',
@@ -25,6 +27,7 @@ class PlantSeeder extends Seeder
                 'status' => 'ACTIVE',
             ],
             [
+                'tenant_id' => '11111111-1111-4111-8111-111111111111',
                 'name' => 'Shimoga PV Unit',
                 'code' => 'SPU-003',
                 'location' => 'Shimoga, Karnataka',
@@ -32,6 +35,7 @@ class PlantSeeder extends Seeder
                 'status' => 'MAINTENANCE',
             ],
             [
+                'tenant_id' => '11111111-1111-4111-8111-111111111111',
                 'name' => 'Hubballi Renewable Hub',
                 'code' => 'HRH-004',
                 'location' => 'Hubballi, Karnataka',
@@ -39,6 +43,7 @@ class PlantSeeder extends Seeder
                 'status' => 'ACTIVE',
             ],
             [
+                'tenant_id' => '11111111-1111-4111-8111-111111111111',
                 'name' => 'Coorg Solar Field',
                 'code' => 'CSF-005',
                 'location' => 'Coorg, Karnataka',

@@ -13,6 +13,7 @@ class AssetFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => $this->faker->uuid(),
             'plant_id' => Plant::factory(),
             'name' => $this->faker->word().' Asset',
             'asset_type' => $this->faker->randomElement(['INVERTER', 'TRACKER', 'TRANSFORMER']),

@@ -11,10 +11,11 @@ class TelemetryEventSeeder extends Seeder
     {
         // Only seed PostgreSQL, skip for MySQL
         if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
-            echo 'Skipping TelemetryEventSeeder on non-PostgreSQL connections' . PHP_EOL;
+            echo 'Skipping TelemetryEventSeeder on non-PostgreSQL connections'.PHP_EOL;
+
             return;
         }
-        
+
         $now = now();
         $tenantId = '11111111-1111-4111-8111-111111111111';
         $sourceIds = [

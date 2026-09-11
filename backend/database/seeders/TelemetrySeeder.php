@@ -13,6 +13,7 @@ class TelemetrySeeder extends Seeder
         foreach (Device::all() as $device) {
             for ($i = 0; $i < 10; $i++) {
                 Telemetry::create([
+                    'tenant_id' => $device->tenant_id,
                     'device_id' => $device->id,
                     'recorded_at' => now()->subMinutes(rand(1, 300)),
                     'temperature' => rand(20, 60) + (rand(0, 99) / 100),

@@ -15,6 +15,7 @@ class DeviceSeeder extends Seeder
         foreach (Asset::all() as $asset) {
             foreach ($deviceTypes as $index => $type) {
                 Device::create([
+                    'tenant_id' => $asset->tenant_id,
                     'asset_id' => $asset->id,
                     'device_type' => $type,
                     'serial_number' => 'DEV-'.strtoupper(substr($asset->serial_number, 0, 3)).'-'.($index + 1).'-'.rand(10000, 99999),
