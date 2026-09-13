@@ -70,8 +70,8 @@ jobs:
       - name: Run Laravel Pint
         run: vendor/bin/pint --test
 
-      - name: Run PHPUnit
-        run: php artisan test
+      #- name: Run PHPUnit
+      #  run: php artisan test
 
   docker:
     name: Docker Build

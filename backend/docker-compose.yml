@@ -4,14 +4,14 @@ x-app-env: &app-env
   DB_CONNECTION: mysql
   DB_HOST: mysql
   DB_PORT: 3306
-  DB_DATABASE: solar_energy
-  DB_USERNAME: solar
-  DB_PASSWORD: solar_password
+  DB_DATABASE: ${DB_DATABASE}
+  DB_USERNAME: ${DB_USERNAME}
+  DB_PASSWORD: ${DB_PASSWORD}
   TELEMETRY_DB_HOST: postgres
   TELEMETRY_DB_PORT: 5432
-  TELEMETRY_DB_DATABASE: telemetry
-  TELEMETRY_DB_USERNAME: telemetry
-  TELEMETRY_DB_PASSWORD: telemetry_password
+  TELEMETRY_DB_DATABASE: ${TELEMETRY_DB_DATABASE}
+  TELEMETRY_DB_USERNAME: ${TELEMETRY_DB_USERNAME}
+  TELEMETRY_DB_PASSWORD: ${TELEMETRY_DB_PASSWORD}
   REDIS_CLIENT: predis
   REDIS_HOST: redis
   REDIS_PORT: 6379
@@ -79,16 +79,20 @@ services:
     container_name: solar-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: solar_energy
-      MYSQL_USER: solar
-      MYSQL_PASSWORD: solar_password
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u${DB_USERNAME} -p${DB_PASSWORD}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -112,15 +116,19 @@ services:
     container_name: solar-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: telemetry
-      POSTGRES_USER: telemetry
-      POSTGRES_PASSWORD: telemetry_password
+      POSTGRES_DB: ${TELEMETRY_DB_DATABASE}
+      POSTGRES_USER: ${TELEMETRY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TELEMETRY_DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U telemetry -d telemetry"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${TELEMETRY_DB_USERNAME} -d ${TELEMETRY_DB_DATABASE}"
+        ]
       interval: 5s
       timeout: 5s
       retries: 10

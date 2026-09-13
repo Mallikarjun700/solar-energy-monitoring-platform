@@ -27,6 +27,8 @@ resource "aws_db_instance" "mysql" {
   max_allocated_storage = var.mysql_max_allocated_storage
   storage_type          = "gp3"
 
+  storage_encrypted = true
+
   db_name  = var.database_name
   username = var.database_username
 
@@ -62,6 +64,8 @@ resource "aws_db_instance" "postgres" {
   allocated_storage     = var.postgres_allocated_storage
   max_allocated_storage = var.postgres_max_allocated_storage
   storage_type          = "gp3"
+
+  storage_encrypted = true
 
   db_name  = var.telemetry_database_name
   username = var.telemetry_database_username

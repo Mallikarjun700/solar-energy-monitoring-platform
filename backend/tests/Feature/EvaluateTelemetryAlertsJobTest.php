@@ -55,4 +55,44 @@ class EvaluateTelemetryAlertsJobTest extends TestCase
             }
         );
     }
+
+    public function test_alert_evaluation_job_creates_alert_for_violation(): void
+    {
+        $tenantId = (string) Str::uuid();
+
+        $rule = AlertRule::factory()->create([
+            'tenant_id' => $tenantId,
+            'metric' => 'temperature',
+            'operator' => AlertOperator::GREATER_THAN,
+            'threshold' => 80,
+            'enabled' => true,
+        ]);
+
+        $eventId = (string) Str::uuid();
+
+        $telemetry = [
+            'event_id' => $eventId,
+            'tenant_id' => $tenantId,
+            'source_id' => (string) Str::uuid(),
+            'event_type' => 'telemetry',
+            'timestamp' => now()->toISOString(),
+            'attributes' => [],
+            'payload' => [
+                'device_id' => 100,
+                'temperature' => 85,
+            ],
+        ];
+
+        (new EvaluateTelemetryAlertsJob($telemetry))->handle(
+            app(App\Services\AlertCreationService::class)
+        );
+
+        $this->assertDatabaseHas('alerts', [
+            'tenant_id' => $tenantId,
+            'device_id' => 100,
+            'rule_id' => $rule->id,
+            'event_id' => $eventId,
+            'status' => App\Enums\AlertStatus::OPEN,
+        ]);
+    }
 }
