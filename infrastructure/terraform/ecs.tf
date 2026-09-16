@@ -176,21 +176,6 @@ resource "aws_ecs_task_definition" "backend" {
       ]
 
 
-      secrets = concat(
-        var.database_secret_arn != "" ? [
-          {
-            name      = "DB_PASSWORD"
-            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
-          }
-        ] : [],
-        var.telemetry_database_secret_arn != "" ? [
-          {
-            name      = "TELEMETRY_DB_PASSWORD"
-            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
-          }
-        ] : []
-      )
-
       logConfiguration = {
         logDriver = "awslogs"
 

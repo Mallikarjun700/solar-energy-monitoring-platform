@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\AlertOperator;
+use App\Enums\AlertStatus;
 use App\Jobs\EvaluateTelemetryAlertsJob;
 use App\Models\AlertRule;
+use App\Services\AlertCreationService;
 use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -84,7 +86,7 @@ class EvaluateTelemetryAlertsJobTest extends TestCase
         ];
 
         (new EvaluateTelemetryAlertsJob($telemetry))->handle(
-            app(App\Services\AlertCreationService::class)
+            app(AlertCreationService::class)
         );
 
         $this->assertDatabaseHas('alerts', [
@@ -92,7 +94,7 @@ class EvaluateTelemetryAlertsJobTest extends TestCase
             'device_id' => 100,
             'rule_id' => $rule->id,
             'event_id' => $eventId,
-            'status' => App\Enums\AlertStatus::OPEN,
+            'status' => AlertStatus::OPEN,
         ]);
     }
 }

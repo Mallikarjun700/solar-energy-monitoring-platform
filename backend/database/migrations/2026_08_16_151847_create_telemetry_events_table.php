@@ -12,7 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+        if (DB::getDefaultConnection() !== 'pgsql_telemetry'
+            || ! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return; // Skip on MySQL, only run on PostgreSQL
         }
         Schema::connection('pgsql_telemetry')->create('telemetry_events', function (Blueprint $table) {
@@ -39,7 +40,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+        if (DB::getDefaultConnection() !== 'pgsql_telemetry'
+            || ! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return; // Skip on MySQL, only run on PostgreSQL
         }
         Schema::connection('pgsql_telemetry')->dropIfExists('telemetry_events');

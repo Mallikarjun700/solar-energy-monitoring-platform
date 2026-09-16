@@ -15,7 +15,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return;
         }
 
@@ -26,6 +26,10 @@ return new class extends Migration
         }
 
         $connection->table('telemetry_events', function (Blueprint $table) use ($connection) {
+            if ($connection->getConnection()->getDriverName() !== 'pgsql') {
+                return;
+            }
+
             $indexes = $connection->getConnection()
                 ->select("
                     SELECT indexname
@@ -46,7 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return;
         }
 
@@ -57,6 +61,10 @@ return new class extends Migration
         }
 
         $connection->table('telemetry_events', function (Blueprint $table) use ($connection) {
+            if ($connection->getConnection()->getDriverName() !== 'pgsql') {
+                return;
+            }
+
             $indexes = $connection->getConnection()
                 ->select("
                     SELECT indexname
