@@ -62,6 +62,7 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'SSL_MODE' => env('DB_SSLMODE', 'disable'),
         ],
 
         'mariadb' => [
@@ -82,6 +83,7 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'SSL_MODE' => env('DB_SSLMODE', 'disable'),
         ],
 
         'pgsql' => [
@@ -96,7 +98,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('TELEMETRY_DB_SSLMODE', 'require'),
+            'sslmode' => env('TELEMETRY_DB_SSLMODE', 'disable'),
         ],
 
         'sqlsrv' => [
@@ -133,7 +135,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('TELEMETRY_DB_SSLMODE', 'require'),
+            'sslmode' => env('TELEMETRY_DB_SSLMODE', 'disable'),
         ],
 
     ],

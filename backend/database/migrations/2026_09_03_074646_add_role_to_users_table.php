@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table): void {
             $table
                 ->string('role')
-                ->default(UserRole::VIEWER->value)
+                ->default(UserRole::USER->value)
                 ->after('password')
                 ->index();
         });

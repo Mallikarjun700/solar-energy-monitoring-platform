@@ -7,6 +7,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Skip if not PostgreSQL telemetry database
+        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+            return;
+        }
+
         $connection = DB::connection('pgsql_telemetry');
 
         // This migration is specifically for PostgreSQL telemetry storage.
@@ -35,6 +40,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Skip if not PostgreSQL telemetry database
+        if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
+            return;
+        }
+
         $connection = DB::connection('pgsql_telemetry');
 
         if ($connection->getDriverName() !== 'pgsql') {
