@@ -84,6 +84,48 @@ class TelemetryIngestionPerformanceTest extends TestCase
         );
     }
 
+    public function test_1000_duplicate_events_are_processed_within_performance_budget(): void
+    {
+        Queue::fake();
+
+        $events = $this->makeEvents(1000);
+        $service = app(TelemetryService::class);
+
+        $firstResult = $service->ingest($events);
+
+        $this->assertSame(1000, $firstResult['accepted']);
+        $this->assertSame(0, $firstResult['duplicates']);
+
+        Queue::fake();
+
+        $startedAt = microtime(true);
+
+        $duplicateResult = $service->ingest($events);
+
+        $durationMs = (microtime(true) - $startedAt) * 1000;
+
+        $this->assertSame(0, $duplicateResult['accepted']);
+        $this->assertSame(1000, $duplicateResult['duplicates']);
+        $this->assertSame(0, $duplicateResult['rejected']);
+
+        $this->assertLessThan(
+            5000,
+            $durationMs,
+            sprintf(
+                '1000 duplicate telemetry events exceeded the 5 second performance budget: %.2f ms',
+                $durationMs
+            )
+        );
+
+        fwrite(
+            STDOUT,
+            sprintf(
+                PHP_EOL.'Telemetry duplicate performance: 1000 events = %.2f ms'.PHP_EOL,
+                $durationMs
+            )
+        );
+    }
+
     private function makeEvents(int $count): array
     {
         $events = [];
