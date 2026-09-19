@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\NonRetryableTelemetryException;
 use App\Services\TelemetryService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class ProcessTelemetryBatchJob implements ShouldQueue
 {
@@ -33,16 +35,40 @@ class ProcessTelemetryBatchJob implements ShouldQueue
     public function handle(TelemetryService $telemetryService): void
     {
         $this->startedAt = microtime(true);
+
         if ($this->correlationId) {
             app()->instance('correlation_id', $this->correlationId);
         }
 
-        if (app()->environment('testing') && ($this->events[0]['force_failure'] ?? false)) {
-            throw new \RuntimeException(
-                'Intentional telemetry queue failure.'
-            );
+        try {
+            if (
+                app()->environment('testing')
+                && ($this->events[0]['force_failure'] ?? false)
+            ) {
+                throw new \RuntimeException(
+                    'Intentional telemetry queue failure.'
+                );
+            }
+
+            $telemetryService->ingest($this->events);
+        } catch (Throwable $exception) {
+            if ($this->isNonRetryable($exception)) {
+                $this->fail($exception);
+
+                return;
+            }
+
+            throw $exception;
         }
-        $telemetryService->ingest($this->events);
+    }
+
+    /**
+     * Determine whether the exception should bypass retries.
+     */
+    private function isNonRetryable(Throwable $exception): bool
+    {
+        return $exception instanceof NonRetryableTelemetryException
+            || $exception instanceof \InvalidArgumentException;
     }
 
     public function attempts(): int

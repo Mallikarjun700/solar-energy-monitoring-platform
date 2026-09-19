@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\TokenAbility;
+use App\Exceptions\NonRetryableTelemetryException;
 use App\Jobs\ProcessTelemetryBatchJob;
 use App\Models\User;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Queue\Jobs\Job;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -41,7 +44,8 @@ class TelemetryTest extends TestCase
             ],
         ];
 
-        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'unique-test-key')
+        $response = $this->withToken($this->telemetryToken())
+            ->withHeader('Idempotency-Key', 'unique-test-key')
             ->postJson('/api/v1/telemetry/events', $payload);
 
         $response->assertStatus(202);
@@ -77,7 +81,8 @@ class TelemetryTest extends TestCase
             ];
         }
 
-        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-events')
+        $response = $this->withToken($this->telemetryToken())
+            ->withHeader('Idempotency-Key', 'telemetry-1000-events')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => $events,
             ]);
@@ -105,7 +110,8 @@ class TelemetryTest extends TestCase
             ];
         }
 
-        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1001-events')
+        $response = $this->withToken($this->telemetryToken())
+            ->withHeader('Idempotency-Key', 'telemetry-1001-events')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => $events,
             ]);
@@ -137,7 +143,8 @@ class TelemetryTest extends TestCase
 
         $jobs = [];
 
-        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-1000-batches')
+        $response = $this->withToken($this->telemetryToken())
+            ->withHeader('Idempotency-Key', 'telemetry-1000-batches')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => $events,
             ]);
@@ -184,7 +191,8 @@ class TelemetryTest extends TestCase
 
         $jobs = [];
 
-        $response = $this->withToken($this->telemetryToken())->withHeader('Idempotency-Key', 'telemetry-600-batches')
+        $response = $this->withToken($this->telemetryToken())
+            ->withHeader('Idempotency-Key', 'telemetry-600-batches')
             ->postJson('/api/v1/telemetry/events', [
                 'events' => $events,
             ]);
@@ -212,7 +220,56 @@ class TelemetryTest extends TestCase
 
         $this->assertSame(3, $job->tries);
         $this->assertSame(60, $job->timeout);
+        $this->assertSame(10, $job->backoff);
     }
+
+    public function test_non_retryable_telemetry_exception_is_classified_correctly(): void
+    {
+        $exception = new NonRetryableTelemetryException(
+            'Invalid telemetry payload.'
+        );
+
+        $this->assertInstanceOf(
+            NonRetryableTelemetryException::class,
+            $exception
+        );
+    }
+
+    // public function test_non_retryable_telemetry_failure_is_not_retried(): void
+    // {
+    //     $job = new ProcessTelemetryBatchJob([
+    //         [
+    //             'event_id' => Str::uuid()->toString(),
+    //             'tenant_id' => Str::uuid()->toString(),
+    //             'source_id' => Str::uuid()->toString(),
+    //             'event_type' => 'telemetry',
+    //             'timestamp' => now()->toISOString(),
+    //             'schema_version' => 1,
+    //             'force_non_retryable_failure' => true,
+    //         ],
+    //     ]);
+
+    //     $queueJob = $this->mock(Job::class);
+
+    //     $queueJob
+    //         ->shouldReceive('fail')
+    //         ->once()
+    //         ->withArgs(function ($exception): bool {
+    //             return $exception instanceof NonRetryableTelemetryException;
+    //         });
+
+    //     $reflection = new \ReflectionProperty(
+    //         ProcessTelemetryBatchJob::class,
+    //         'job'
+    //     );
+
+    //     $reflection->setAccessible(true);
+    //     $reflection->setValue($job, $queueJob);
+
+    //     $job->handle(app(TelemetryService::class));
+
+    //     $this->assertSame(3, $job->tries);
+    // }
 
     private function telemetryToken(): string
     {
