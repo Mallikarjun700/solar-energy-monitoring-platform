@@ -19,7 +19,7 @@ class AuthLoginTest extends TestCase
             'name' => 'Solar Operator',
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
-            'role' => UserRole::OPERATOR,
+            'role' => UserRole::ADMIN,
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
@@ -50,7 +50,7 @@ class AuthLoginTest extends TestCase
                     'user' => [
                         'name' => 'Solar Operator',
                         'email' => 'admin@example.com',
-                        'role' => 'operator',
+                        'role' => 'admin',
                     ],
                 ],
             ]);
@@ -137,6 +137,12 @@ class AuthLoginTest extends TestCase
                 [
                     TokenAbility::TELEMETRY_READ->value,
                     TokenAbility::TELEMETRY_WRITE->value,
+                    TokenAbility::PLANTS_READ->value,
+                    TokenAbility::PLANTS_WRITE->value,
+                    TokenAbility::ASSETS_READ->value,
+                    TokenAbility::ASSETS_WRITE->value,
+                    TokenAbility::DEVICES_READ->value,
+                    TokenAbility::DEVICES_WRITE->value,
                     TokenAbility::ALERTS_READ->value,
                     TokenAbility::ALERTS_ACKNOWLEDGE->value,
                     TokenAbility::ALERTS_RESOLVE->value,
@@ -163,6 +169,9 @@ class AuthLoginTest extends TestCase
                 'data.abilities',
                 [
                     TokenAbility::TELEMETRY_READ->value,
+                    TokenAbility::PLANTS_READ->value,
+                    TokenAbility::ASSETS_READ->value,
+                    TokenAbility::DEVICES_READ->value,
                     TokenAbility::ALERTS_READ->value,
                 ]
             );

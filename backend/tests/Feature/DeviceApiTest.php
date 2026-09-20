@@ -15,7 +15,10 @@ class DeviceApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->authenticateForApi();
+        $this->authenticateForApi([
+            'devices:read',
+            'devices:write',
+        ]);
     }
 
     public function test_device_index_returns_resource_fields(): void

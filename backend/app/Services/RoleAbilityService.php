@@ -21,13 +21,29 @@ class RoleAbilityService
             UserRole::OPERATOR => [
                 TokenAbility::TELEMETRY_READ->value,
                 TokenAbility::TELEMETRY_WRITE->value,
+
+                TokenAbility::PLANTS_READ->value,
+                TokenAbility::PLANTS_WRITE->value,
+
+                TokenAbility::ASSETS_READ->value,
+                TokenAbility::ASSETS_WRITE->value,
+
+                TokenAbility::DEVICES_READ->value,
+                TokenAbility::DEVICES_WRITE->value,
+
                 TokenAbility::ALERTS_READ->value,
                 TokenAbility::ALERTS_ACKNOWLEDGE->value,
                 TokenAbility::ALERTS_RESOLVE->value,
             ],
 
-            UserRole::VIEWER => [
+            UserRole::VIEWER,
+            UserRole::USER => [
                 TokenAbility::TELEMETRY_READ->value,
+
+                TokenAbility::PLANTS_READ->value,
+                TokenAbility::ASSETS_READ->value,
+                TokenAbility::DEVICES_READ->value,
+
                 TokenAbility::ALERTS_READ->value,
             ],
         };

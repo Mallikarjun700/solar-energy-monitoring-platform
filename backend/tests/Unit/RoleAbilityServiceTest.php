@@ -54,4 +54,45 @@ class RoleAbilityServiceTest extends TestCase
             TokenAbility::ALERTS_READ->value,
         ], $abilities);
     }
+
+    public function test_user_role_has_read_only_resource_abilities(): void
+    {
+        $abilities = $this->service->abilitiesFor(UserRole::USER);
+
+        $this->assertContains('plants:read', $abilities);
+        $this->assertContains('assets:read', $abilities);
+        $this->assertContains('devices:read', $abilities);
+
+        $this->assertNotContains('plants:write', $abilities);
+        $this->assertNotContains('assets:write', $abilities);
+        $this->assertNotContains('devices:write', $abilities);
+    }
+
+    public function test_viewer_cannot_create_assets(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::VIEWER,
+        ]);
+
+        Sanctum::actingAs($user, [
+            'assets:read',
+        ]);
+
+        $this->postJson('/api/v1/assets', [])
+            ->assertForbidden();
+    }
+
+    public function test_viewer_cannot_create_devices(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::VIEWER,
+        ]);
+
+        Sanctum::actingAs($user, [
+            'devices:read',
+        ]);
+
+        $this->postJson('/api/v1/devices', [])
+            ->assertForbidden();
+    }
 }

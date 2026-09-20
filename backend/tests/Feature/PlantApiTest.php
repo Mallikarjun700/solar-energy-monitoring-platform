@@ -14,7 +14,10 @@ class PlantApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->authenticateForApi();
+        $this->authenticateForApi([
+            'plants:read',
+            'plants:write',
+        ]);
     }
 
     public function test_plant_list_returns_resource_fields(): void

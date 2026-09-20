@@ -15,7 +15,10 @@ class AssetApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->authenticateForApi();
+        $this->authenticateForApi([
+            'assets:read',
+            'assets:write',
+        ]);
     }
 
     public function test_asset_index_returns_resource_fields(): void
