@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { AdministrationService } from './services/administration.service';
 import { AdministrationProfile } from './models/administration-profile.model';
@@ -25,7 +32,13 @@ export class AdministrationComponent implements OnInit {
   private readonly administrationService = inject(AdministrationService);
   private readonly tenantContext = inject(TenantContextService);
 
-  readonly tenantId = this.tenantContext.getTenantId();
+  readonly tenantId = computed(() => {
+    try {
+      return this.tenantContext.getTenantId();
+    } catch {
+      return '';
+    }
+  });
 
   readonly profile = signal<AdministrationProfile | null>(null);
   readonly loading = signal(false);

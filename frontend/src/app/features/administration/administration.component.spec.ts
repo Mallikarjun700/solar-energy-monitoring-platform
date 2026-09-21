@@ -4,12 +4,22 @@ import { Observable, of, throwError } from 'rxjs';
 
 import { AdministrationComponent } from './administration.component';
 import { AdministrationService } from './services/administration.service';
+import { AuthStateService } from '../../core/services/auth/auth-state.service';
+import { AuthUser } from '../../core/models/auth/auth-user.model';
 
 describe('AdministrationComponent', () => {
   let fixture: ComponentFixture<AdministrationComponent>;
   let component: AdministrationComponent;
   let administrationService: {
     getProfile: ReturnType<typeof vi.fn>;
+  };
+
+  const user: AuthUser = {
+    id: 1,
+    name: 'Admin User',
+    email: 'admin@example.com',
+    role: 'admin',
+    tenant_id: '11111111-1111-4111-8111-111111111111',
   };
 
   const profile = {
@@ -54,6 +64,13 @@ describe('AdministrationComponent', () => {
       ],
     }).compileComponents();
 
+    const authState = TestBed.inject(AuthStateService);
+    authState.setAuthenticatedUser(user, [
+      'telemetry:read',
+      'telemetry:write',
+      'alerts:read',
+    ]);
+
     fixture = TestBed.createComponent(AdministrationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -63,6 +80,12 @@ describe('AdministrationComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should expose the authenticated tenant id', () => {
+    expect(component.tenantId()).toBe(
+      '11111111-1111-4111-8111-111111111111',
+    );
+  });
+
   it('should load the administration profile on initialization', () => {
     expect(administrationService.getProfile).toHaveBeenCalledTimes(1);
     expect(component.profile()).toEqual(profile);
@@ -70,7 +93,8 @@ describe('AdministrationComponent', () => {
   });
 
   it('should render the page heading', () => {
-    const heading: HTMLElement | null = fixture.nativeElement.querySelector('h1');
+    const heading: HTMLElement | null =
+      fixture.nativeElement.querySelector('h1');
 
     expect(heading?.textContent?.trim()).toBe('Administration');
   });
@@ -113,7 +137,9 @@ describe('AdministrationComponent', () => {
   });
 
   it('should display an error when loading fails', () => {
-    administrationService.getProfile.mockReturnValue(throwError(() => new Error('Request failed')));
+    administrationService.getProfile.mockReturnValue(
+      throwError(() => new Error('Request failed')),
+    );
 
     component.loadProfile();
     fixture.detectChanges();
@@ -138,7 +164,9 @@ describe('AdministrationComponent', () => {
     component.loadProfile();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('No abilities assigned');
+    expect(fixture.nativeElement.textContent).toContain(
+      'No abilities assigned',
+    );
   });
 
   it('should show the loading state while the profile request is pending', () => {
@@ -153,14 +181,19 @@ describe('AdministrationComponent', () => {
 
     expect(component.loading()).toBe(true);
 
-    const loadingState = fixture.nativeElement.querySelector('.loading-state');
+    const loadingState =
+      fixture.nativeElement.querySelector('.loading-state');
 
     expect(loadingState).toBeTruthy();
-    expect(loadingState.textContent).toContain('Loading administration');
+    expect(loadingState.textContent).toContain(
+      'Loading administration',
+    );
   });
 
   it('should clear a previous error when retry starts', () => {
-    administrationService.getProfile.mockReturnValue(throwError(() => new Error('Request failed')));
+    administrationService.getProfile.mockReturnValue(
+      throwError(() => new Error('Request failed')),
+    );
 
     component.loadProfile();
     fixture.detectChanges();
@@ -178,7 +211,9 @@ describe('AdministrationComponent', () => {
   });
 
   it('should expose a retry action when loading fails', () => {
-    administrationService.getProfile.mockReturnValue(throwError(() => new Error('Request failed')));
+    administrationService.getProfile.mockReturnValue(
+      throwError(() => new Error('Request failed')),
+    );
 
     component.loadProfile();
     fixture.detectChanges();
@@ -201,16 +236,22 @@ describe('AdministrationComponent', () => {
     expect(component.error()).toBeNull();
     expect(component.loading()).toBe(false);
 
-    expect(fixture.nativeElement.textContent).toContain('Administration information unavailable');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Administration information unavailable',
+    );
   });
 
   it('should expose accessible loading and error regions', () => {
-    administrationService.getProfile.mockReturnValue(throwError(() => new Error('Request failed')));
+    administrationService.getProfile.mockReturnValue(
+      throwError(() => new Error('Request failed')),
+    );
 
     component.loadProfile();
     fixture.detectChanges();
 
-    const errorState = fixture.nativeElement.querySelector('.error-state') as HTMLElement | null;
+    const errorState = fixture.nativeElement.querySelector(
+      '.error-state',
+    ) as HTMLElement | null;
 
     expect(errorState?.getAttribute('role')).toBe('alert');
 

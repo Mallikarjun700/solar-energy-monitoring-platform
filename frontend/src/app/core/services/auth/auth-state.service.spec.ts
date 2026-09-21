@@ -16,6 +16,7 @@ describe('AuthStateService', () => {
     name: 'Admin',
     email: 'admin@example.com',
     role: 'viewer' as const,
+    tenant_id: '11111111-1111-4111-8111-111111111111',
   };
 
   beforeEach(() => {

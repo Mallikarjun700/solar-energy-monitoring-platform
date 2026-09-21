@@ -39,12 +39,35 @@ export interface TelemetryCursorResult {
   hasMore: boolean;
 }
 
+export interface TelemetryIngestEvent {
+  event_id: string;
+  tenant_id: string;
+  source_id: string;
+  event_type: string;
+  timestamp: string;
+  schema_version: number;
+  attributes?: Record<string, unknown> | null;
+  payload?: Record<string, unknown> | null;
+}
+
+export interface TelemetryIngestResponse {
+  accepted: number;
+  jobs_dispatched: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class TelemetryService {
   private readonly api = inject(ApiService);
   private readonly apiErrorService = inject(ApiErrorService);
+
+  ingest(events: TelemetryIngestEvent[]): Observable<TelemetryIngestResponse> {
+    return this.api.post<TelemetryIngestResponse>(
+      '/telemetry/events',
+      { events },
+    );
+  }
 
   getEvents(query: TelemetryEventQuery = {}): Observable<TelemetryEventsResult> {
     const params = this.buildEventQueryParams(query);

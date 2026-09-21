@@ -1,50 +1,77 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { ApiService } from '../../../core/services/api.service';
-import { ApiErrorService } from '../../../core/services/api-error.service';
-
-import { Device } from '../models/device.model';
 import {
-  DeviceApiResponse,
-  DeviceApiResource,
-  DevicesApiResponse,
-} from '../models/device-response.model';
+  CreateDeviceRequest,
+  Device,
+  DeviceStatus,
+  UpdateDeviceRequest,
+} from '../models/device.model';
+
+interface DeviceApiResource {
+  id: number;
+  asset_id: number;
+  device_type: string;
+  serial_number: string;
+  status: DeviceStatus | null;
+  last_seen_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DeviceListResponse {
+  data: DeviceApiResource[];
+}
+
+interface DeviceResponse {
+  message?: string;
+  data: DeviceApiResource;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class DevicesService {
   private readonly api = inject(ApiService);
-  private readonly apiErrorService = inject(ApiErrorService);
 
-  getDevices(filters?: { assetId?: number; status?: string }): Observable<Device[]> {
-    const params: Record<string, string | number> = {};
-
-    if (filters?.assetId !== undefined) {
-      params['asset_id'] = filters.assetId;
-    }
-
-    if (filters?.status) {
-      params['status'] = filters.status;
-    }
-
-    return this.api.get<DevicesApiResponse>('/devices', params).pipe(
-      map((response) => response.data.map((device) => this.mapDevice(device))),
-      catchError((error: HttpErrorResponse) =>
-        throwError(() => this.apiErrorService.normalize(error)),
-      ),
-    );
+  getDevices(filters?: {
+    assetId?: number;
+    status?: DeviceStatus;
+  }): Observable<Device[]> {
+    return this.api
+      .get<DeviceListResponse>('/devices', {
+        ...(filters?.assetId !== undefined
+          ? { asset_id: filters.assetId }
+          : {}),
+        ...(filters?.status ? { status: filters.status } : {}),
+      })
+      .pipe(map((response) => response.data.map(this.mapDevice)));
   }
 
   getDevice(id: number): Observable<Device> {
-    return this.api.get<DeviceApiResponse>(`/devices/${id}`).pipe(
-      map((response) => this.mapDevice(response.data)),
-      catchError((error: HttpErrorResponse) =>
-        throwError(() => this.apiErrorService.normalize(error)),
-      ),
-    );
+    return this.api
+      .get<DeviceApiResource>(`/devices/${id}`)
+      .pipe(map((response) => this.mapDevice(response)));
+  }
+
+  createDevice(payload: CreateDeviceRequest): Observable<Device> {
+    return this.api
+      .post<DeviceResponse>('/devices', payload)
+      .pipe(map((response) => this.mapDevice(response.data)));
+  }
+
+  updateDevice(
+    id: number,
+    payload: UpdateDeviceRequest,
+  ): Observable<Device> {
+    return this.api
+      .put<DeviceResponse>(`/devices/${id}`, payload)
+      .pipe(map((response) => this.mapDevice(response.data)));
+  }
+
+  deleteDevice(id: number): Observable<void> {
+    return this.api.delete<void>(`/devices/${id}`);
   }
 
   private mapDevice(resource: DeviceApiResource): Device {
@@ -53,7 +80,7 @@ export class DevicesService {
       assetId: resource.asset_id,
       deviceType: resource.device_type,
       serialNumber: resource.serial_number,
-      status: resource.status,
+      status: resource.status ?? '',
       lastSeenAt: resource.last_seen_at,
       createdAt: resource.created_at,
       updatedAt: resource.updated_at,

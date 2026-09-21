@@ -93,7 +93,7 @@
       <app-user-management [user]="currentProfile.user" [abilities]="currentProfile.abilities" />
 
       <app-tenant-access-context
-        [tenantId]="tenantId"
+        [tenantId]="tenantId()"
         [user]="currentProfile.user"
         [abilities]="currentProfile.abilities"
       />

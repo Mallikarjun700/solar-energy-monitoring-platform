@@ -32,6 +32,7 @@ describe('Authentication flow', () => {
               name: 'Admin',
               email: 'admin@example.com',
               role: 'viewer',
+              tenant_id: '11111111-1111-4111-8111-111111111111',
             },
             abilities: ['telemetry:read'],
           },
@@ -63,6 +64,7 @@ describe('Authentication flow', () => {
       name: 'Admin',
       email: 'admin@example.com',
       role: 'viewer' as const,
+      tenant_id: '11111111-1111-4111-8111-111111111111',
     };
 
     const abilities = ['telemetry:read', 'alerts:read'];
@@ -91,6 +93,7 @@ describe('Authentication flow', () => {
       name: 'Admin',
       email: 'admin@example.com',
       role: 'viewer',
+      tenant_id: '11111111-1111-4111-8111-111111111111',
     });
 
     expect(authState.abilities()).toEqual(['telemetry:read']);
