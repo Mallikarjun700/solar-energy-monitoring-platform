@@ -22,8 +22,6 @@ resource "aws_lb_target_group" "backend" {
   protocol    = "HTTP"
   target_type = "ip"
 
-  deregistration_delay = 30
-
   vpc_id = aws_vpc.main.id
 
   health_check {

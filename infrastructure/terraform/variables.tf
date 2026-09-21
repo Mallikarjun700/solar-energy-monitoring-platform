@@ -269,3 +269,43 @@ variable "enable_deletion_protection" {
   type        = bool
   default     = false
 }
+
+variable "mysql_multi_az" {
+  description = "Enable Multi-AZ deployment for the application MySQL database."
+  type        = bool
+  default     = false
+}
+
+variable "postgres_multi_az" {
+  description = "Enable Multi-AZ deployment for the telemetry PostgreSQL database."
+  type        = bool
+  default     = false
+}
+
+variable "mysql_backup_retention_period" {
+  description = "Number of days to retain automated MySQL backups."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.mysql_backup_retention_period >= 0 && var.mysql_backup_retention_period <= 35
+    error_message = "MySQL backup retention must be between 0 and 35 days."
+  }
+}
+
+variable "postgres_backup_retention_period" {
+  description = "Number of days to retain automated PostgreSQL backups."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.postgres_backup_retention_period >= 0 && var.postgres_backup_retention_period <= 35
+    error_message = "PostgreSQL backup retention must be between 0 and 35 days."
+  }
+}
+
+variable "skip_final_snapshot" {
+  description = "Whether RDS should skip the final snapshot when the instance is destroyed."
+  type        = bool
+  default     = true
+}

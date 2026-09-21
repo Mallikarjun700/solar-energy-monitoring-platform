@@ -1,5 +1,5 @@
 resource "aws_lb" "main" {
-  name               = "${local.short_name_prefix}-alb"
+  name               = "${local.name_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
 
@@ -9,7 +9,7 @@ resource "aws_lb" "main" {
 
   subnets = aws_subnet.public[*].id
 
-  enable_deletion_protection = var.enable_deletion_protection
+  enable_deletion_protection = false
 
   tags = {
     Name = "${local.name_prefix}-alb"
@@ -17,12 +17,10 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "backend" {
-  name        = "${local.short_name_prefix}-backend"
+  name        = "${local.name_prefix}-backend"
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
-
-  deregistration_delay = 30
 
   vpc_id = aws_vpc.main.id
 

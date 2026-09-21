@@ -31,6 +31,11 @@ resource "aws_iam_role" "ecs_task_execution" {
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
+  role = aws_iam_role.ecs_task_execution.name
+
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
 resource "aws_iam_role" "ecs_task" {
   name               = "${local.name_prefix}-ecs-task-role"
@@ -201,11 +206,6 @@ resource "aws_ecs_service" "backend" {
     rollback = true
   }
 
-  health_check_grace_period_seconds = 60
-
-  deployment_minimum_healthy_percent = 50
-  deployment_maximum_percent         = 200
-
   load_balancer {
     target_group_arn = aws_lb_target_group.backend.arn
     container_name   = "nginx"
@@ -221,6 +221,9 @@ resource "aws_ecs_service" "backend" {
 
     assign_public_ip = false
   }
+
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent         = 200
 
   tags = {
     Name = "${local.name_prefix}-backend-service"

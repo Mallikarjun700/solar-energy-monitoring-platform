@@ -48,3 +48,11 @@ postgres_allocated_storage     = 20
 postgres_max_allocated_storage = 50
 
 redis_node_type = "cache.t4g.micro"
+
+
+mysql_multi_az                    = false
+postgres_multi_az                 = false
+mysql_backup_retention_period    = 1
+postgres_backup_retention_period = 1
+
+skip_final_snapshot        = true

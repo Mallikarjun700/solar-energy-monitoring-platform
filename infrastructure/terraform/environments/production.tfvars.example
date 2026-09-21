@@ -37,7 +37,7 @@ telemetry_database_secret_arn = ""
 enable_https = false
 domain_name  = ""
 
-enable_deletion_protection = false
+enable_deletion_protection = true
 
 mysql_instance_class         = "db.t4g.micro"
 mysql_allocated_storage      = 20
@@ -48,3 +48,10 @@ postgres_allocated_storage     = 20
 postgres_max_allocated_storage = 50
 
 redis_node_type = "cache.t4g.micro"
+
+mysql_multi_az                  = true
+postgres_multi_az               = true
+mysql_backup_retention_period  = 7
+postgres_backup_retention_period = 7
+
+skip_final_snapshot       = false
