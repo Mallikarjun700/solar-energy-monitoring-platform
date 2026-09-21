@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\TokenAbility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class ApiErrorResponseTest extends TestCase
@@ -17,6 +18,10 @@ class ApiErrorResponseTest extends TestCase
         $this->authenticateForApi([
             TokenAbility::TELEMETRY_WRITE->value,
         ]);
+
+        Route::middleware('api')->get('/api/v1/test-error', function () {
+            throw new \RuntimeException('Intentional test exception.');
+        });
     }
 
     /**

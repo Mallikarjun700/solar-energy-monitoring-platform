@@ -15,9 +15,13 @@ class CorrelationIdTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function token(array $abilities = []): string
-    {
-        $user = User::factory()->create();
+    private function token(
+        array $abilities = [],
+        ?string $tenantId = null
+    ): string {
+        $user = User::factory()
+            ->forTenant($tenantId ?? (string) Str::uuid())
+            ->create();
 
         return $user->createToken(
             'correlation-test',
@@ -27,7 +31,9 @@ class CorrelationIdTest extends TestCase
 
     public function test_request_generates_correlation_id(): void
     {
-        $token = $this->token();
+        $token = $this->token([
+            TokenAbility::PLANTS_READ->value,
+        ]);
 
         $response = $this
             ->withToken($token)
@@ -47,7 +53,9 @@ class CorrelationIdTest extends TestCase
 
     public function test_existing_correlation_id_is_preserved(): void
     {
-        $token = $this->token();
+        $token = $this->token([
+            TokenAbility::PLANTS_READ->value,
+        ]);
 
         $correlationId = 'test-correlation-123';
 
@@ -119,9 +127,22 @@ class CorrelationIdTest extends TestCase
 
     public function test_no_content_response_does_not_receive_a_json_body(): void
     {
-        $token = $this->token();
+        $tenantId = (string) Str::uuid();
 
-        $asset = Asset::factory()->create();
+        $user = User::factory()
+            ->forTenant($tenantId)
+            ->create();
+
+        $asset = Asset::factory()->create([
+            'tenant_id' => $tenantId,
+        ]);
+
+        $token = $user->createToken(
+            'correlation-test',
+            [
+                TokenAbility::ASSETS_WRITE->value,
+            ]
+        )->plainTextToken;
 
         $response = $this
             ->withToken($token)

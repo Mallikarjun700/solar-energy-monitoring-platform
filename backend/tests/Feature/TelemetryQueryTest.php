@@ -66,7 +66,10 @@ class TelemetryQueryTest extends TestCase
 
         return $user->createToken(
             'telemetry-test',
-            [TokenAbility::TELEMETRY_WRITE->value]
+            [
+                TokenAbility::TELEMETRY_READ->value,
+                TokenAbility::TELEMETRY_WRITE->value,
+            ]
         )->plainTextToken;
     }
 }

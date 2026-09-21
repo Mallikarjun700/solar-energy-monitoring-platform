@@ -7,35 +7,52 @@ use App\Http\Requests\StorePlantRequest;
 use App\Http\Resources\PlantResource;
 use App\Models\Plant;
 use App\Services\PlantService;
+use App\Services\Tenant\TenantContextService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PlantController extends Controller
 {
-    public function __construct(protected PlantService $plantService) {}
+    public function __construct(
+        protected PlantService $plantService,
+        protected TenantContextService $tenantContextService,
+    ) {}
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
         return response()->json([
-            'data' => PlantResource::collection($this->plantService->getPlants()),
-        ], 200);
+            'data' => PlantResource::collection(
+                $this->plantService->getPlants($tenantId)
+            ),
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Plant $plant): PlantResource
+    public function show(Request $request, Plant $plant): PlantResource
     {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
+        $plant = $this->plantService->getPlant(
+            $plant->id,
+            $tenantId
+        );
+
         return new PlantResource($plant);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePlantRequest $request)
-    {
-        $plant = $this->plantService->createPlant($request->validated());
+    public function store(
+        StorePlantRequest $request
+    ): JsonResponse {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request, false);
+
+        $plant = $this->plantService->createPlant(
+            $request->validated(),
+            $tenantId
+        );
 
         return response()->json([
             'message' => 'Plant created successfully.',

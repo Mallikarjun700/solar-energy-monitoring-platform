@@ -43,6 +43,7 @@ class AuthMeTest extends TestCase
                         'name' => 'Solar Operator',
                         'email' => 'admin@example.com',
                         'role' => 'operator',
+                        'tenant_id' => $user->tenant_id,
                     ],
                     'abilities' => [
                         TokenAbility::TELEMETRY_READ->value,

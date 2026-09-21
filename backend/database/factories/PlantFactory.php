@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Plant;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class PlantFactory extends Factory
 {
@@ -13,7 +12,7 @@ class PlantFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => (string) Str::uuid(),
+            'tenant_id' => '00000000-0000-0000-0000-000000000001',
             'name' => $this->faker->company().' Solar Farm',
             'code' => 'PLANT-'.$this->faker->unique()->numberBetween(1000, 9999),
             'location' => $this->faker->city().', '.$this->faker->state(),

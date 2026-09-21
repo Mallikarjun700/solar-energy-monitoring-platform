@@ -8,54 +8,91 @@ use App\Http\Requests\UpdateDeviceRequest;
 use App\Http\Resources\DeviceResource;
 use App\Models\Device;
 use App\Services\DeviceService;
+use App\Services\Tenant\TenantContextService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class DeviceController extends Controller
 {
     public function __construct(
-        private readonly DeviceService $deviceService
+        private readonly DeviceService $deviceService,
+        private readonly TenantContextService $tenantContextService
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
-        $devices = $this->deviceService->list([
-            'asset_id' => $request->query('asset_id'),
-            'status' => $request->query('status'),
-        ]);
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
 
-        return DeviceResource::collection($devices);
+        return response()->json([
+            'data' => DeviceResource::collection(
+                $this->deviceService->list(
+                    $tenantId,
+                    $request->only(['asset_id', 'status'])
+                )
+            ),
+        ]);
     }
 
-    public function store(StoreDeviceRequest $request): DeviceResource
+    public function store(StoreDeviceRequest $request): JsonResponse
     {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
         $device = $this->deviceService->create(
-            $request->validated()
+            $request->validated(),
+            $tenantId
         );
 
-        return new DeviceResource($device);
+        return response()->json([
+            'message' => 'Device created successfully.',
+            'data' => new DeviceResource($device),
+        ], 201);
     }
 
-    public function show(Device $device): DeviceResource
-    {
-        return new DeviceResource($device);
+    public function show(
+        Request $request,
+        Device $device
+    ): DeviceResource {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
+        return new DeviceResource(
+            $this->deviceService->find($device->id, $tenantId)
+        );
     }
 
-    public function update(UpdateDeviceRequest $request, Device $device): DeviceResource
-    {
+    public function update(
+        UpdateDeviceRequest $request,
+        Device $device
+    ): JsonResponse {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
         $device = $this->deviceService->update(
             $device,
-            $request->validated()
+            $request->validated(),
+            $tenantId
         );
 
-        return new DeviceResource($device);
+        return response()->json([
+            'message' => 'Device updated successfully.',
+            'data' => new DeviceResource($device),
+        ]);
     }
 
-    public function destroy(Device $device): Response
-    {
-        $this->deviceService->delete($device);
+    public function destroy(
+        Request $request,
+        Device $device
+    ): Response {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
 
-        return response()->noContent();
+        $this->deviceService->delete($device, $tenantId);
+
+        return response()->json([
+            'message' => 'Device deleted successfully.',
+        ]);
     }
 }

@@ -20,9 +20,11 @@ class DeviceFactory extends Factory
 
     public function definition(): array
     {
+        $tenantId = '00000000-0000-0000-0000-000000000001';
+
         return [
-            'tenant_id' => fake()->uuid(),
-            'asset_id' => Asset::factory(),
+            'tenant_id' => $tenantId,
+            'asset_id' => Asset::factory()->state(['tenant_id' => $tenantId]),
             'device_type' => fake()->randomElement([
                 'INVERTER',
                 'METER',

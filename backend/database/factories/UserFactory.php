@@ -32,6 +32,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'role' => UserRole::VIEWER->value,
+            'tenant_id' => '00000000-0000-0000-0000-000000000001',
         ];
     }
 
@@ -42,6 +43,16 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the model's tenant should be set.
+     */
+    public function forTenant(string $tenantId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenantId,
         ]);
     }
 }

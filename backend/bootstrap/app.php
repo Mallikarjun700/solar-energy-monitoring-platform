@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -82,6 +83,19 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $exceptions->render(function (AccessDeniedHttpException $exception, Request $request) {
             if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Forbidden.',
+                'correlation_id' => app()->bound('correlation_id')
+                    ? app('correlation_id')
+                    : null,
+            ], 403);
+        });
+        $exceptions->render(function (HttpException $exception, Request $request) {
+            if (! $request->is('api/*') || $exception->getStatusCode() !== 403) {
                 return null;
             }
 

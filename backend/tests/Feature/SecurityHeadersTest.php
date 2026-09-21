@@ -2,10 +2,20 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class SecurityHeadersTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Route::middleware('api')->get('/api/v1/test-error', function () {
+            throw new \RuntimeException('Intentional test exception.');
+        });
+    }
+
     /**
      * A basic feature test example.
      */
