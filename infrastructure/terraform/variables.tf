@@ -309,3 +309,51 @@ variable "skip_final_snapshot" {
   type        = bool
   default     = true
 }
+
+
+variable "cloudwatch_log_retention_days" {
+  description = "CloudWatch log retention period in days."
+  type        = number
+  default     = 30
+
+  validation {
+    condition = contains(
+      [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653],
+      var.cloudwatch_log_retention_days
+    )
+    error_message = "cloudwatch_log_retention_days must be a valid CloudWatch retention period."
+  }
+}
+
+variable "backend_cpu_alarm_threshold" {
+  description = "Backend ECS CPU utilization alarm threshold."
+  type        = number
+  default     = 80
+
+  validation {
+    condition     = var.backend_cpu_alarm_threshold > 0 && var.backend_cpu_alarm_threshold <= 100
+    error_message = "backend_cpu_alarm_threshold must be between 1 and 100."
+  }
+}
+
+variable "backend_memory_alarm_threshold" {
+  description = "Backend ECS memory utilization alarm threshold."
+  type        = number
+  default     = 85
+
+  validation {
+    condition     = var.backend_memory_alarm_threshold > 0 && var.backend_memory_alarm_threshold <= 100
+    error_message = "backend_memory_alarm_threshold must be between 1 and 100."
+  }
+}
+
+variable "alb_unhealthy_host_threshold" {
+  description = "Number of unhealthy ALB targets that triggers an alarm."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.alb_unhealthy_host_threshold >= 1
+    error_message = "alb_unhealthy_host_threshold must be at least 1."
+  }
+}

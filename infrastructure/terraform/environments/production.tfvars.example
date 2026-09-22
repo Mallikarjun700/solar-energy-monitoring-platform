@@ -55,3 +55,9 @@ mysql_backup_retention_period  = 7
 postgres_backup_retention_period = 7
 
 skip_final_snapshot       = false
+
+cloudwatch_log_retention_days = 30
+
+backend_cpu_alarm_threshold    = 80
+backend_memory_alarm_threshold = 85
+alb_unhealthy_host_threshold   = 1

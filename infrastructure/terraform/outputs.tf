@@ -141,3 +141,9 @@ output "ecs_scheduler_service_name" {
   description = "ECS service name for the scheduler."
   value       = aws_ecs_service.scheduler.name
 }
+
+
+output "alerts_topic_arn" {
+  description = "SNS topic ARN used for infrastructure alerts."
+  value       = aws_sns_topic.alerts.arn
+}
