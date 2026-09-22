@@ -20,8 +20,8 @@ resource "aws_appautoscaling_policy" "backend_cpu" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
+    scale_in_cooldown  = var.backend_scale_in_cooldown_seconds
+    scale_out_cooldown = var.backend_scale_out_cooldown_seconds
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_appautoscaling_policy" "queue_worker_cpu" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    scale_in_cooldown  = 120
-    scale_out_cooldown = 60
+    scale_in_cooldown  = var.queue_worker_scale_in_cooldown_seconds
+    scale_out_cooldown = var.queue_worker_scale_out_cooldown_seconds
   }
 }
