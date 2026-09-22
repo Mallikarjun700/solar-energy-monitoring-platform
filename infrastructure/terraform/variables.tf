@@ -174,6 +174,89 @@ variable "scheduler_desired_count" {
   default     = 1
 }
 
+variable "backend_deployment_min_healthy_percent" {
+  description = "Minimum percentage of healthy backend tasks during deployment."
+  type        = number
+  default     = 50
+
+  validation {
+    condition = (
+      var.backend_deployment_min_healthy_percent >= 0 &&
+      var.backend_deployment_min_healthy_percent <= 100
+    )
+    error_message = "backend_deployment_min_healthy_percent must be between 0 and 100."
+  }
+}
+
+variable "backend_deployment_max_percent" {
+  description = "Maximum percentage of backend tasks allowed during deployment."
+  type        = number
+  default     = 200
+
+  validation {
+    condition     = var.backend_deployment_max_percent >= 100
+    error_message = "backend_deployment_max_percent must be at least 100."
+  }
+}
+
+variable "backend_health_check_grace_period_seconds" {
+  description = "Grace period before ECS evaluates backend load balancer health."
+  type        = number
+  default     = 60
+
+  validation {
+    condition = (
+      var.backend_health_check_grace_period_seconds >= 0 &&
+      var.backend_health_check_grace_period_seconds <= 3600
+    )
+    error_message = "backend_health_check_grace_period_seconds must be between 0 and 3600."
+  }
+}
+
+variable "backend_scale_in_cooldown_seconds" {
+  description = "Backend ECS autoscaling scale-in cooldown."
+  type        = number
+  default     = 180
+
+  validation {
+    condition     = var.backend_scale_in_cooldown_seconds >= 0
+    error_message = "backend_scale_in_cooldown_seconds must be non-negative."
+  }
+}
+
+variable "backend_scale_out_cooldown_seconds" {
+  description = "Backend ECS autoscaling scale-out cooldown."
+  type        = number
+  default     = 60
+
+  validation {
+    condition     = var.backend_scale_out_cooldown_seconds >= 0
+    error_message = "backend_scale_out_cooldown_seconds must be non-negative."
+  }
+}
+
+variable "queue_worker_scale_in_cooldown_seconds" {
+  description = "Queue worker ECS autoscaling scale-in cooldown."
+  type        = number
+  default     = 180
+
+  validation {
+    condition     = var.queue_worker_scale_in_cooldown_seconds >= 0
+    error_message = "queue_worker_scale_in_cooldown_seconds must be non-negative."
+  }
+}
+
+variable "queue_worker_scale_out_cooldown_seconds" {
+  description = "Queue worker ECS autoscaling scale-out cooldown."
+  type        = number
+  default     = 60
+
+  validation {
+    condition     = var.queue_worker_scale_out_cooldown_seconds >= 0
+    error_message = "queue_worker_scale_out_cooldown_seconds must be non-negative."
+  }
+}
+
 variable "backend_min_capacity" {
   description = "Minimum number of API ECS tasks."
   type        = number
