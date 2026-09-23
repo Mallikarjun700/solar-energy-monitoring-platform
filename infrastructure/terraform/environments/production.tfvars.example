@@ -48,6 +48,10 @@ postgres_allocated_storage     = 20
 postgres_max_allocated_storage = 50
 
 redis_node_type = "cache.t4g.micro"
+redis_num_cache_clusters = 2
+redis_multi_az = true
+redis_automatic_failover = true
+redis_snapshot_retention_limit = 7
 
 mysql_multi_az                  = true
 postgres_multi_az               = true

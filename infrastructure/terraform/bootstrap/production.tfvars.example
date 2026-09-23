@@ -1,0 +1,3 @@
+aws_region       = "ap-south-1"
+project_name     = "solar-energy-monitoring-platform"
+state_bucket_name = "REPLACE_WITH_UNIQUE_STATE_BUCKET_NAME"

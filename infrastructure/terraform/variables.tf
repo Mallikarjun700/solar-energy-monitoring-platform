@@ -329,6 +329,40 @@ variable "postgres_max_allocated_storage" {
   default     = 50
 }
 
+variable "redis_num_cache_clusters" {
+  description = "Number of Redis cache nodes."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.redis_num_cache_clusters >= 1
+    error_message = "Redis must have at least one cache cluster."
+  }
+}
+
+variable "redis_multi_az" {
+  description = "Enable Redis Multi-AZ deployment."
+  type        = bool
+  default     = false
+}
+
+variable "redis_automatic_failover" {
+  description = "Enable Redis automatic failover."
+  type        = bool
+  default     = false
+}
+
+variable "redis_snapshot_retention_limit" {
+  description = "Number of days to retain Redis automatic snapshots."
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.redis_snapshot_retention_limit >= 0 && var.redis_snapshot_retention_limit <= 35
+    error_message = "Redis snapshot retention must be between 0 and 35 days."
+  }
+}
+
 variable "redis_node_type" {
   description = "ElastiCache Redis node type."
   type        = string

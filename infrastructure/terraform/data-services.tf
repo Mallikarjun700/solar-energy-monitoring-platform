@@ -79,11 +79,11 @@ resource "aws_db_instance" "postgres" {
 
   publicly_accessible = false
 
-  multi_az            = false
-  skip_final_snapshot = true
+  multi_az            = var.postgres_multi_az
+  skip_final_snapshot = var.skip_final_snapshot
   deletion_protection = var.enable_deletion_protection
 
-  backup_retention_period = 1
+  backup_retention_period = var.postgres_backup_retention_period
 
   auto_minor_version_upgrade = true
 
@@ -108,15 +108,16 @@ resource "aws_elasticache_replication_group" "redis" {
 
   engine             = "redis"
   node_type          = var.redis_node_type
-  num_cache_clusters = 1
+  num_cache_clusters = var.redis_num_cache_clusters
 
   port = 6379
 
   subnet_group_name  = aws_elasticache_subnet_group.redis.name
   security_group_ids = [aws_security_group.redis.id]
 
-  automatic_failover_enabled = false
-  multi_az_enabled           = false
+  automatic_failover_enabled = var.redis_automatic_failover
+  multi_az_enabled           = var.redis_multi_az
+  snapshot_retention_limit   = var.redis_snapshot_retention_limit
 
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
