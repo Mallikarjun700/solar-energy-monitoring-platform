@@ -57,6 +57,88 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOYMENT_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Validate deployment configuration
+        env:
+          AWS_DEPLOYMENT_ROLE_ARN: ${{ vars.AWS_DEPLOYMENT_ROLE_ARN }}
+          ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+          ECR_NGINX_REPOSITORY: ${{ vars.ECR_NGINX_REPOSITORY }}
+          ECS_CLUSTER_NAME: ${{ vars.ECS_CLUSTER_NAME }}
+          ECS_BACKEND_TASK_FAMILY: ${{ vars.ECS_BACKEND_TASK_FAMILY }}
+          ECS_BACKEND_SERVICE_NAME: ${{ vars.ECS_BACKEND_SERVICE_NAME }}
+          ECS_QUEUE_TASK_FAMILY: ${{ vars.ECS_QUEUE_TASK_FAMILY }}
+          ECS_QUEUE_SERVICE_NAME: ${{ vars.ECS_QUEUE_SERVICE_NAME }}
+          ECS_SCHEDULER_TASK_FAMILY: ${{ vars.ECS_SCHEDULER_TASK_FAMILY }}
+          ECS_SCHEDULER_SERVICE_NAME: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
+        run: |
+          set -euo pipefail
+
+          required_vars=(
+            AWS_DEPLOYMENT_ROLE_ARN
+            ECR_BACKEND_REPOSITORY
+            ECR_NGINX_REPOSITORY
+            ECS_CLUSTER_NAME
+            ECS_BACKEND_TASK_FAMILY
+            ECS_BACKEND_SERVICE_NAME
+            ECS_QUEUE_TASK_FAMILY
+            ECS_QUEUE_SERVICE_NAME
+            ECS_SCHEDULER_TASK_FAMILY
+            ECS_SCHEDULER_SERVICE_NAME
+          )
+
+          for variable in "${required_vars[@]}"; do
+            if [ -z "${!variable:-}" ]; then
+              echo "ERROR: Required deployment variable is empty: $variable"
+              exit 1
+            fi
+          done
+
+          echo "Deployment configuration variables: OK"
+
+          echo ""
+          echo "========== AWS IDENTITY =========="
+          aws sts get-caller-identity
+
+          echo ""
+          echo "========== ECR REPOSITORIES =========="
+          aws ecr describe-repositories             --repository-names               "$ECR_BACKEND_REPOSITORY"               "$ECR_NGINX_REPOSITORY"             --region "$AWS_REGION"             >/dev/null
+
+          echo "ECR repositories: OK"
+
+          echo ""
+          echo "========== ECS CLUSTER =========="
+          cluster_status=$(aws ecs describe-clusters             --clusters "$ECS_CLUSTER_NAME"             --region "$AWS_REGION"             --query 'clusters[0].status'             --output text)
+
+          if [ "$cluster_status" != "ACTIVE" ]; then
+            echo "ERROR: ECS cluster is missing or not ACTIVE: $ECS_CLUSTER_NAME"
+            exit 1
+          fi
+
+          echo "ECS cluster: $ECS_CLUSTER_NAME ($cluster_status)"
+
+          echo ""
+          echo "========== ECS SERVICES =========="
+          service_count=$(aws ecs describe-services             --cluster "$ECS_CLUSTER_NAME"             --services               "$ECS_BACKEND_SERVICE_NAME"               "$ECS_QUEUE_SERVICE_NAME"               "$ECS_SCHEDULER_SERVICE_NAME"             --region "$AWS_REGION"             --query 'length(services)'             --output text)
+
+          if [ "$service_count" != "3" ]; then
+            echo "ERROR: Expected 3 ECS services, found $service_count"
+            exit 1
+          fi
+
+          aws ecs describe-services             --cluster "$ECS_CLUSTER_NAME"             --services               "$ECS_BACKEND_SERVICE_NAME"               "$ECS_QUEUE_SERVICE_NAME"               "$ECS_SCHEDULER_SERVICE_NAME"             --region "$AWS_REGION"             --query 'services[].{name:serviceName,status:status}'             --output table
+
+          echo "ECS services: OK"
+
+          echo ""
+          echo "========== ECS TASK DEFINITIONS =========="
+          aws ecs describe-task-definition             --task-definition "$ECS_BACKEND_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition.family'             --output text
+
+          aws ecs describe-task-definition             --task-definition "$ECS_QUEUE_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition.family'             --output text
+
+          aws ecs describe-task-definition             --task-definition "$ECS_SCHEDULER_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition.family'             --output text
+
+          echo ""
+          echo "Deployment preflight: PASSED"
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
