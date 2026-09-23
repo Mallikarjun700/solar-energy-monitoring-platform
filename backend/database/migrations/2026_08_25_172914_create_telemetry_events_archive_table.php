@@ -11,7 +11,7 @@ return new class extends Migration
 
     public function up(): void
     {
-        if ( ! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
+        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return;
         }
 
@@ -40,7 +40,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if ( ! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
+        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
             return;
         }
 
