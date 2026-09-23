@@ -126,20 +126,16 @@ resource "aws_ecs_task_definition" "backend" {
       ]
 
 
-      secrets = concat(
-        var.database_secret_arn != "" ? [
-          {
-            name      = "DB_PASSWORD"
-            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
-          }
-        ] : [],
-        var.telemetry_database_secret_arn != "" ? [
-          {
-            name      = "TELEMETRY_DB_PASSWORD"
-            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
-          }
-        ] : []
-      )
+      secrets = [
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${aws_db_instance.mysql.master_user_secret[0].secret_arn}:password::"
+        },
+        {
+          name      = "TELEMETRY_DB_PASSWORD"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -254,20 +250,16 @@ resource "aws_ecs_task_definition" "queue_worker" {
       ]
 
 
-      secrets = concat(
-        var.database_secret_arn != "" ? [
-          {
-            name      = "DB_PASSWORD"
-            valueFrom = "${var.database_secret_arn}:DB_PASSWORD::"
-          }
-        ] : [],
-        var.telemetry_database_secret_arn != "" ? [
-          {
-            name      = "TELEMETRY_DB_PASSWORD"
-            valueFrom = "${var.telemetry_database_secret_arn}:TELEMETRY_DB_PASSWORD::"
-          }
-        ] : []
-      )
+      secrets = [
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${aws_db_instance.mysql.master_user_secret[0].secret_arn}:password::"
+        },
+        {
+          name      = "TELEMETRY_DB_PASSWORD"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"

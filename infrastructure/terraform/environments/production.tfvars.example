@@ -31,8 +31,8 @@ telemetry_database_username = ""
 redis_host = ""
 redis_port = "6379"
 
-database_secret_arn          = ""
-telemetry_database_secret_arn = ""
+# Database passwords are supplied by RDS-managed Secrets Manager secrets.
+# No plaintext database passwords or manually copied secret ARNs are required.
 
 enable_https = false
 domain_name  = ""
