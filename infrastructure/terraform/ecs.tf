@@ -23,6 +23,24 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
     actions = [
       "sts:AssumeRole"
     ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+
+      values = [
+        data.aws_caller_identity.current.account_id
+      ]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+
+      values = [
+        "arn:aws:ecs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+      ]
+    }
   }
 }
 

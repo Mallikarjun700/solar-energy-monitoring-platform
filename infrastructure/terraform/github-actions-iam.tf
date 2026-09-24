@@ -44,21 +44,45 @@ data "aws_iam_policy_document" "github_actions_deployment" {
   }
 
   statement {
-    sid    = "ECSDescribe"
+    sid    = "ECSDescribeServices"
     effect = "Allow"
 
     actions = [
-      "ecs:DescribeServices",
-      "ecs:DescribeTaskDefinition"
+      "ecs:DescribeServices"
     ]
 
     resources = [
       aws_ecs_service.backend.id,
       aws_ecs_service.queue_worker.id,
-      aws_ecs_service.scheduler.id,
+      aws_ecs_service.scheduler.id
+    ]
+  }
+
+  statement {
+    sid    = "ECSDescribeTaskDefinitions"
+    effect = "Allow"
+
+    actions = [
+      "ecs:DescribeTaskDefinition"
+    ]
+
+    resources = [
       aws_ecs_task_definition.backend.arn,
       aws_ecs_task_definition.queue_worker.arn,
       aws_ecs_task_definition.scheduler.arn
+    ]
+  }
+
+  statement {
+    sid    = "ECSDescribeCluster"
+    effect = "Allow"
+
+    actions = [
+      "ecs:DescribeClusters"
+    ]
+
+    resources = [
+      aws_ecs_cluster.main.arn
     ]
   }
 

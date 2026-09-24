@@ -66,18 +66,6 @@ variable "nginx_image_tag" {
   default     = "demo"
 }
 
-variable "database_secret_arn" {
-  description = "ARN of the AWS Secrets Manager secret containing the application database credentials."
-  type        = string
-  default     = ""
-}
-
-variable "telemetry_database_secret_arn" {
-  description = "ARN of the AWS Secrets Manager secret containing telemetry database credentials."
-  type        = string
-  default     = ""
-}
-
 variable "database_host" {
   description = "Application database hostname."
   type        = string

@@ -31,9 +31,6 @@ telemetry_database_username = ""
 redis_host = ""
 redis_port = "6379"
 
-database_secret_arn          = ""
-telemetry_database_secret_arn = ""
-
 enable_https = false
 domain_name  = ""
 
