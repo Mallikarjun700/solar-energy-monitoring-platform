@@ -42,6 +42,28 @@ variable "backend_image_tag" {
   default     = "demo"
 }
 
+variable "migration_cpu" {
+  description = "CPU units for the one-off database migration ECS task."
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = var.migration_cpu >= 256
+    error_message = "Migration CPU must be at least 256."
+  }
+}
+
+variable "migration_memory" {
+  description = "Memory in MiB for the one-off database migration ECS task."
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = var.migration_memory >= 512
+    error_message = "Migration memory must be at least 512 MiB."
+  }
+}
+
 variable "backend_cpu" {
   description = "CPU units for the Laravel ECS task."
   type        = number

@@ -12,6 +12,20 @@ on:
           - production
         default: staging
 
+      action:
+        description: "Deployment action"
+        required: true
+        type: choice
+        options:
+          - deploy
+          - rollback
+        default: deploy
+
+      release_sha:
+        description: "Existing Git SHA to deploy when rolling back"
+        required: false
+        type: string
+
 permissions:
   contents: read
   id-token: write
@@ -22,7 +36,6 @@ concurrency:
 
 env:
   AWS_REGION: ap-south-1
-  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   deployment:
@@ -35,6 +48,94 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve release
+        env:
+          DEPLOYMENT_ACTION: ${{ inputs.action }}
+          REQUESTED_RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$DEPLOYMENT_ACTION" = "deploy" ]; then
+            IMAGE_TAG="$GITHUB_SHA"
+          elif [ "$DEPLOYMENT_ACTION" = "rollback" ]; then
+            if [ -z "$REQUESTED_RELEASE_SHA" ]; then
+              echo "ERROR: release_sha is required for rollback."
+              exit 1
+            fi
+
+            IMAGE_TAG="$REQUESTED_RELEASE_SHA"
+          else
+            echo "ERROR: Unsupported deployment action: $DEPLOYMENT_ACTION"
+            exit 1
+          fi
+
+          if ! printf '%s' "$IMAGE_TAG" | grep -Eq '^[0-9a-fA-F]{7,64}$'; then
+            echo "ERROR: Invalid release SHA: $IMAGE_TAG"
+            exit 1
+          fi
+
+          echo "Deployment action: $DEPLOYMENT_ACTION"
+          echo "Selected release SHA: $IMAGE_TAG"
+
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Display release plan
+        run: |
+          set -euo pipefail
+
+          echo "=========================================="
+          echo "PRODUCTION DEPLOYMENT RELEASE PLAN"
+          echo "=========================================="
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Action:      ${{ inputs.action }}"
+          echo "Release SHA: $IMAGE_TAG"
+
+          if [ "${{ inputs.action }}" = "deploy" ]; then
+            echo "Images:      BUILD + PUSH"
+            echo "Migration:   RUN"
+          else
+            echo "Images:      EXISTING ECR ARTIFACTS"
+            echo "Migration:   SKIP"
+          fi
+
+          echo "=========================================="
+
+      - name: Validate rollback environment
+        if: ${{ inputs.action == 'rollback' }}
+        run: |
+          set -euo pipefail
+
+          if [ "${{ inputs.environment }}" != "production" ]; then
+            echo "ERROR: Rollback is only allowed for production."
+            echo "Requested environment: ${{ inputs.environment }}"
+            exit 1
+          fi
+
+          echo "Rollback environment: production"
+          echo "Rollback safety gate: PASSED"
+
+      - name: Verify rollback artifacts
+        if: ${{ inputs.action == 'rollback' }}
+        env:
+          ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+          ECR_NGINX_REPOSITORY: ${{ vars.ECR_NGINX_REPOSITORY }}
+        run: |
+          set -euo pipefail
+
+          echo "========== ROLLBACK ARTIFACT VERIFICATION =========="
+          echo "Release SHA: $IMAGE_TAG"
+
+          echo "Checking backend image..."
+          aws ecr describe-images             --repository-name "$ECR_BACKEND_REPOSITORY"             --image-ids "imageTag=$IMAGE_TAG"             --region "$AWS_REGION"             >/dev/null
+
+          echo "Backend image exists."
+
+          echo "Checking Nginx image..."
+          aws ecr describe-images             --repository-name "$ECR_NGINX_REPOSITORY"             --image-ids "imageTag=$IMAGE_TAG"             --region "$AWS_REGION"             >/dev/null
+
+          echo "Nginx image exists."
+          echo "Rollback artifacts: VERIFIED"
 
       - name: Validate production branch
         if: ${{ inputs.environment == 'production' }}
@@ -69,6 +170,7 @@ jobs:
           ECS_QUEUE_SERVICE_NAME: ${{ vars.ECS_QUEUE_SERVICE_NAME }}
           ECS_SCHEDULER_TASK_FAMILY: ${{ vars.ECS_SCHEDULER_TASK_FAMILY }}
           ECS_SCHEDULER_SERVICE_NAME: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
+          ECS_MIGRATION_TASK_FAMILY: ${{ vars.ECS_MIGRATION_TASK_FAMILY }}
         run: |
           set -euo pipefail
 
@@ -83,6 +185,7 @@ jobs:
             ECS_QUEUE_SERVICE_NAME
             ECS_SCHEDULER_TASK_FAMILY
             ECS_SCHEDULER_SERVICE_NAME
+            ECS_MIGRATION_TASK_FAMILY
           )
 
           for variable in "${required_vars[@]}"; do
@@ -136,6 +239,8 @@ jobs:
 
           aws ecs describe-task-definition             --task-definition "$ECS_SCHEDULER_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition.family'             --output text
 
+          aws ecs describe-task-definition             --task-definition "$ECS_MIGRATION_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition.family'             --output text
+
           echo ""
           echo "Deployment preflight: PASSED"
 
@@ -143,6 +248,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build backend image
+        if: ${{ inputs.action == 'deploy' }}
         run: |
           docker build \
             -f backend/docker/php/Dockerfile \
@@ -150,6 +256,7 @@ jobs:
             backend
 
       - name: Build Nginx image
+        if: ${{ inputs.action == 'deploy' }}
         run: |
           docker build \
             -f docker/nginx/Dockerfile \
@@ -157,14 +264,99 @@ jobs:
             backend
 
       - name: Push backend image
+        if: ${{ inputs.action == 'deploy' }}
         run: |
           docker push \
             "${{ vars.ECR_BACKEND_REPOSITORY }}:${IMAGE_TAG}"
 
       - name: Push Nginx image
+        if: ${{ inputs.action == 'deploy' }}
         run: |
           docker push \
             "${{ vars.ECR_NGINX_REPOSITORY }}:${IMAGE_TAG}"
+
+      - name: Run database migrations
+        if: ${{ inputs.action == 'deploy' }}
+        env:
+          ECS_CLUSTER_NAME: ${{ vars.ECS_CLUSTER_NAME }}
+          ECS_BACKEND_SERVICE_NAME: ${{ vars.ECS_BACKEND_SERVICE_NAME }}
+          ECS_MIGRATION_TASK_FAMILY: ${{ vars.ECS_MIGRATION_TASK_FAMILY }}
+          ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+        run: |
+          set -euo pipefail
+
+          echo "========== DATABASE MIGRATION =========="
+
+          echo "Getting backend network configuration..."
+          NETWORK_CONFIGURATION=$(aws ecs describe-services             --cluster "$ECS_CLUSTER_NAME"             --services "$ECS_BACKEND_SERVICE_NAME"             --region "$AWS_REGION"             --query 'services[0].networkConfiguration'             --output json)
+
+          if [ "$NETWORK_CONFIGURATION" = "null" ]; then
+            echo "ERROR: Backend ECS network configuration was not found."
+            exit 1
+          fi
+
+          printf '%s' "$NETWORK_CONFIGURATION" > migration-network-configuration.json
+
+          echo "Preparing migration task definition..."
+          aws ecs describe-task-definition             --task-definition "$ECS_MIGRATION_TASK_FAMILY"             --region "$AWS_REGION"             --query 'taskDefinition'             > migration-task-definition.json
+
+          python3 - "$ECR_BACKEND_REPOSITORY" "$IMAGE_TAG" <<'PYTHON'
+          import json
+          import sys
+          from pathlib import Path
+
+          repository = sys.argv[1]
+          image_tag = sys.argv[2]
+
+          path = Path("migration-task-definition.json")
+          definition = json.loads(path.read_text())
+
+          definition["containerDefinitions"][0]["image"] = (
+              f"{repository}:{image_tag}"
+          )
+
+          for key in [
+              "taskDefinitionArn",
+              "revision",
+              "status",
+              "requiresAttributes",
+              "compatibilities",
+              "registeredAt",
+              "registeredBy"
+          ]:
+              definition.pop(key, None)
+
+          path.write_text(json.dumps(definition))
+          PYTHON
+
+          echo "Registering migration task definition..."
+          MIGRATION_TASK_DEFINITION_ARN=$(aws ecs register-task-definition             --cli-input-json file://migration-task-definition.json             --region "$AWS_REGION"             --query 'taskDefinition.taskDefinitionArn'             --output text)
+
+          echo "Migration task definition: $MIGRATION_TASK_DEFINITION_ARN"
+
+          echo "Starting migration task..."
+          MIGRATION_TASK_ARN=$(aws ecs run-task             --cluster "$ECS_CLUSTER_NAME"             --launch-type FARGATE             --task-definition "$MIGRATION_TASK_DEFINITION_ARN"             --network-configuration file://migration-network-configuration.json             --region "$AWS_REGION"             --query 'tasks[0].taskArn'             --output text)
+
+          if [ -z "$MIGRATION_TASK_ARN" ] || [ "$MIGRATION_TASK_ARN" = "None" ]; then
+            echo "ERROR: ECS migration task failed to start."
+            exit 1
+          fi
+
+          echo "Migration task started: $MIGRATION_TASK_ARN"
+
+          echo "Waiting for migration task to finish..."
+          aws ecs wait tasks-stopped             --cluster "$ECS_CLUSTER_NAME"             --tasks "$MIGRATION_TASK_ARN"             --region "$AWS_REGION"
+
+          EXIT_CODE=$(aws ecs describe-tasks             --cluster "$ECS_CLUSTER_NAME"             --tasks "$MIGRATION_TASK_ARN"             --region "$AWS_REGION"             --query 'tasks[0].containers[0].exitCode'             --output text)
+
+          echo "Migration exit code: $EXIT_CODE"
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "ERROR: Database migration failed."
+            exit 1
+          fi
+
+          echo "Database migrations completed successfully."
 
       - name: Download current backend task definition
         run: |

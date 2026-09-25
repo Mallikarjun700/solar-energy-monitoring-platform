@@ -69,8 +69,33 @@ data "aws_iam_policy_document" "github_actions_deployment" {
     resources = [
       aws_ecs_task_definition.backend.arn,
       aws_ecs_task_definition.queue_worker.arn,
-      aws_ecs_task_definition.scheduler.arn
+      aws_ecs_task_definition.scheduler.arn,
+      aws_ecs_task_definition.migration.arn
     ]
+  }
+
+  statement {
+    sid    = "ECSRunMigrationTask"
+    effect = "Allow"
+
+    actions = [
+      "ecs:RunTask"
+    ]
+
+    resources = [
+      aws_ecs_task_definition.migration.arn
+    ]
+  }
+
+  statement {
+    sid    = "ECSDescribeMigrationTasks"
+    effect = "Allow"
+
+    actions = [
+      "ecs:DescribeTasks"
+    ]
+
+    resources = ["*"]
   }
 
   statement {

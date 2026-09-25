@@ -117,6 +117,21 @@ output "github_actions_deployment_role_arn" {
   value       = aws_iam_role.github_actions_deployment.arn
 }
 
+output "ecr_backend_repository_url" {
+  description = "ECR repository URL for the backend image."
+  value       = aws_ecr_repository.backend.repository_url
+}
+
+output "ecr_nginx_repository_url" {
+  description = "ECR repository URL for the Nginx image."
+  value       = aws_ecr_repository.nginx.repository_url
+}
+
+output "ecs_backend_service_name" {
+  description = "ECS backend service name."
+  value       = aws_ecs_service.backend.name
+}
+
 output "ecs_backend_task_family" {
   description = "ECS task definition family for the backend."
   value       = aws_ecs_task_definition.backend.family
@@ -125,6 +140,11 @@ output "ecs_backend_task_family" {
 output "ecs_queue_task_family" {
   description = "ECS task definition family for the queue worker."
   value       = aws_ecs_task_definition.queue_worker.family
+}
+
+output "migration_task_family" {
+  description = "ECS migration task definition family."
+  value       = aws_ecs_task_definition.migration.family
 }
 
 output "ecs_queue_service_name" {

@@ -202,6 +202,124 @@ resource "aws_ecs_task_definition" "backend" {
   }
 }
 
+resource "aws_ecs_task_definition" "migration" {
+  family                   = "${local.name_prefix}-migration"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  cpu    = var.migration_cpu
+  memory = var.migration_memory
+
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "migration"
+      image     = "${aws_ecr_repository.backend.repository_url}:${var.backend_image_tag}"
+      essential = true
+
+      entryPoint = ["sh", "./docker/entrypoint.sh"]
+
+      environment = [
+        {
+          name  = "SERVICE_TYPE"
+          value = "migration"
+        },
+        {
+          name  = "APP_ENV"
+          value = var.environment
+        },
+        {
+          name  = "APP_DEBUG"
+          value = "false"
+        },
+        {
+          name  = "CACHE_STORE"
+          value = "redis"
+        },
+        {
+          name  = "QUEUE_CONNECTION"
+          value = "database"
+        },
+        {
+          name  = "DB_CONNECTION"
+          value = "mysql"
+        },
+        {
+          name  = "DB_HOST"
+          value = aws_db_instance.mysql.address
+        },
+        {
+          name  = "DB_PORT"
+          value = "3306"
+        },
+        {
+          name  = "DB_DATABASE"
+          value = var.database_name
+        },
+        {
+          name  = "DB_USERNAME"
+          value = var.database_username
+        },
+        {
+          name  = "TELEMETRY_DB_CONNECTION"
+          value = "pgsql_telemetry"
+        },
+        {
+          name  = "TELEMETRY_DB_HOST"
+          value = aws_db_instance.postgres.address
+        },
+        {
+          name  = "TELEMETRY_DB_PORT"
+          value = "5432"
+        },
+        {
+          name  = "TELEMETRY_DB_DATABASE"
+          value = var.telemetry_database_name
+        },
+        {
+          name  = "TELEMETRY_DB_USERNAME"
+          value = var.telemetry_database_username
+        },
+        {
+          name  = "REDIS_HOST"
+          value = aws_elasticache_replication_group.redis.primary_endpoint_address
+        },
+        {
+          name  = "REDIS_PORT"
+          value = "6379"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${aws_db_instance.mysql.master_user_secret[0].secret_arn}:password::"
+        },
+        {
+          name      = "TELEMETRY_DB_PASSWORD"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.api.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "migration"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name = "${local.name_prefix}-migration-task"
+  }
+}
+
 resource "aws_ecs_service" "backend" {
   name            = "${local.name_prefix}-backend"
   cluster         = aws_ecs_cluster.main.id
