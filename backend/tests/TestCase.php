@@ -7,6 +7,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 
 abstract class TestCase extends BaseTestCase
@@ -30,9 +31,15 @@ abstract class TestCase extends BaseTestCase
     protected function resetTelemetryDatabase(): void
     {
         $connection = DB::connection('pgsql_telemetry');
+        $schema = Schema::connection('pgsql_telemetry');
 
-        $connection->table('telemetry_events_archive')->delete();
-        $connection->table('telemetry_events')->delete();
+        if ($schema->hasTable('telemetry_events_archive')) {
+            $connection->table('telemetry_events_archive')->delete();
+        }
+
+        if ($schema->hasTable('telemetry_events')) {
+            $connection->table('telemetry_events')->delete();
+        }
     }
 
     protected function authenticateForApi(array $abilities = []): void
