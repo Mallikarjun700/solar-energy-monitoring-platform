@@ -22,14 +22,14 @@ class CorsSecurityTest extends TestCase
     public function test_allowed_origin_receives_cors_headers(): void
     {
         $response = $this
-            ->withHeader('Origin', 'http://localhost:3000')
+            ->withHeader('Origin', 'http://localhost:4200')
             ->options('/api/v1/ready');
 
         $response
             ->assertSuccessful()
             ->assertHeader(
                 'Access-Control-Allow-Origin',
-                '*'
+                'http://localhost:4200'
             );
     }
 
