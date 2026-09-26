@@ -127,6 +127,11 @@ output "ecr_nginx_repository_url" {
   value       = aws_ecr_repository.nginx.repository_url
 }
 
+output "alb_backend_target_group_arn" {
+  description = "ALB target group ARN for the backend service."
+  value       = aws_lb_target_group.backend.arn
+}
+
 output "ecs_backend_service_name" {
   description = "ECS backend service name."
   value       = aws_ecs_service.backend.name

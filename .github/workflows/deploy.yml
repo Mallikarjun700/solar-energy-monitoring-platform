@@ -171,6 +171,8 @@ jobs:
           ECS_SCHEDULER_TASK_FAMILY: ${{ vars.ECS_SCHEDULER_TASK_FAMILY }}
           ECS_SCHEDULER_SERVICE_NAME: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
           ECS_MIGRATION_TASK_FAMILY: ${{ vars.ECS_MIGRATION_TASK_FAMILY }}
+          ALB_BACKEND_TARGET_GROUP_ARN: ${{ vars.ALB_BACKEND_TARGET_GROUP_ARN }}
+          ALB_DNS_NAME: ${{ vars.ALB_DNS_NAME }}
         run: |
           set -euo pipefail
 
@@ -186,6 +188,8 @@ jobs:
             ECS_SCHEDULER_TASK_FAMILY
             ECS_SCHEDULER_SERVICE_NAME
             ECS_MIGRATION_TASK_FAMILY
+            ALB_BACKEND_TARGET_GROUP_ARN
+            ALB_DNS_NAME
           )
 
           for variable in "${required_vars[@]}"; do
@@ -434,6 +438,186 @@ jobs:
           service: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
           cluster: ${{ vars.ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
+
+      - name: Verify ALB target health
+        env:
+          ALB_BACKEND_TARGET_GROUP_ARN: ${{ vars.ALB_BACKEND_TARGET_GROUP_ARN }}
+        run: |
+          set -euo pipefail
+
+          echo "========== ALB TARGET HEALTH =========="
+
+          if [ -z "$ALB_BACKEND_TARGET_GROUP_ARN" ]; then
+            echo "ERROR: ALB target group ARN is not configured."
+            exit 1
+          fi
+
+          echo "Target group: $ALB_BACKEND_TARGET_GROUP_ARN"
+
+          HEALTH_OUTPUT=$(aws elbv2 describe-target-health             --target-group-arn "$ALB_BACKEND_TARGET_GROUP_ARN"             --region "$AWS_REGION"             --query 'TargetHealthDescriptions[].{Target:Target.Id,Port:Target.Port,State:TargetHealth.State,Reason:TargetHealth.Reason}'             --output json)
+
+          echo "Target health:"
+          echo "$HEALTH_OUTPUT"
+
+          TARGET_COUNT=$(printf '%s' "$HEALTH_OUTPUT" | python3 -c '
+          import json
+          import sys
+
+          data = json.load(sys.stdin)
+          print(len(data))
+          ')
+
+          HEALTHY_COUNT=$(printf '%s' "$HEALTH_OUTPUT" | python3 -c '
+          import json
+          import sys
+
+          data = json.load(sys.stdin)
+          print(sum(1 for target in data if target.get("State") == "healthy"))
+          ')
+
+          echo "Registered targets: $TARGET_COUNT"
+          echo "Healthy targets:    $HEALTHY_COUNT"
+
+          if [ "$TARGET_COUNT" -lt 1 ]; then
+            echo "ERROR: No targets are registered in the ALB target group."
+            exit 1
+          fi
+
+          if [ "$HEALTHY_COUNT" -lt 1 ]; then
+            echo "ERROR: No healthy ALB targets were detected."
+            exit 1
+          fi
+
+          echo "ALB target health: PASSED"
+
+      - name: Verify application health endpoint
+        env:
+          ALB_DNS_NAME: ${{ vars.ALB_DNS_NAME }}
+        run: |
+          set -euo pipefail
+
+          echo "========== APPLICATION HEALTH =========="
+
+          if [ -z "$ALB_DNS_NAME" ]; then
+            echo "ERROR: ALB DNS name is not configured."
+            exit 1
+          fi
+
+          HEALTH_URL="http://${ALB_DNS_NAME}/up"
+
+          echo "Health endpoint: $HEALTH_URL"
+
+          HTTP_STATUS=$(curl             --silent             --show-error             --output /tmp/application-health-response.txt             --write-out '%{http_code}'             --max-time 15             "$HEALTH_URL")
+
+          echo "HTTP status: $HTTP_STATUS"
+          echo "Response:"
+          cat /tmp/application-health-response.txt
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERROR: Application health endpoint did not return HTTP 200."
+            exit 1
+          fi
+
+          echo "Application health endpoint: PASSED"
+
+      - name: Verify deployed release
+        env:
+          ECS_CLUSTER_NAME: ${{ vars.ECS_CLUSTER_NAME }}
+          ECS_BACKEND_SERVICE_NAME: ${{ vars.ECS_BACKEND_SERVICE_NAME }}
+          ECS_QUEUE_SERVICE_NAME: ${{ vars.ECS_QUEUE_SERVICE_NAME }}
+          ECS_SCHEDULER_SERVICE_NAME: ${{ vars.ECS_SCHEDULER_SERVICE_NAME }}
+          ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+          ECR_NGINX_REPOSITORY: ${{ vars.ECR_NGINX_REPOSITORY }}
+        run: |
+          set -euo pipefail
+
+          echo "========== DEPLOYED RELEASE VERIFICATION =========="
+
+          EXPECTED_BACKEND_IMAGE="${ECR_BACKEND_REPOSITORY}:${IMAGE_TAG}"
+          EXPECTED_NGINX_IMAGE="${ECR_NGINX_REPOSITORY}:${IMAGE_TAG}"
+
+          echo "Expected backend image: $EXPECTED_BACKEND_IMAGE"
+          echo "Expected Nginx image:   $EXPECTED_NGINX_IMAGE"
+
+          verify_service() {
+            local service_name="$1"
+            local expected_image="$2"
+            local container_name="$3"
+
+            echo ""
+            echo "Checking service: $service_name"
+            echo "Expected container: $container_name"
+            echo "Expected image: $expected_image"
+
+            local task_arns
+            task_arns=$(aws ecs list-tasks               --cluster "$ECS_CLUSTER_NAME"               --service-name "$service_name"               --desired-status RUNNING               --region "$AWS_REGION"               --query 'taskArns[]'               --output text)
+
+            if [ -z "$task_arns" ] || [ "$task_arns" = "None" ]; then
+              echo "ERROR: No running tasks found for $service_name."
+              return 1
+            fi
+
+            local task_arn
+            while read -r task_arn; do
+              [ -z "$task_arn" ] && continue
+
+              local actual_image
+              actual_image=$(aws ecs describe-tasks                 --cluster "$ECS_CLUSTER_NAME"                 --tasks "$task_arn"                 --region "$AWS_REGION"                 --query "tasks[0].containers[?name=='$container_name'].image | [0]"                 --output text)
+
+              echo "Task: $task_arn"
+              echo "Actual image: $actual_image"
+
+              if [ -z "$actual_image" ] || [ "$actual_image" = "None" ]; then
+                echo "ERROR: Container $container_name was not found in task $task_arn."
+                return 1
+              fi
+
+              if [ "$actual_image" != "$expected_image" ]; then
+                echo "ERROR: Release mismatch for $service_name."
+                echo "Expected: $expected_image"
+                echo "Actual:   $actual_image"
+                return 1
+              fi
+            done <<< "$task_arns"
+
+            echo "$service_name release verification: PASSED"
+          }
+
+          verify_service             "$ECS_BACKEND_SERVICE_NAME"             "$EXPECTED_BACKEND_IMAGE"             "app"
+
+          verify_service             "$ECS_QUEUE_SERVICE_NAME"             "$EXPECTED_BACKEND_IMAGE"             "queue-worker"
+
+          verify_service             "$ECS_SCHEDULER_SERVICE_NAME"             "$EXPECTED_BACKEND_IMAGE"             "scheduler"
+
+          echo ""
+          echo "Checking backend Nginx containers..."
+
+          BACKEND_TASK_ARNS=$(aws ecs list-tasks             --cluster "$ECS_CLUSTER_NAME"             --service-name "$ECS_BACKEND_SERVICE_NAME"             --desired-status RUNNING             --region "$AWS_REGION"             --query 'taskArns[]'             --output text)
+
+          if [ -z "$BACKEND_TASK_ARNS" ] || [ "$BACKEND_TASK_ARNS" = "None" ]; then
+            echo "ERROR: No running backend tasks found for Nginx verification."
+            exit 1
+          fi
+
+          while read -r task_arn; do
+            [ -z "$task_arn" ] && continue
+
+            ACTUAL_NGINX_IMAGE=$(aws ecs describe-tasks               --cluster "$ECS_CLUSTER_NAME"               --tasks "$task_arn"               --region "$AWS_REGION"               --query "tasks[0].containers[?name=='nginx'].image | [0]"               --output text)
+
+            echo "Task: $task_arn"
+            echo "Actual Nginx image: $ACTUAL_NGINX_IMAGE"
+
+            if [ "$ACTUAL_NGINX_IMAGE" != "$EXPECTED_NGINX_IMAGE" ]; then
+              echo "ERROR: Nginx release mismatch."
+              echo "Expected: $EXPECTED_NGINX_IMAGE"
+              echo "Actual:   $ACTUAL_NGINX_IMAGE"
+              exit 1
+            fi
+          done <<< "$BACKEND_TASK_ARNS"
+
+          echo "Backend Nginx release verification: PASSED"
+          echo ""
+          echo "Deployed release verification: PASSED"
 
       - name: Deployment summary
         run: |

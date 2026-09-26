@@ -44,8 +44,6 @@ RUN composer dump-autoload \
     --no-scripts \
     --optimize
 
-RUN APP_ENV=local php artisan package:discover --ansi
-
 RUN chown -R www-data:www-data \
     storage \
     bootstrap/cache
