@@ -1,0 +1,192 @@
+services:
+  - type: web
+    name: solar-energy-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: sh -lc 'php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+    healthCheckPath: /api/v1/ready
+    envVars:
+      - key: APP_NAME
+        value: Solar_Energy_Platform
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_STACK
+        value: single
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: solar_energy
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSLMODE
+        value: disable
+      - key: TELEMETRY_DB_HOST
+        sync: false
+      - key: TELEMETRY_DB_PORT
+        value: "5432"
+      - key: TELEMETRY_DB_DATABASE
+        value: telemetry
+      - key: TELEMETRY_DB_USERNAME
+        sync: false
+      - key: TELEMETRY_DB_PASSWORD
+        sync: false
+      - key: TELEMETRY_DB_SSLMODE
+        value: require
+      - key: REDIS_CLIENT
+        value: predis
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_PASSWORD
+        value: ""
+      - key: CACHE_STORE
+        value: redis
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: file
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false
+      - key: MAIL_MAILER
+        value: log
+      - key: ALERT_NOTIFICATION_CHANNEL
+        value: log
+
+  - type: worker
+    name: solar-energy-queue
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: php artisan queue:work --queue=default --sleep=3 --tries=3 --timeout=60 --backoff=10 --max-jobs=1000 --max-time=3600 --memory=256 --no-interaction
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: solar_energy
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: TELEMETRY_DB_HOST
+        sync: false
+      - key: TELEMETRY_DB_PORT
+        value: "5432"
+      - key: TELEMETRY_DB_DATABASE
+        value: telemetry
+      - key: TELEMETRY_DB_USERNAME
+        sync: false
+      - key: TELEMETRY_DB_PASSWORD
+        sync: false
+      - key: TELEMETRY_DB_SSLMODE
+        value: require
+      - key: REDIS_CLIENT
+        value: predis
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "6379"
+      - key: CACHE_STORE
+        value: redis
+      - key: QUEUE_CONNECTION
+        value: database
+
+  - type: worker
+    name: solar-energy-scheduler
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: php artisan schedule:work
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: solar_energy
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: TELEMETRY_DB_HOST
+        sync: false
+      - key: TELEMETRY_DB_PORT
+        value: "5432"
+      - key: TELEMETRY_DB_DATABASE
+        value: telemetry
+      - key: TELEMETRY_DB_USERNAME
+        sync: false
+      - key: TELEMETRY_DB_PASSWORD
+        sync: false
+      - key: TELEMETRY_DB_SSLMODE
+        value: require
+      - key: REDIS_CLIENT
+        value: predis
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "6379"
+      - key: CACHE_STORE
+        value: redis
+      - key: QUEUE_CONNECTION
+        value: database
+
+  - type: web
+    name: solar-energy-frontend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/frontend/Dockerfile
+    dockerContext: .
+    dockerCommand: /entrypoint.sh
+    healthCheckPath: /health
+    envVars:
+      - key: BACKEND_BASE_URL
+        sync: false
