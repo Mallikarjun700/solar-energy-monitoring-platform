@@ -13,6 +13,7 @@ return new class extends Migration
         if ($this->connection !== 'pgsql_telemetry') {
             return;
         }
+
         Schema::table('telemetry_events_archive', function (Blueprint $table): void {
             $table->index('archived_at', 'telemetry_events_archive_archived_at_index');
         });
@@ -23,6 +24,7 @@ return new class extends Migration
         if ($this->connection !== 'pgsql_telemetry') {
             return;
         }
+
         Schema::table('telemetry_events_archive', function (Blueprint $table): void {
             $table->dropIndex('telemetry_events_archive_archived_at_index');
         });
