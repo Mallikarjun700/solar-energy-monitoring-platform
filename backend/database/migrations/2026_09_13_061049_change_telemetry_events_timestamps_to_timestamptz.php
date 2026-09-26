@@ -35,7 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Skip if not PostgreSQL telemetry database
         if (DB::getDefaultConnection() !== 'pgsql_telemetry') {
             return;
         }
