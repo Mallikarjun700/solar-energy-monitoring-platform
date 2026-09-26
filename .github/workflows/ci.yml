@@ -158,3 +158,40 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs:
+      - docker
+      - terraform
+      - frontend
+      - test
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    environment:
+      name: production
+      url: https://solar-energy-frontend.onrender.com
+    concurrency:
+      group: production
+      cancel-in-progress: false
+
+    steps:
+      - name: Deploy backend to Render
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+        run: |
+          test -n "${RENDER_BACKEND_DEPLOY_HOOK_URL}" || {
+            echo "RENDER_BACKEND_DEPLOY_HOOK_URL is not configured."
+            exit 1
+          }
+          curl --fail --silent --show-error --request POST "${RENDER_BACKEND_DEPLOY_HOOK_URL}"
+
+      - name: Deploy frontend to Render
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+        run: |
+          test -n "${RENDER_FRONTEND_DEPLOY_HOOK_URL}" || {
+            echo "RENDER_FRONTEND_DEPLOY_HOOK_URL is not configured."
+            exit 1
+          }
+          curl --fail --silent --show-error --request POST "${RENDER_FRONTEND_DEPLOY_HOOK_URL}"
