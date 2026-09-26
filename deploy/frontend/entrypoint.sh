@@ -2,8 +2,8 @@
 set -eu
 
 : "${PORT:=10000}"
-: "${BACKEND_HOSTPORT:?BACKEND_HOSTPORT is required}"
+: "${BACKEND_BASE_URL:?BACKEND_BASE_URL is required}"
 
-envsubst '\$PORT \$BACKEND_HOSTPORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '\$PORT \$BACKEND_BASE_URL' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
 
 exec nginx -g 'daemon off;'
