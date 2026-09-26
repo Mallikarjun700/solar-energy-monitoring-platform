@@ -12,9 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
+        if (! in_array(
+            DB::connection('pgsql_telemetry')->getDriverName(),
+            ['pgsql', 'sqlite'],
+            true
+        )) {
             return; // Skip on MySQL, only run on PostgreSQL
         }
+
         Schema::connection('pgsql_telemetry')->create('telemetry_events', function (Blueprint $table) {
             $table->id();
             $table->uuid('event_id')->unique();
@@ -39,9 +44,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! in_array(DB::connection('pgsql_telemetry')->getDriverName(), ['pgsql', 'sqlite'], true)) {
+        if (! in_array(
+            DB::connection('pgsql_telemetry')->getDriverName(),
+            ['pgsql', 'sqlite'],
+            true
+        )) {
             return; // Skip on MySQL, only run on PostgreSQL
         }
+
         Schema::connection('pgsql_telemetry')->dropIfExists('telemetry_events');
     }
 };
