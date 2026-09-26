@@ -11,21 +11,26 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $tenantId = '11111111-1111-4111-8111-111111111111';
+
         $users = [
             [
                 'name' => 'Solar Administrator',
                 'email' => 'admin@example.com',
                 'role' => UserRole::ADMIN->value,
+                'tenant_id' => $tenantId,
             ],
             [
                 'name' => 'Solar Operator',
                 'email' => 'operator@example.com',
                 'role' => UserRole::OPERATOR->value,
+                'tenant_id' => $tenantId,
             ],
             [
                 'name' => 'Solar Viewer',
                 'email' => 'viewer@example.com',
                 'role' => UserRole::VIEWER->value,
+                'tenant_id' => $tenantId,
             ],
         ];
 
