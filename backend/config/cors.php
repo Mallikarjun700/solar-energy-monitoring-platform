@@ -29,12 +29,12 @@ return [
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => [
-    'Accept',
-    'Authorization',
-    'Content-Type',
-    'Origin',
-    'X-Correlation-ID',
-    'Idempotency-Key',
+        'Accept',
+        'Authorization',
+        'Content-Type',
+        'Origin',
+        'X-Correlation-ID',
+        'Idempotency-Key',
     ],
 
     'exposed_headers' => [],
