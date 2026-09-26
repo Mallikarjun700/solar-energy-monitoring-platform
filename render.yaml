@@ -56,7 +56,7 @@ services:
       - key: REDIS_CLIENT
         value: predis
       - key: REDIS_HOST
-        value: red-darmvh7avr4c73fbojg0
+        sync: false
       - key: REDIS_PORT
         value: "6379"
       - key: REDIS_PASSWORD
@@ -120,7 +120,7 @@ services:
       - key: REDIS_CLIENT
         value: predis
       - key: REDIS_HOST
-        value: red-darmvh7avr4c73fbojg0
+        sync: false
       - key: REDIS_PORT
         value: "6379"
       - key: CACHE_STORE
@@ -170,7 +170,7 @@ services:
       - key: REDIS_CLIENT
         value: predis
       - key: REDIS_HOST
-        value: red-darmvh7avr4c73fbojg0
+        sync: false
       - key: REDIS_PORT
         value: "6379"
       - key: CACHE_STORE
@@ -188,5 +188,5 @@ services:
     dockerCommand: /entrypoint.sh
     healthCheckPath: /health
     envVars:
-      - key: BACKEND_HOSTPORT
-        value: solar-energy-api:10000
+      - key: BACKEND_BASE_URL
+        sync: false
