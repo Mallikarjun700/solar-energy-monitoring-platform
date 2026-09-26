@@ -174,24 +174,116 @@ jobs:
     concurrency:
       group: production
       cancel-in-progress: false
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      BACKEND_SERVICE_ID: srv-darnifh7lnhs73e4506g
+      FRONTEND_SERVICE_ID: srv-daro75npn0mc73dcb8r0
+      COMMIT_ID: ${{ github.sha }}
 
     steps:
-      - name: Deploy backend to Render
-        env:
-          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+      - name: Validate Render credentials
         run: |
-          test -n "${RENDER_BACKEND_DEPLOY_HOOK_URL}" || {
-            echo "RENDER_BACKEND_DEPLOY_HOOK_URL is not configured."
+          test -n "${RENDER_API_KEY}" || {
+            echo "::error::RENDER_API_KEY GitHub secret is not configured."
             exit 1
           }
-          curl --fail --silent --show-error --request POST "${RENDER_BACKEND_DEPLOY_HOOK_URL}"
 
-      - name: Deploy frontend to Render
-        env:
-          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+      - name: Deploy backend and wait for result
         run: |
-          test -n "${RENDER_FRONTEND_DEPLOY_HOOK_URL}" || {
-            echo "RENDER_FRONTEND_DEPLOY_HOOK_URL is not configured."
+          set -euo pipefail
+          response="$(
+            curl --fail --silent --show-error \
+              --request POST \
+              --url "https://api.render.com/v1/services/${BACKEND_SERVICE_ID}/deploys" \
+              --header "Accept: application/json" \
+              --header "Content-Type: application/json" \
+              --header "Authorization: Bearer ${RENDER_API_KEY}" \
+              --data "{\"commitId\":\"${COMMIT_ID}\",\"clearCache\":\"do_not_clear\",\"deployMode\":\"build_and_deploy\"}"
+          )"
+          deploy_id="$(printf '%s' "${response}" | jq -r '.id // empty')"
+          test -n "${deploy_id}" || {
+            echo "::error::Render did not return a backend deploy ID."
+            printf '%s\n' "${response}"
             exit 1
           }
-          curl --fail --silent --show-error --request POST "${RENDER_FRONTEND_DEPLOY_HOOK_URL}"
+          echo "Backend Render deploy: ${deploy_id}"
+          for attempt in {1..60}; do
+            status="$(
+              curl --fail --silent --show-error \
+                --url "https://api.render.com/v1/services/${BACKEND_SERVICE_ID}/deploys/${deploy_id}" \
+                --header "Accept: application/json" \
+                --header "Authorization: Bearer ${RENDER_API_KEY}" |
+                jq -r '.status'
+            )"
+            echo "Backend deployment status: ${status}"
+            case "${status}" in
+              live)
+                echo "Backend deployment successful."
+                break
+                ;;
+              build_failed|update_failed|pre_deploy_failed|canceled)
+                echo "::error::Backend Render deployment failed with status: ${status}"
+                exit 1
+                ;;
+            esac
+            if [ "${attempt}" -eq 60 ]; then
+              echo "::error::Backend Render deployment timed out."
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Deploy frontend and wait for result
+        run: |
+          set -euo pipefail
+          response="$(
+            curl --fail --silent --show-error \
+              --request POST \
+              --url "https://api.render.com/v1/services/${FRONTEND_SERVICE_ID}/deploys" \
+              --header "Accept: application/json" \
+              --header "Content-Type: application/json" \
+              --header "Authorization: Bearer ${RENDER_API_KEY}" \
+              --data "{\"commitId\":\"${COMMIT_ID}\",\"clearCache\":\"do_not_clear\",\"deployMode\":\"build_and_deploy\"}"
+          )"
+          deploy_id="$(printf '%s' "${response}" | jq -r '.id // empty')"
+          test -n "${deploy_id}" || {
+            echo "::error::Render did not return a frontend deploy ID."
+            printf '%s\n' "${response}"
+            exit 1
+          }
+          echo "Frontend Render deploy: ${deploy_id}"
+          for attempt in {1..60}; do
+            status="$(
+              curl --fail --silent --show-error \
+                --url "https://api.render.com/v1/services/${FRONTEND_SERVICE_ID}/deploys/${deploy_id}" \
+                --header "Accept: application/json" \
+                --header "Authorization: Bearer ${RENDER_API_KEY}" |
+                jq -r '.status'
+            )"
+            echo "Frontend deployment status: ${status}"
+            case "${status}" in
+              live)
+                echo "Frontend deployment successful."
+                break
+                ;;
+              build_failed|update_failed|pre_deploy_failed|canceled)
+                echo "::error::Frontend Render deployment failed with status: ${status}"
+                exit 1
+                ;;
+            esac
+            if [ "${attempt}" -eq 60 ]; then
+              echo "::error::Frontend Render deployment timed out."
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Deployment summary
+        run: |
+          echo "========================================"
+          echo "CI/CD DEPLOYMENT SUCCESSFUL"
+          echo "========================================"
+          echo "Commit: ${COMMIT_ID}"
+          echo "Backend: LIVE"
+          echo "Frontend: LIVE"
+          echo "========================================"
