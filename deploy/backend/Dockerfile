@@ -40,9 +40,8 @@ COPY backend/ ./
 
 RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
     && chown -R www-data:www-data bootstrap/cache storage \
-    && composer dump-autoload --no-dev --no-scripts --optimize \
-    && php artisan package:discover --ansi
+    && composer dump-autoload --no-dev --no-scripts --optimize
 
 EXPOSE 10000
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+CMD ["sh", "-lc", "php artisan package:discover --ansi && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
