@@ -44,4 +44,4 @@ RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framew
 
 EXPOSE 10000
 
-CMD ["sh", "-lc", "php artisan package:discover --ansi && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+CMD ["sh", "-lc", "php artisan package:discover --ansi && if [ \"${RUN_DB_SEED:-false}\" = \"true\" ]; then php artisan db:seed --force; fi && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
