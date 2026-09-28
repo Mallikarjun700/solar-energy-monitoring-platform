@@ -13,6 +13,8 @@ use App\Models\Asset;
 use App\Models\Device;
 use App\Models\Plant;
 use App\Models\User;
+use App\Services\AlertCreationService;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -115,7 +117,7 @@ class TelemetryAlertDashboardPropagationTest extends TestCase
         $this->assertNotNull($processingJob);
 
         $processingJob->handle(
-            app(\App\Services\TelemetryService::class)
+            app(TelemetryService::class)
         );
 
         // 3. Telemetry processing should dispatch alert evaluation.
@@ -134,7 +136,7 @@ class TelemetryAlertDashboardPropagationTest extends TestCase
 
         // 4. Execute alert evaluation.
         $alertJob->handle(
-            app(\App\Services\AlertCreationService::class)
+            app(AlertCreationService::class)
         );
 
         // 5. Verify the alert was generated for the correct tenant/device/rule.

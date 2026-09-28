@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\DeadLetterStatus;
 use App\Enums\TokenAbility;
+use App\Models\Asset;
 use App\Models\DeadLetterEvent;
+use App\Models\Device;
+use App\Models\Plant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
-use App\Models\Asset;
-use App\Models\Device;
-use App\Models\Plant;
 
 class ApiAuthenticationTest extends TestCase
 {

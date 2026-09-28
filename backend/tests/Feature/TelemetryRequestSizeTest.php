@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\TokenAbility;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\Asset;
 use App\Models\Device;
 use App\Models\Plant;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class TelemetryRequestSizeTest extends TestCase
 {

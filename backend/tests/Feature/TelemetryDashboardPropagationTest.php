@@ -8,8 +8,8 @@ use App\Models\Asset;
 use App\Models\Device;
 use App\Models\Plant;
 use App\Models\Telemetry;
-use App\Models\TelemetryEvent;
 use App\Models\User;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -100,7 +100,7 @@ class TelemetryDashboardPropagationTest extends TestCase
 
         $this->assertNotNull($job);
 
-        $job->handle(app(\App\Services\TelemetryService::class));
+        $job->handle(app(TelemetryService::class));
 
         // 3. Verify the raw telemetry event was persisted.
         $this->assertDatabaseHas('telemetry_events', [

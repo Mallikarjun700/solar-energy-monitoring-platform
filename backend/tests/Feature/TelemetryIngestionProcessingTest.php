@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\TokenAbility;
 use App\Jobs\ProcessTelemetryBatchJob;
-use App\Models\User;
-use App\Models\TelemetryEvent;
-use App\Models\Plant;
 use App\Models\Asset;
 use App\Models\Device;
+use App\Models\Plant;
+use App\Models\TelemetryEvent;
+use App\Models\User;
+use App\Services\TelemetryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -108,7 +109,7 @@ class TelemetryIngestionProcessingTest extends TestCase
         $this->assertNotNull($job);
 
         // 3. Execute the queued processing job.
-        $job->handle(app(\App\Services\TelemetryService::class));
+        $job->handle(app(TelemetryService::class));
 
         // 4. Verify the processed event was persisted to telemetry storage.
         $storedEvent = TelemetryEvent::query()
@@ -157,7 +158,7 @@ class TelemetryIngestionProcessingTest extends TestCase
             ],
         ];
 
-        $service = app(\App\Services\TelemetryService::class);
+        $service = app(TelemetryService::class);
 
         $first = $service->ingest($events);
         $second = $service->ingest($events);
