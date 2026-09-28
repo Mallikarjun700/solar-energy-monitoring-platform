@@ -103,7 +103,7 @@ resource "aws_ecs_task_definition" "backend" {
         },
         {
           name  = "DB_HOST"
-          value = var.database_host
+          value = aws_db_instance.mysql.address
         },
         {
           name  = "DB_PORT"
@@ -119,7 +119,7 @@ resource "aws_ecs_task_definition" "backend" {
         },
         {
           name  = "TELEMETRY_DB_HOST"
-          value = var.telemetry_database_host
+          value = aws_db_instance.postgres.address
         },
         {
           name  = "TELEMETRY_DB_PORT"
@@ -135,7 +135,7 @@ resource "aws_ecs_task_definition" "backend" {
         },
         {
           name  = "REDIS_HOST"
-          value = var.redis_host
+          value = aws_elasticache_replication_group.redis.primary_endpoint_address
         },
         {
           name  = "REDIS_PORT"

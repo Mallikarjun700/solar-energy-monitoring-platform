@@ -113,10 +113,13 @@ class AppServiceProvider extends ServiceProvider
                 foreach ($job->events as $telemetryEvent) {
                     $deadLetterService->captureFailedEvent(
                         $telemetryEvent['event_id'],
-                        $telemetryEvent['attributes']['device_id'] ?? null,
+                        $telemetryEvent['attributes']['device_id']
+                            ?? $telemetryEvent['payload']['device_id']
+                            ?? null,
                         $telemetryEvent,
                         $event->exception,
-                        $event->job->attempts()
+                        $event->job->attempts(),
+                        $telemetryEvent['tenant_id'] ?? null,
                     );
                 }
             } catch (\Throwable $exception) {

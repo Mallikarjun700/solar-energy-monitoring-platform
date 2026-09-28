@@ -29,6 +29,7 @@ class DeadLetterControllerTest extends TestCase
     public function test_dlq_events_can_be_listed(): void
     {
         DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-123',
             'device_id' => 101,
             'original_payload' => [
@@ -77,6 +78,7 @@ class DeadLetterControllerTest extends TestCase
         ]);
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-replay-001',
             'device_id' => $device->id,
             'original_payload' => [
@@ -112,6 +114,7 @@ class DeadLetterControllerTest extends TestCase
     public function test_resolved_dlq_event_cannot_be_replayed_again(): void
     {
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-resolved-001',
             'device_id' => 101,
             'original_payload' => [
@@ -171,6 +174,7 @@ class DeadLetterControllerTest extends TestCase
         $this->assertDatabaseCount('telemetry', 1);
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-replay-duplicate',
             'device_id' => $device->id,
             'original_payload' => [

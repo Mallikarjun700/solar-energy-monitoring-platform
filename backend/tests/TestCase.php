@@ -12,6 +12,8 @@ use Laravel\Sanctum\Sanctum;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected User $authenticatedUser;
+
     public function createApplication(): Application
     {
         $app = require __DIR__.'/../bootstrap/app.php';
@@ -44,6 +46,8 @@ abstract class TestCase extends BaseTestCase
 
     protected function authenticateForApi(array $abilities = []): void
     {
-        Sanctum::actingAs(User::factory()->create(), $abilities);
+        $this->authenticatedUser = User::factory()->create();
+
+        Sanctum::actingAs($this->authenticatedUser, $abilities);
     }
 }

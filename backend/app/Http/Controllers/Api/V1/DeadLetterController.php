@@ -6,14 +6,23 @@ use App\Enums\DeadLetterStatus;
 use App\Http\Controllers\Controller;
 use App\Models\DeadLetterEvent;
 use App\Services\TelemetryService;
+use App\Services\Tenant\TenantContextService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DeadLetterController extends Controller
 {
+    public function __construct(
+        protected TenantContextService $tenantContextService,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
         $query = DeadLetterEvent::query()
+            ->where('tenant_id', $tenantId)
             ->latest('created_at');
 
         if ($request->filled('status')) {
@@ -31,8 +40,18 @@ class DeadLetterController extends Controller
         return response()->json($events);
     }
 
-    public function replay(DeadLetterEvent $deadLetterEvent, TelemetryService $telemetryService): JsonResponse
-    {
+    public function replay(
+        Request $request,
+        DeadLetterEvent $deadLetterEvent,
+        TelemetryService $telemetryService
+    ): JsonResponse {
+        $tenantId = $this->tenantContextService
+            ->resolveForUser($request);
+
+        if ($deadLetterEvent->tenant_id !== $tenantId) {
+            abort(403, 'Tenant access denied.');
+        }
+
         if ($deadLetterEvent->status === DeadLetterStatus::RESOLVED) {
             return response()->json([
                 'status' => 'error',

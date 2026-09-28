@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use App\Models\Asset;
+use App\Models\Device;
+use App\Models\Plant;
 
 class ApiAuthenticationTest extends TestCase
 {
@@ -27,7 +30,24 @@ class ApiAuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $token = $user->createToken('telemetry-test', [TokenAbility::TELEMETRY_WRITE->value])->plainTextToken;
+        $plant = Plant::factory()->create([
+            'tenant_id' => $user->tenant_id,
+        ]);
+
+        $asset = Asset::factory()->create([
+            'tenant_id' => $user->tenant_id,
+            'plant_id' => $plant->id,
+        ]);
+
+        $device = Device::factory()->create([
+            'tenant_id' => $user->tenant_id,
+            'asset_id' => $asset->id,
+        ]);
+
+        $token = $user->createToken(
+            'telemetry-test',
+            [TokenAbility::TELEMETRY_WRITE->value]
+        )->plainTextToken;
 
         $response = $this
             ->withToken($token)
@@ -36,13 +56,13 @@ class ApiAuthenticationTest extends TestCase
                 'events' => [
                     [
                         'event_id' => '550e8400-e29b-41d4-a716-446655440000',
-                        'tenant_id' => '550e8400-e29b-41d4-a716-446655440001',
+                        'tenant_id' => $user->tenant_id,
                         'source_id' => '550e8400-e29b-41d4-a716-446655440002',
                         'event_type' => 'telemetry.power',
                         'timestamp' => now()->toISOString(),
                         'schema_version' => 1,
                         'attributes' => [
-                            'device_id' => 1,
+                            'device_id' => $device->id,
                         ],
                         'payload' => [
                             'power_kw' => 52.5,

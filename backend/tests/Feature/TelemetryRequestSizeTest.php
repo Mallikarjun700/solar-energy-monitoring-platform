@@ -6,6 +6,9 @@ use App\Enums\TokenAbility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Asset;
+use App\Models\Device;
+use App\Models\Plant;
 
 class TelemetryRequestSizeTest extends TestCase
 {
@@ -23,18 +26,33 @@ class TelemetryRequestSizeTest extends TestCase
 
     public function test_telemetry_request_within_size_limit_is_accepted(): void
     {
+        $user = User::factory()->create();
+
+        $plant = Plant::factory()->create([
+            'tenant_id' => $user->tenant_id,
+        ]);
+
+        $asset = Asset::factory()->create([
+            'tenant_id' => $user->tenant_id,
+            'plant_id' => $plant->id,
+        ]);
+
+        $device = Device::factory()->create([
+            'tenant_id' => $user->tenant_id,
+            'asset_id' => $asset->id,
+        ]);
         $payload = [
             'events' => [
                 [
                     'event_id' => '550e8400-e29b-41d4-a716-446655440000',
-                    'tenant_id' => '550e8400-e29b-41d4-a716-446655440001',
+                    'tenant_id' => $user->tenant_id,
                     'source_id' => '550e8400-e29b-41d4-a716-446655440002',
                     'event_type' => 'telemetry.power',
                     'timestamp' => now()->toISOString(),
                     'schema_version' => 1,
                     'attributes' => [],
                     'payload' => [
-                        'device_id' => 1,
+                        'device_id' => $device->id,
                         'power_kw' => 52.5,
                     ],
                 ],

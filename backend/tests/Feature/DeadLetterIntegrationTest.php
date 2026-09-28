@@ -57,6 +57,7 @@ class DeadLetterIntegrationTest extends TestCase
         ]);
 
         $event = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-retry-exhausted',
             'device_id' => $device->id,
             'original_payload' => [
@@ -107,6 +108,7 @@ class DeadLetterIntegrationTest extends TestCase
         ]);
 
         $event = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-invalid',
             'device_id' => $device->id,
             'original_payload' => [
@@ -156,6 +158,7 @@ class DeadLetterIntegrationTest extends TestCase
         ]);
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-replay-resolve',
             'device_id' => $device->id,
             'original_payload' => [
@@ -215,6 +218,7 @@ class DeadLetterIntegrationTest extends TestCase
         ]);
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-replay-failed',
             'device_id' => $device->id,
             'original_payload' => [
@@ -285,6 +289,7 @@ class DeadLetterIntegrationTest extends TestCase
         $this->assertDatabaseCount('telemetry', 1);
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => 'evt-replay-duplicate',
             'device_id' => $device->id,
             'original_payload' => [

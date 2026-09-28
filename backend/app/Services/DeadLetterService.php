@@ -11,17 +11,28 @@ class DeadLetterService
     /**
      * Capture a failed telemetry event in the DLQ.
      */
-    public function captureFailedEvent(string $eventId, ?int $deviceId, array $payload, Throwable|string $error, int $attemptCount = 0): DeadLetterEvent
-    {
-        $errorType = $error instanceof Throwable ? get_class($error) : 'PROCESSING_ERROR';
+    public function captureFailedEvent(
+        string $eventId,
+        ?int $deviceId,
+        array $payload,
+        Throwable|string $error,
+        int $attemptCount = 0,
+        ?string $tenantId = null,
+    ): DeadLetterEvent {
+        $errorType = $error instanceof Throwable
+            ? get_class($error)
+            : 'PROCESSING_ERROR';
 
-        $failureReason = $error instanceof Throwable ? $error->getMessage() : $error;
+        $failureReason = $error instanceof Throwable
+            ? $error->getMessage()
+            : $error;
 
         return DeadLetterEvent::firstOrCreate(
             [
                 'event_id' => $eventId,
             ],
             [
+                'tenant_id' => $tenantId,
                 'device_id' => $deviceId,
                 'original_payload' => $payload,
                 'error_type' => $errorType,

@@ -308,7 +308,7 @@ class DashboardService
                 'message' => $alert->message,
                 'timestamp' => $alert->triggered_at?->toISOString(),
                 'deviceId' => $alert->device_id,
-                'eventId' => $alert->event_id?->toString(),
+                'eventId' => $alert->event_id !== null ? (string) $alert->event_id : null,
             ]);
 
         return $telemetryActivities

@@ -34,8 +34,6 @@ class ProcessTelemetryBatchJob implements ShouldQueue
      */
     public function handle(TelemetryService $telemetryService): void
     {
-        $this->startedAt = microtime(true);
-
         if ($this->correlationId) {
             app()->instance('correlation_id', $this->correlationId);
         }
@@ -51,6 +49,43 @@ class ProcessTelemetryBatchJob implements ShouldQueue
             }
 
             $telemetryService->ingest($this->events);
+
+            foreach ($this->events as $event) {
+                $deviceId = $event['attributes']['device_id']
+                    ?? $event['payload']['device_id']
+                    ?? null;
+
+                if ($deviceId === null) {
+                    throw new \InvalidArgumentException(
+                        'Telemetry event must contain device_id.'
+                    );
+                }
+
+                $telemetryService->process([
+                    'tenant_id' => $event['tenant_id'],
+                    'device_id' => $deviceId,
+                    'recorded_at' => $event['timestamp'],
+                    'temperature' => $event['attributes']['temperature']
+                        ?? $event['payload']['temperature']
+                        ?? null,
+                    'voltage' => $event['attributes']['voltage']
+                        ?? $event['payload']['voltage']
+                        ?? null,
+                    'current' => $event['attributes']['current']
+                        ?? $event['payload']['current']
+                        ?? null,
+                    'power' => $event['attributes']['power']
+                        ?? $event['payload']['power']
+                        ?? $event['payload']['power_kw']
+                        ?? null,
+                    'energy_generated' => $event['attributes']['energy_generated']
+                        ?? $event['payload']['energy_generated']
+                        ?? null,
+                    'status' => $event['attributes']['status']
+                        ?? $event['payload']['status']
+                        ?? 'OK',
+                ]);
+            }
         } catch (Throwable $exception) {
             if ($this->isNonRetryable($exception)) {
                 $this->fail($exception);

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class DeadLetterEvent extends Model
 {
     protected $fillable = [
+        'tenant_id',
         'event_id',
         'device_id',
         'original_payload',

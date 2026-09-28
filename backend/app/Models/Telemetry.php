@@ -12,6 +12,7 @@ class Telemetry extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'tenant_id',
         'device_id',
         'recorded_at',
         'temperature',

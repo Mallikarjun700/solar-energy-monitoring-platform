@@ -55,6 +55,7 @@ class DeadLetterReplayTest extends TestCase
         $recordedAt = now();
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => (string) Str::uuid(),
             'device_id' => $device->id,
             'original_payload' => [
@@ -91,6 +92,7 @@ class DeadLetterReplayTest extends TestCase
     public function test_replay_with_invalid_payload_transitions_to_failed(): void
     {
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => (string) Str::uuid(),
             'device_id' => 999,
             'original_payload' => [
@@ -119,6 +121,7 @@ class DeadLetterReplayTest extends TestCase
     public function test_replay_resolved_event_returns_409(): void
     {
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $this->authenticatedUser->tenant_id,
             'event_id' => (string) Str::uuid(),
             'device_id' => 1,
             'original_payload' => [

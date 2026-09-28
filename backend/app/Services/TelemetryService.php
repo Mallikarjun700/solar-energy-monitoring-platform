@@ -97,12 +97,17 @@ class TelemetryService
                         ]
                     );
                 }
+                $deviceId = $storedEvent->attributes['device_id']
+                    ?? $storedEvent->payload['device_id']
+                    ?? null;
+
                 EvaluateTelemetryAlertsJob::dispatch([
                     'event_id' => $storedEvent->event_id,
                     'tenant_id' => $storedEvent->tenant_id,
                     'source_id' => $storedEvent->source_id,
                     'event_type' => $storedEvent->event_type,
                     'timestamp' => $storedEvent->event_timestamp,
+                    'device_id' => $deviceId,
                     'attributes' => $storedEvent->attributes,
                     'payload' => $storedEvent->payload,
                 ]);
@@ -133,6 +138,7 @@ class TelemetryService
             ->format('Y-m-d H:i:s');
 
         $alreadyExists = Telemetry::query()
+            ->where('tenant_id', $payload['tenant_id'] ?? null)
             ->where('device_id', (int) $deviceId)
             ->where('recorded_at', $recordedAtString)
             ->exists();
@@ -142,6 +148,7 @@ class TelemetryService
         }
 
         Telemetry::query()->create([
+            'tenant_id' => $payload['tenant_id'] ?? null,
             'device_id' => (int) $deviceId,
             'recorded_at' => $recordedAtString,
             'temperature' => $payload['temperature'] ?? null,

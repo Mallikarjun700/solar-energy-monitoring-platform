@@ -347,6 +347,7 @@ class EndToEndWorkflowTest extends TestCase
         ];
 
         $deadLetterEvent = DeadLetterEvent::create([
+            'tenant_id' => $tenantId,
             'event_id' => $eventId,
             'device_id' => $device->id,
             'original_payload' => $payload,
